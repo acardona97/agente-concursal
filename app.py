@@ -437,7 +437,8 @@ def limpiar():
 
 if __name__ == "__main__":
     Path("./documentos_generados").mkdir(exist_ok=True)
+    port = int(os.environ.get("PORT", 5000))
     print("\n⚖️  Agente Concursal v3 — con generación de documentos")
     print("────────────────────────────────────────────────────────")
-    print("🌐 Abre tu navegador en: http://localhost:5000\n")
-    app.run(debug=False, port=5000, host="0.0.0.0")
+    print(f"🌐 Corriendo en puerto {port}\n")
+    app.run(debug=False, port=port, host="0.0.0.0")
