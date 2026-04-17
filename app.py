@@ -155,7 +155,7 @@ HTML = r"""<!DOCTYPE html>
   <div class="modal">
     <h3>Nombre del proceso</h3>
     <p>Para el nombre del archivo generado, indica el nombre del deudor o proceso.</p>
-    <input type="text" id="inputNombreProceso" placeholder="Ej: Pollería Flamante S.A.S." />
+    <input type="text" id="inputNombreProceso" placeholder="Ej: Nombre del deudor o proceso" />
     <div class="modal-btns">
       <button class="btn-modal-cancel" onclick="cerrarModal()">Cancelar</button>
       <button class="btn-modal-ok" onclick="confirmarNombre()">Continuar</button>
@@ -207,7 +207,7 @@ HTML = r"""<!DOCTYPE html>
 
 <div class="input-area">
   <div class="input-wrapper">
-    <textarea id="input" placeholder="Ej: Redacta el proyecto de calificación y graduación del proceso de Pollería Flamante…" rows="1"
+    <textarea id="input" placeholder="Ej: Redacta el proyecto de calificación y graduación del proceso de [DEUDOR]…" rows="1"
       onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();enviar()}"
       oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,160)+'px'"></textarea>
     <button class="btn-clear" onclick="limpiarChat()" title="Nueva conversación">↺</button>
