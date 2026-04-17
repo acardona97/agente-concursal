@@ -1,5 +1,4 @@
-venv/ 
-vectordb/ 
+venv/  
 documentos/ 
 documentos_generados/ 
 __pycache__/ 
