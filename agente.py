@@ -71,7 +71,7 @@ print("🤖 Cargando agente concursal v2...")
 
 _embed_model   = SentenceTransformer(EMBED_MODEL)
 _chroma_client = chromadb.PersistentClient(path=DB_FOLDER)
-__anthropic = anthropic.Anthropic(api_key=os.environ.get("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"))
+___anthropic = anthropic.Anthropic(api_key=os.environ.get("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"))
 
 try:
     _collection = _chroma_client.get_collection("concursal")
