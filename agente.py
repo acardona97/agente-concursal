@@ -1,25 +1,22 @@
 """
-agente.py v2 — Motor del Agente Concursal
-Incluye indexación de documentos en tiempo real
+agente.py v3 — Sin sentence-transformers, usa embeddings de ChromaDB
 """
 
 import os
 import anthropic
 import chromadb
-from sentence_transformers import SentenceTransformer
+from chromadb.utils import embedding_functions
 from pathlib import Path
 import pypdf
 from docx import Document
+import re
 
-# ─── Configuración ────────────────────────────────────────────────────────────
 DB_FOLDER    = "./vectordb"
-EMBED_MODEL  = "paraphrase-multilingual-mpnet-base-v2"
 N_RESULTADOS = 7
 MAX_TOKENS   = 4096
 CLAUDE_MODEL = "claude-opus-4-5"
 CHUNK_SIZE   = 900
 CHUNK_OVERLAP = 180
-# ──────────────────────────────────────────────────────────────────────────────
 
 SYSTEM_PROMPT = """Eres un agente jurídico especializado en derecho concursal colombiano, \
 con dominio experto de la Ley 1116 de 2006 y sus decretos reglamentarios, el Decreto 772 de 2020, \
@@ -66,42 +63,34 @@ Jamás extraigas ni reproduzcas datos, nombres, cifras o hechos específicos de 
 sustitúyelo inmediatamente por el placeholder correspondiente."""
 
 
-# ─── Inicialización ───────────────────────────────────────────────────────────
-print("🤖 Cargando agente concursal v2...")
+print("🤖 Cargando agente concursal v3...")
 
-_embed_model   = SentenceTransformer(EMBED_MODEL)
-_chroma_client = chromadb.PersistentClient(path=DB_FOLDER)
-___anthropic = anthropic.Anthropic(api_key=os.environ.get("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"))
+_ef             = embedding_functions.DefaultEmbeddingFunction()
+_chroma_client  = chromadb.PersistentClient(path=DB_FOLDER)
+_anthropic      = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
 try:
-    _collection = _chroma_client.get_collection("concursal")
+    _collection = _chroma_client.get_collection("concursal", embedding_function=_ef)
     count = _collection.count()
     print(f"✅ Base vectorial cargada: {count} fragmentos indexados")
 except Exception:
     _collection = None
     print("⚠️  Base vectorial no encontrada. Ejecuta primero: python ingest.py")
-# ──────────────────────────────────────────────────────────────────────────────
 
 
-def _leer_archivo(path: str, nombre: str) -> str:
-    """Lee el contenido de un archivo según su extensión."""
+def _leer_archivo(path, nombre):
     ext = Path(nombre).suffix.lower()
     if ext == ".pdf":
         try:
             reader = pypdf.PdfReader(path)
-            paginas = []
-            for i, page in enumerate(reader.pages):
-                texto = page.extract_text()
-                if texto and texto.strip():
-                    paginas.append(f"[Página {i+1}]\n{texto}")
-            return "\n\n".join(paginas)
-        except Exception as e:
+            return "\n\n".join(p.extract_text() or "" for p in reader.pages)
+        except Exception:
             return ""
     elif ext == ".docx":
         try:
             doc = Document(path)
             return "\n".join(p.text for p in doc.paragraphs if p.text.strip())
-        except Exception as e:
+        except Exception:
             return ""
     elif ext == ".txt":
         try:
@@ -111,8 +100,7 @@ def _leer_archivo(path: str, nombre: str) -> str:
     return ""
 
 
-def _chunker(texto: str, nombre: str) -> list[dict]:
-    """Divide texto en fragmentos con overlap."""
+def _chunker(texto, nombre):
     chunks = []
     texto = texto.strip()
     if not texto:
@@ -129,70 +117,45 @@ def _chunker(texto: str, nombre: str) -> list[dict]:
     return chunks
 
 
-def indexar_documento_nuevo(tmp_path: str, nombre_original: str) -> dict:
-    """
-    Indexa un documento nuevo en tiempo real.
-    Retorna dict con ok, fragmentos_nuevos, fragmentos_total.
-    """
+def indexar_documento_nuevo(tmp_path, nombre_original):
     global _collection
-
     if _collection is None:
-        # Intentar crear la colección si no existe
         try:
             _collection = _chroma_client.create_collection(
-                name="concursal",
+                "concursal", embedding_function=_ef,
                 metadata={"hnsw:space": "cosine"}
             )
         except Exception:
-            _collection = _chroma_client.get_collection("concursal")
+            _collection = _chroma_client.get_collection("concursal", embedding_function=_ef)
 
-    # Leer el archivo
     texto = _leer_archivo(tmp_path, nombre_original)
     if not texto.strip():
-        return {
-            "ok": False,
-            "error": "No se pudo extraer texto. El PDF puede estar escaneado (imagen)."
-        }
+        return {"ok": False, "error": "No se pudo extraer texto. El PDF puede estar escaneado."}
 
-    # Generar chunks
     chunks = _chunker(texto, nombre_original)
     if not chunks:
         return {"ok": False, "error": "El documento no contiene texto procesable."}
 
-    # Generar embeddings
     textos = [c["texto"] for c in chunks]
-    embeddings = _embed_model.encode(textos).tolist()
-
-    # Generar IDs únicos para no colisionar con los existentes
     count_actual = _collection.count()
     ids = [f"nuevo_{count_actual + i}" for i in range(len(chunks))]
 
-    # Agregar a la colección
     _collection.add(
         documents=textos,
-        embeddings=embeddings,
         metadatas=[{"fuente": nombre_original} for _ in chunks],
         ids=ids
     )
 
-    fragmentos_total = _collection.count()
-
-    return {
-        "ok": True,
-        "fragmentos_nuevos": len(chunks),
-        "fragmentos_total": fragmentos_total
-    }
+    return {"ok": True, "fragmentos_nuevos": len(chunks), "fragmentos_total": _collection.count()}
 
 
-def buscar_contexto(consulta: str) -> tuple[str, list[str]]:
-    """Busca los fragmentos más relevantes en la base vectorial."""
+def buscar_contexto(consulta):
     if _collection is None:
         return "⚠️ Base vectorial no disponible.", []
 
-    embedding = _embed_model.encode([consulta]).tolist()
     resultados = _collection.query(
-        query_embeddings=embedding,
-        n_results=min(N_RESULTADOS, _collection.count())
+        query_texts=[consulta],
+        n_results=min(N_RESULTADOS, max(1, _collection.count()))
     )
 
     fragmentos = []
@@ -205,8 +168,7 @@ def buscar_contexto(consulta: str) -> tuple[str, list[str]]:
     return "\n\n---\n\n".join(fragmentos), sorted(fuentes_usadas)
 
 
-def consultar_agente(mensaje: str, historial: list = None) -> tuple[str, list, list]:
-    """Consulta principal al agente con RAG."""
+def consultar_agente(mensaje, historial=None):
     if historial is None:
         historial = []
 
@@ -242,8 +204,7 @@ SOLICITUD:
     return respuesta, historial_nuevo, fuentes
 
 
-def estado_base_vectorial() -> dict:
-    """Retorna info sobre la base vectorial."""
+def estado_base_vectorial():
     if _collection is None:
         return {"ok": False, "fragmentos": 0, "mensaje": "Base vectorial no inicializada"}
     try:

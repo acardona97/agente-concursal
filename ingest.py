@@ -1,6 +1,5 @@
 """
-ingest.py — Agente Concursal Ley 1116
-Procesa e indexa todos los documentos en /documentos
+ingest.py v2 — Sin sentence-transformers, usa embeddings de ChromaDB
 Ejecutar UNA sola vez (y cada vez que agregues archivos nuevos)
 """
 
@@ -8,21 +7,17 @@ import os
 import sys
 from pathlib import Path
 import chromadb
-from sentence_transformers import SentenceTransformer
+from chromadb.utils import embedding_functions
 import pypdf
 from docx import Document
 
-# ─── Configuración ────────────────────────────────────────────────────────────
 DOCS_FOLDER  = "./documentos"
 DB_FOLDER    = "./vectordb"
-CHUNK_SIZE   = 900    # caracteres por fragmento
-CHUNK_OVERLAP = 180   # superposición para no perder contexto entre fragmentos
-EMBED_MODEL  = "paraphrase-multilingual-mpnet-base-v2"  # soporta español nativo
-# ──────────────────────────────────────────────────────────────────────────────
+CHUNK_SIZE   = 900
+CHUNK_OVERLAP = 180
 
 
-def leer_pdf(path: Path) -> str:
-    """Extrae texto de un PDF, página por página."""
+def leer_pdf(path):
     try:
         reader = pypdf.PdfReader(str(path))
         paginas = []
@@ -36,19 +31,16 @@ def leer_pdf(path: Path) -> str:
         return ""
 
 
-def leer_docx(path: Path) -> str:
-    """Extrae texto de un archivo Word (.docx)."""
+def leer_docx(path):
     try:
         doc = Document(str(path))
-        parrafos = [p.text for p in doc.paragraphs if p.text.strip()]
-        return "\n".join(parrafos)
+        return "\n".join(p.text for p in doc.paragraphs if p.text.strip())
     except Exception as e:
         print(f"  ⚠️  Error leyendo DOCX {path.name}: {e}")
         return ""
 
 
-def leer_txt(path: Path) -> str:
-    """Extrae texto de un archivo .txt."""
+def leer_txt(path):
     try:
         return path.read_text(encoding="utf-8", errors="ignore")
     except Exception as e:
@@ -56,88 +48,64 @@ def leer_txt(path: Path) -> str:
         return ""
 
 
-def chunker(texto: str, nombre_archivo: str) -> list[dict]:
-    """
-    Divide el texto en fragmentos con overlap.
-    Retorna lista de dicts con texto y metadatos.
-    """
+def chunker(texto, nombre_archivo):
     chunks = []
     texto = texto.strip()
     if not texto:
         return chunks
-
     inicio = 0
     idx = 0
     while inicio < len(texto):
         fin = min(inicio + CHUNK_SIZE, len(texto))
         fragmento = texto[inicio:fin].strip()
         if fragmento:
-            chunks.append({
-                "texto": fragmento,
-                "fuente": nombre_archivo,
-                "chunk_idx": idx
-            })
+            chunks.append({"texto": fragmento, "fuente": nombre_archivo, "chunk_idx": idx})
             idx += 1
         inicio += CHUNK_SIZE - CHUNK_OVERLAP
-
     return chunks
 
 
 def indexar_todo():
-    """Proceso principal: lee, trocea e indexa todos los documentos."""
-
-    # Verificar que existe la carpeta de documentos
     docs_path = Path(DOCS_FOLDER)
     if not docs_path.exists():
         print(f"❌ No se encontró la carpeta '{DOCS_FOLDER}'.")
-        print("   Crea la carpeta y agrega tus archivos PDF y DOCX.")
         sys.exit(1)
 
-    # Inicializar base vectorial
     print("🔧 Inicializando base vectorial...")
     chroma_client = chromadb.PersistentClient(path=DB_FOLDER)
+    ef = embedding_functions.DefaultEmbeddingFunction()
 
-    # Borrar colección anterior si existe (para re-indexar limpio)
     try:
         chroma_client.delete_collection("concursal")
-        print("   Colección anterior eliminada (re-indexación limpia)")
+        print("   Colección anterior eliminada")
     except Exception:
         pass
 
     collection = chroma_client.create_collection(
         name="concursal",
+        embedding_function=ef,
         metadata={"hnsw:space": "cosine"}
     )
 
-    # Cargar modelo de embeddings
-    print(f"🤖 Cargando modelo de embeddings ({EMBED_MODEL})...")
-    print("   (Primera vez puede tomar 1-2 minutos descargando el modelo)")
-    embed_model = SentenceTransformer(EMBED_MODEL)
-    print("   ✅ Modelo listo\n")
-
-    # Procesar archivos
-    extensiones_soportadas = {".pdf", ".docx", ".txt"}
-    archivos = [
-        f for f in docs_path.rglob("*")
-        if f.suffix.lower() in extensiones_soportadas and f.is_file()
-    ]
+    extensiones = {".pdf", ".docx", ".txt"}
+    archivos = [f for f in docs_path.rglob("*")
+                if f.suffix.lower() in extensiones and f.is_file()]
 
     if not archivos:
-        print("❌ No se encontraron archivos PDF, DOCX o TXT en la carpeta documentos/")
+        print("❌ No se encontraron archivos en la carpeta documentos/")
         sys.exit(1)
 
     print(f"📁 Archivos encontrados: {len(archivos)}\n")
 
     todos_chunks = []
     for archivo in sorted(archivos):
-        extension = archivo.suffix.lower()
+        ext = archivo.suffix.lower()
         print(f"  📄 {archivo.name}", end=" ... ")
-
-        if extension == ".pdf":
+        if ext == ".pdf":
             texto = leer_pdf(archivo)
-        elif extension == ".docx":
+        elif ext == ".docx":
             texto = leer_docx(archivo)
-        elif extension == ".txt":
+        elif ext == ".txt":
             texto = leer_txt(archivo)
         else:
             print("omitido")
@@ -155,39 +123,24 @@ def indexar_todo():
         print("\n❌ No se pudo extraer texto de ningún archivo.")
         sys.exit(1)
 
-    print(f"\n📊 Total fragmentos generados: {len(todos_chunks)}")
-    print("🔢 Generando embeddings (puede tomar varios minutos)...")
+    print(f"\n📊 Total fragmentos: {len(todos_chunks)}")
+    print("💾 Guardando en base vectorial...")
 
-    # Generar embeddings en lotes
-    BATCH_SIZE = 64
+    BATCH = 64
     textos  = [c["texto"]  for c in todos_chunks]
     fuentes = [c["fuente"] for c in todos_chunks]
     ids     = [f"chunk_{i}" for i in range(len(todos_chunks))]
 
-    todos_embeddings = []
-    for i in range(0, len(textos), BATCH_SIZE):
-        lote = textos[i : i + BATCH_SIZE]
-        embeddings_lote = embed_model.encode(lote, show_progress_bar=False).tolist()
-        todos_embeddings.extend(embeddings_lote)
-        progreso = min(i + BATCH_SIZE, len(textos))
-        print(f"   {progreso}/{len(textos)} fragmentos procesados", end="\r")
-
-    print(f"   {len(textos)}/{len(textos)} fragmentos procesados ✅")
-
-    # Guardar en ChromaDB en lotes
-    print("💾 Guardando en base vectorial...")
-    for i in range(0, len(todos_chunks), BATCH_SIZE):
+    for i in range(0, len(todos_chunks), BATCH):
         collection.add(
-            documents=textos[i : i + BATCH_SIZE],
-            embeddings=todos_embeddings[i : i + BATCH_SIZE],
-            metadatas=[{"fuente": f} for f in fuentes[i : i + BATCH_SIZE]],
-            ids=ids[i : i + BATCH_SIZE]
+            documents=textos[i:i+BATCH],
+            metadatas=[{"fuente": f} for f in fuentes[i:i+BATCH]],
+            ids=ids[i:i+BATCH]
         )
+        print(f"   {min(i+BATCH, len(textos))}/{len(textos)} guardados", end="\r")
 
-    print(f"\n✅ Indexación completa.")
-    print(f"   {len(archivos)} archivos → {len(todos_chunks)} fragmentos indexados")
-    print(f"   Base vectorial guardada en: {DB_FOLDER}/")
-    print(f"\n👉 Ahora puedes correr: python app.py")
+    print(f"\n✅ Indexación completa: {len(archivos)} archivos → {len(todos_chunks)} fragmentos")
+    print(f"👉 Ahora puedes correr: python app.py")
 
 
 if __name__ == "__main__":
