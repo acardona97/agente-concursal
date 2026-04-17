@@ -14,6 +14,9 @@ app = Flask(__name__)
 CORS(app)
 app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024
 
+from mcp_server import mcp
+app.register_blueprint(mcp)
+
 _historial = []
 _nombre_proceso_actual = "Proceso"
 EXTENSIONES_PERMITIDAS = {".pdf", ".docx", ".txt"}
