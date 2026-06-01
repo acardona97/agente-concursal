@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acervos Imaginarios - Sucesiones EAFIT 2026</title>
+<style>
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --bg: #0f1114;
+    --text: #e4e0d8;
+    --accent: #c9a84c;
+    --green: #4caf7a;
+    --blue: #5c9de0;
+    --dim: #6b6860;
+    --slide-title: 48px;
+    --slide-body: 28px;
+    --slide-article: 22px;
+    --slide-small: 18px;
+}
+
+html {
+    scroll-behavior: smooth;
+    scroll-snap-type: y mandatory;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+.slide {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 100px;
+    scroll-snap-align: start;
+    position: relative;
+    overflow: hidden;
+}
+
+.slide-inner {
+    max-width: 1200px;
+    width: 100%;
+}
+
+h1 {
+    font-size: var(--slide-title);
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 24px;
+    line-height: 1.2;
+}
+
+h2 {
+    font-size: 36px;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+h3 {
+    font-size: 30px;
+    color: var(--text);
+    font-weight: 400;
+    margin-bottom: 16px;
+    opacity: 0.85;
+}
+
+p, li {
+    font-size: var(--slide-body);
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+
+.subtitle {
+    font-size: 30px;
+    color: var(--text);
+    opacity: 0.8;
+    margin-bottom: 12px;
+}
+
+.meta {
+    font-size: 22px;
+    color: var(--dim);
+    margin-top: 30px;
+}
+
+.diagram {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 12px;
+    padding: 32px 40px;
+    margin: 24px 0;
+    font-family: "Cascadia Code", "Fira Code", "Consolas", monospace;
+    font-size: 24px;
+    line-height: 1.7;
+    white-space: pre;
+    overflow-x: auto;
+}
+
+.article-box {
+    background: rgba(76,175,122,0.08);
+    border-left: 4px solid var(--green);
+    border-radius: 0 10px 10px 0;
+    padding: 24px 32px;
+    margin: 20px 0;
+    font-size: var(--slide-article);
+    font-style: italic;
+    line-height: 1.7;
+    color: #c8d8c8;
+}
+
+.article-box .article-label {
+    font-style: normal;
+    font-weight: 700;
+    color: var(--green);
+    display: block;
+    margin-bottom: 8px;
+    font-size: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.case-box {
+    background: rgba(92,157,224,0.08);
+    border-left: 4px solid var(--blue);
+    border-radius: 0 10px 10px 0;
+    padding: 24px 32px;
+    margin: 20px 0;
+    font-size: var(--slide-body);
+    line-height: 1.6;
+}
+
+.data-box {
+    background: rgba(201,168,76,0.08);
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: 10px;
+    padding: 28px 36px;
+    margin: 20px 0;
+    font-size: var(--slide-body);
+    line-height: 1.8;
+}
+
+.key-point {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--accent);
+    text-align: center;
+    margin: 30px 0;
+    padding: 20px;
+    border: 2px solid var(--accent);
+    border-radius: 12px;
+}
+
+.two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin: 20px 0;
+}
+
+.col {
+    background: rgba(255,255,255,0.03);
+    border-radius: 12px;
+    padding: 28px 32px;
+}
+
+.col h2 {
+    font-size: 28px;
+    margin-bottom: 16px;
+}
+
+.col p, .col li {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 24px;
+}
+
+table th {
+    background: rgba(201,168,76,0.15);
+    color: var(--accent);
+    padding: 16px 20px;
+    text-align: left;
+    font-weight: 700;
+    border-bottom: 2px solid var(--accent);
+}
+
+table td {
+    padding: 14px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    vertical-align: top;
+}
+
+table tr:last-child td {
+    border-bottom: none;
+}
+
+ol, ul {
+    padding-left: 36px;
+}
+
+ol li, ul li {
+    margin-bottom: 14px;
+}
+
+.numbered-list {
+    list-style: none;
+    padding-left: 0;
+    counter-reset: item;
+}
+
+.numbered-list li {
+    counter-increment: item;
+    padding-left: 48px;
+    position: relative;
+    margin-bottom: 20px;
+    font-size: var(--slide-body);
+}
+
+.numbered-list li::before {
+    content: counter(item);
+    position: absolute;
+    left: 0;
+    top: 2px;
+    width: 36px;
+    height: 36px;
+    background: var(--accent);
+    color: var(--bg);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 20px;
+}
+
+.highlight {
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.highlight-green {
+    color: var(--green);
+    font-weight: 700;
+}
+
+.highlight-blue {
+    color: var(--blue);
+    font-weight: 700;
+}
+
+.x-mark {
+    color: #e05c5c;
+}
+
+.check-mark {
+    color: var(--green);
+}
+
+.calc-line {
+    font-size: 36px;
+    text-align: center;
+    margin: 16px 0;
+    font-family: "Cascadia Code", "Fira Code", "Consolas", monospace;
+}
+
+.calc-line .label {
+    font-size: 20px;
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    display: block;
+    opacity: 0.6;
+    margin-top: 4px;
+}
+
+.flow-item {
+    text-align: center;
+    font-size: 26px;
+    padding: 14px 0;
+    position: relative;
+}
+
+.flow-item::after {
+    content: "\2193";
+    display: block;
+    font-size: 28px;
+    color: var(--accent);
+    margin-top: 6px;
+}
+
+.flow-item:last-child::after {
+    display: none;
+}
+
+.flow-answer {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--accent);
+    text-align: center;
+    margin-top: 10px;
+}
+
+/* Slide indicator */
+#slide-indicator {
+    position: fixed;
+    bottom: 24px;
+    right: 32px;
+    font-size: 16px;
+    color: var(--dim);
+    z-index: 1000;
+    background: rgba(15,17,20,0.85);
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.08);
+    pointer-events: none;
+}
+
+/* Speaker notes */
+.speaker-notes {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0,0,0,0.92);
+    border-top: 2px solid var(--accent);
+    padding: 16px 40px;
+    font-size: 16px;
+    line-height: 1.5;
+    color: #aaa;
+    max-height: 25vh;
+    overflow-y: auto;
+    display: none;
+    z-index: 100;
+}
+
+.speaker-notes.visible {
+    display: block;
+}
+
+.speaker-notes::before {
+    content: "NOTAS";
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+}
+
+/* Progress bar */
+#progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    background: var(--accent);
+    z-index: 1000;
+    transition: width 0.3s ease;
+}
+
+/* Animations */
+.slide-inner > * {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.slide.active .slide-inner > * {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.slide.active .slide-inner > *:nth-child(1) { transition-delay: 0.05s; }
+.slide.active .slide-inner > *:nth-child(2) { transition-delay: 0.15s; }
+.slide.active .slide-inner > *:nth-child(3) { transition-delay: 0.25s; }
+.slide.active .slide-inner > *:nth-child(4) { transition-delay: 0.35s; }
+.slide.active .slide-inner > *:nth-child(5) { transition-delay: 0.45s; }
+.slide.active .slide-inner > *:nth-child(6) { transition-delay: 0.55s; }
+.slide.active .slide-inner > *:nth-child(7) { transition-delay: 0.65s; }
+
+/* Responsive */
+@media (max-width: 900px) {
+    .slide { padding: 40px 32px; }
+    h1 { font-size: 36px; }
+    h2 { font-size: 28px; }
+    p, li { font-size: 22px; }
+    .two-col { grid-template-columns: 1fr; gap: 20px; }
+    .diagram { font-size: 18px; padding: 20px; }
+    .calc-line { font-size: 28px; }
+    table { font-size: 18px; }
+    .col p, .col li { font-size: 20px; }
+}
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+<div id="slide-indicator">1 / 22</div>
+
+<!-- ======== SLIDE 1: PORTADA ======== -->
+<section class="slide" id="slide-1">
+    <div class="slide-inner" style="text-align:center;">
+        <h1 style="font-size:64px; margin-bottom:16px;">Acervos Imaginarios</h1>
+        <p class="subtitle" style="font-size:32px;">Protección de legitimas frente a donaciones en vida</p>
+        <p class="meta" style="margin-top:48px;">Sucesiones &middot; EAFIT &middot; 2026</p>
+    </div>
+    <div class="speaker-notes">Bienvenida. Hoy vamos a ver una figura que protege a los legitimarios cuando el causante intento sacar bienes de su patrimonio antes de morir. Es una ficción jurídica poderosa que sigue vigente a pesar de la Ley 1934 de 2018.</div>
+</section>
+
+<!-- ======== SLIDE 2: EL PROBLEMA ======== -->
+<section class="slide" id="slide-2">
+    <div class="slide-inner">
+        <h1>El problema</h1>
+        <div class="diagram" style="text-align:center; font-size:26px; line-height:2;">Causante con 3 hijos
+        |
+   En vida dona TODO
+   a su hijo favorito
+        |
+   Al morir: patrimonio = <span class="highlight">$0</span>
+        |
+   Los otros hijos se quedan sin legitima?
+        |
+   <span class="x-mark" style="font-size:32px;">&#10060;</span> <span style="color:var(--accent); font-weight:700; font-size:30px;">NO</span> &mdash; Para eso existen los <span class="highlight">acervos imaginarios</span></div>
+    </div>
+    <div class="speaker-notes">Planteen la pregunta antes de dar la respuesta. Que pasa si un padre le dona todo a un hijo? Los demás se quedan sin nada? La respuesta es no, y la herramienta jurídica es el acervo imaginario.</div>
+</section>
+
+<!-- ======== SLIDE 3: DEFINICION ======== -->
+<section class="slide" id="slide-3">
+    <div class="slide-inner">
+        <h1>Acervo Imaginario</h1>
+        <p style="font-size:30px; margin-bottom:32px;">Ficcion jurídica que <span class="highlight">SUMA de vuelta</span> al acervo líquido el valor de las donaciones hechas por el causante en vida, para calcular las legitimas <em>como si esas donaciones nunca se hubieran hecho</em>.</p>
+        <div class="diagram" style="text-align:center; font-size:24px; line-height:1.8;">
+   <span style="color:var(--text)">Acervo Líquido</span>    +    <span style="color:var(--accent)">Donaciones en vida</span>    =    <span style="color:var(--green); font-weight:700;">ACERVO IMAGINARIO</span>
+   <span style="color:var(--dim)">(lo que dejo)</span>          <span style="color:var(--dim)">(lo que regalo)</span>             <span style="color:var(--dim)">(base de cálculo)</span></div>
+    </div>
+    <div class="speaker-notes">La palabra clave es IMAGINAR. No se devuelven fisicamente los bienes &mdash; se suman matematicamente para que el cálculo de legitimas sea justo. Es como hacer la cuenta de cuanto DEBERIA haber habido si el causante no hubiera donado nada.</div>
+</section>
+
+<!-- ======== SLIDE 4: DOS TIPOS ======== -->
+<section class="slide" id="slide-4">
+    <div class="slide-inner">
+        <h1>Dos tipos de acervos imaginarios</h1>
+        <div class="two-col">
+            <div class="col" style="border-top:3px solid var(--accent);">
+                <h2 style="color:var(--accent);">Primer Acervo</h2>
+                <p>Donaciones a <span class="highlight">LEGITIMARIOS</span></p>
+                <p style="font-size:20px; color:var(--green);">Art. 1243 CC (derogado formalmente)</p>
+                <p>Protege a unos legitimarios <em>de otros</em></p>
+                <p style="margin-top:16px;">Efecto: <span class="highlight">IMPUTACION</span><br><span style="font-size:20px; color:var(--dim);">(se descuenta de la legitima del donatario)</span></p>
+            </div>
+            <div class="col" style="border-top:3px solid var(--blue);">
+                <h2 style="color:var(--blue);">Segundo Acervo</h2>
+                <p>Donaciones a <span class="highlight-blue">EXTRAÑOS</span></p>
+                <p style="font-size:20px; color:var(--green);">Art. 1244 CC (vigente)</p>
+                <p>Protege a legitimarios <em>frente a terceros</em></p>
+                <p style="margin-top:16px;">Efecto: <span class="highlight-blue">AGREGACION</span> + posible <span class="highlight-blue">RESTITUCION</span></p>
+            </div>
+        </div>
+    </div>
+    <div class="speaker-notes">Aqui es donde la clase se pone interesante. El legislador penso en dos escenarios: que el causante favorezca a un hijo sobre los demás, o que regale bienes a personas ajenas a la familia.</div>
+</section>
+
+<!-- ======== SLIDE 5: PRIMER ACERVO ======== -->
+<section class="slide" id="slide-5">
+    <div class="slide-inner">
+        <h1>Primer Acervo Imaginario</h1>
+        <h3>Donaciones a <span class="highlight">LEGITIMARIOS</span></h3>
+        <div class="article-box">
+            <span class="article-label">Art. 1256 CC (Ley 1934/2018)</span>
+            "Todos los legados y todas las donaciones, sean revocables o irrevocables, hechas a un legitimario que tenía entonces la calidad de tal, se imputaran a su legitima..."
+        </div>
+        <div class="key-point">La Ley 1934/2018 derogó el Art. 1243 &mdash; pero la derogatoria fue FORMAL, no material</div>
+    </div>
+    <div class="speaker-notes">Este es un punto polemico. La Ley 1934 derogó el artículo 1243 que definia el primer acervo. Pero los artículos 1256 (imputación) y 1242 (que TODAVIA remite al 1243) siguen vigentes. Citar el cuaderno de clase: 'Esa derogatoria fue meramente formal, o sea que a pesar de la ley sigue aplicándose el acervo imaginario en Colombia.' Si desapareciera la colación, un padre podría donarle todo a un hijo y dejar a los demás sin legitima &mdash; lo cual contradice todo el sistema.</div>
+</section>
+
+<!-- ======== SLIDE 6: POR QUE SIGUE VIGENTE ======== -->
+<section class="slide" id="slide-6">
+    <div class="slide-inner">
+        <h1>3 razones por las que el primer acervo sigue vivo</h1>
+        <ol class="numbered-list">
+            <li><span class="highlight-green">Art. 1256 vigente</span> &rarr; "se imputaran a su legitima" las donaciones a legitimarios</li>
+            <li><span class="highlight-green">Art. 1242 vigente</span> &rarr; sigue remitiendo a "las agregaciones indicadas en los artículos 1243 a 1245"</li>
+            <li><span class="highlight">Interpretacion sistemática</span> &rarr; sin colación, el sistema de legitimas colapsa</li>
+        </ol>
+    </div>
+    <div class="speaker-notes">Aqui se puede abrir debate. Esta bien que una ley derogue formalmente algo que sigue aplicándose? Deberia el Congreso corregir esto? Es un ejemplo perfecto de mala tecnica legislativa. La doctrina mayoritaria dice que sigue vigente: ver Scielo, Revista de Derecho Privado U. Externado.</div>
+</section>
+
+<!-- ======== SLIDE 7: EXCEPCIONES ======== -->
+<section class="slide" id="slide-7">
+    <div class="slide-inner">
+        <h1>Excepciones: que no se imputa</h1>
+        <div class="article-box">
+            <span class="article-label">Art. 1256 inciso 2</span>
+        </div>
+        <ul style="list-style:none; padding-left:0; margin-top:20px;">
+            <li style="font-size:32px; margin-bottom:24px;"><span class="x-mark" style="font-size:36px;">&#10007;</span>&ensp; Gastos de educación de un descendiente</li>
+            <li style="font-size:32px; margin-bottom:24px;"><span class="x-mark" style="font-size:36px;">&#10007;</span>&ensp; Presentes hechos con ocasión de matrimonio</li>
+            <li style="font-size:32px; margin-bottom:24px;"><span class="x-mark" style="font-size:36px;">&#10007;</span>&ensp; Regalos de costumbre</li>
+        </ul>
+    </div>
+    <div class="speaker-notes">Los padres pueden pagar la universidad de un hijo sin que eso se descuente de su legitima. Lo mismo con un regalo de boda. Esto es lógico &mdash; son gastos que se presumen hechos por obligación moral o costumbre, no con animo de favorecer a un hijo sobre otro.</div>
+</section>
+
+<!-- ======== SLIDE 8: SEGUNDO ACERVO ======== -->
+<section class="slide" id="slide-8">
+    <div class="slide-inner">
+        <h1>Segundo Acervo Imaginario</h1>
+        <h3>Donaciones a <span class="highlight-blue">EXTRAÑOS</span> &mdash; Art. 1244 CC</h3>
+        <div class="article-box">
+            <span class="article-label">Art. 1244 CC</span>
+            "Si el que tenía, a la sazón, legitimarios, hubiere hecho donaciones entre vivos a extraños, y el valor de todas ellas juntas excediere a la mitad..."
+        </div>
+        <div class="diagram" style="text-align:center; font-size:24px; line-height:2.2;">Donaciones a extraños > <span class="highlight">50% libre disposición</span>?
+        |
+   <span class="highlight-green">SI</span> &rarr; Se agrega el exceso imaginariamente
+        |
+   Menoscaba legitimas? &rarr; <span class="highlight-blue">RESTITUCION</span> (Art. 1245)
+   <span style="color:var(--dim);">(Orden inverso: primero las más recientes)</span></div>
+    </div>
+    <div class="speaker-notes">Este es el que no tiene discusion de vigencia. Si el causante dono más de lo que podia a extraños y eso afecta las legitimas, los legitimarios pueden pedir la DEVOLUCION. Y se empieza por las ultimas donaciones.</div>
+</section>
+
+<!-- ======== SLIDE 9: DISTRIBUCION ACTUAL ======== -->
+<section class="slide" id="slide-9">
+    <div class="slide-inner">
+        <h1>Masa sucesoral &mdash; Post Ley 1934/2018</h1>
+        <div class="diagram" style="text-align:center; font-size:22px; line-height:1.6;">
+         ACERVO IMAGINARIO
+         &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+         &#9474;        &#9474;        &#9474;
+         &#9474;  <span class="highlight">50%</span>   &#9474;  <span class="highlight-blue">50%</span>   &#9474;
+         &#9474;<span class="highlight">LEGITIMAS</span>&#9474; <span class="highlight-blue">LIBRE</span>  &#9474;
+         &#9474;        &#9474;<span class="highlight-blue">DISPOSICION</span>&#9474;
+         &#9474;        &#9474;        &#9474;
+         &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9524;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;</div>
+        <div style="text-align:center; margin-top:28px;">
+            <p style="font-size:24px; color:var(--dim);">ANTES: 50% legitimas + 25% mejoras + 25% libre</p>
+            <p style="font-size:28px; color:var(--accent); font-weight:700; margin-top:8px;">La cuarta de mejoras desaparecio</p>
+        </div>
+    </div>
+    <div class="speaker-notes">La Ley 1934 simplificó la distribución. Ya no hay cuarta de mejoras. Es mitad y mitad. Esto le da más libertad al testador, pero las legitimas siguen siendo intangibles &mdash; Art. 1250: no pueden tener condición, plazo, modo o gravamen.</div>
+</section>
+
+<!-- ======== SLIDE 10: EJERCICIO ======== -->
+<section class="slide" id="slide-10">
+    <div class="slide-inner" style="text-align:center;">
+        <h1>Caso práctico de cálculo</h1>
+        <div class="data-box" style="text-align:left; display:inline-block; min-width:600px;">
+            <p><span class="highlight">Causante:</span> Don Roberto, 3 hijos (Ana, Bruno, Camila)</p>
+            <p><span class="highlight">Acervo líquido:</span> $600M</p>
+            <p><span class="highlight">Dono a Ana</span> (legitimaria): <span style="color:var(--accent);">$200M</span></p>
+            <p><span class="highlight">Dono a Pedro</span> (extraño): <span style="color:var(--blue);">$100M</span></p>
+        </div>
+    </div>
+    <div class="speaker-notes">Vamos a resolver esto paso a paso. Pidan a los estudiantes que anoten los datos antes de avanzar.</div>
+</section>
+
+<!-- ======== SLIDE 11: PASO 1 ======== -->
+<section class="slide" id="slide-11">
+    <div class="slide-inner" style="text-align:center;">
+        <h1>Paso 1: Acervo Imaginario</h1>
+        <div class="calc-line" style="margin-top:40px;">
+            <span style="color:var(--text);">$600M</span>
+            <span style="color:var(--dim); margin:0 12px;">+</span>
+            <span style="color:var(--accent);">$200M</span>
+            <span style="color:var(--dim); margin:0 12px;">+</span>
+            <span style="color:var(--blue);">$100M</span>
+            <span style="color:var(--dim); margin:0 12px;">=</span>
+            <span style="color:var(--green); font-weight:700; font-size:44px;">$900M</span>
+        </div>
+        <div style="display:flex; justify-content:center; gap:60px; margin-top:40px;">
+            <div>
+                <div style="font-size:36px; color:var(--text);">$600M</div>
+                <div style="font-size:18px; color:var(--dim);">Acervo líquido</div>
+            </div>
+            <div>
+                <div style="font-size:36px; color:var(--accent);">$200M</div>
+                <div style="font-size:18px; color:var(--dim);">Donación a legitimaria<br>(1er acervo)</div>
+            </div>
+            <div>
+                <div style="font-size:36px; color:var(--blue);">$100M</div>
+                <div style="font-size:18px; color:var(--dim);">Donación a extraño<br>(2do acervo)</div>
+            </div>
+        </div>
+    </div>
+    <div class="speaker-notes">Se suman las dos donaciones. La de Ana se suma por el primer acervo (Art. 1256). La de Pedro por el segundo (Art. 1244).</div>
+</section>
+
+<!-- ======== SLIDE 12: PASO 2 ======== -->
+<section class="slide" id="slide-12">
+    <div class="slide-inner" style="text-align:center;">
+        <h1>Paso 2: Calcular mitades</h1>
+        <div style="display:flex; justify-content:center; gap:80px; margin-top:60px;">
+            <div style="background:rgba(201,168,76,0.1); border:2px solid var(--accent); border-radius:16px; padding:40px 60px;">
+                <div style="font-size:20px; color:var(--dim); text-transform:uppercase; letter-spacing:2px;">Mitad legitimaria</div>
+                <div style="font-size:56px; color:var(--accent); font-weight:700; margin-top:12px;">$450M</div>
+            </div>
+            <div style="background:rgba(92,157,224,0.1); border:2px solid var(--blue); border-radius:16px; padding:40px 60px;">
+                <div style="font-size:20px; color:var(--dim); text-transform:uppercase; letter-spacing:2px;">Mitad libre disposición</div>
+                <div style="font-size:56px; color:var(--blue); font-weight:700; margin-top:12px;">$450M</div>
+            </div>
+        </div>
+    </div>
+    <div class="speaker-notes">Simple: 50% y 50%.</div>
+</section>
+
+<!-- ======== SLIDE 13: PASO 3 ======== -->
+<section class="slide" id="slide-13">
+    <div class="slide-inner" style="text-align:center;">
+        <h1>Paso 3: Donación a Pedro excede la libre disposición?</h1>
+        <div class="calc-line" style="margin-top:50px;">
+            <span style="color:var(--blue);">$100M</span>
+            <span style="color:var(--dim); margin:0 16px; font-size:28px;">donado a Pedro</span>
+            <span style="color:var(--dim); margin:0 8px;">&lt;</span>
+            <span style="color:var(--blue);">$450M</span>
+            <span style="color:var(--dim); margin:0 16px; font-size:28px;">libre disposición</span>
+        </div>
+        <div style="margin-top:40px;">
+            <p style="font-size:36px;"><span class="check-mark" style="font-size:40px;">&#10003;</span>&ensp; <span class="highlight-green">NO excede</span> &rarr; No hay restitución contra Pedro</p>
+        </div>
+    </div>
+    <div class="speaker-notes">Si Pedro hubiera recibido $500M, ahi si habria restitución porque excederia los $450M de libre disposición. En este caso no hay problema.</div>
+</section>
+
+<!-- ======== SLIDE 14: PASO 4 ======== -->
+<section class="slide" id="slide-14">
+    <div class="slide-inner">
+        <h1>Paso 4: Legitimas rigurosas</h1>
+        <div class="calc-line" style="margin-top:24px;">
+            <span style="color:var(--accent);">$450M</span>
+            <span style="color:var(--dim); margin:0 12px;">&divide;</span>
+            <span style="color:var(--text);">3 hijos</span>
+            <span style="color:var(--dim); margin:0 12px;">=</span>
+            <span style="color:var(--green); font-weight:700;">$150M por hijo</span>
+        </div>
+        <div style="margin-top:36px;">
+            <div class="data-box" style="border-color:var(--accent);">
+                <p><span class="highlight">Ana:</span> legitima = $150M, pero ya recibio <span style="color:var(--accent);">$200M</span></p>
+                <p style="font-size:30px; font-weight:700; color:var(--accent); margin-top:8px;">Exceso: $50M &rarr; se imputa a libre disposición (Art. 1251)</p>
+            </div>
+            <div style="display:flex; gap:30px; margin-top:20px;">
+                <div class="data-box" style="flex:1; border-color:var(--green);">
+                    <p><span class="highlight-green">Bruno:</span> recibe <span style="font-weight:700; font-size:32px; color:var(--green);">$150M</span></p>
+                </div>
+                <div class="data-box" style="flex:1; border-color:var(--green);">
+                    <p><span class="highlight-green">Camila:</span> recibe <span style="font-weight:700; font-size:32px; color:var(--green);">$150M</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="speaker-notes">Ana no recibe nada más en la sucesion. Su donación de $200M ya supero su legitima de $150M. Los $50M de exceso se descuentan de la libre disposición.</div>
+</section>
+
+<!-- ======== SLIDE 15: RESULTADO ======== -->
+<section class="slide" id="slide-15">
+    <div class="slide-inner">
+        <h1>Resultado</h1>
+        <table style="margin-top:24px;">
+            <thead>
+                <tr>
+                    <th>Persona</th>
+                    <th>Recibio en vida</th>
+                    <th>Recibe en sucesion</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="highlight">Ana</span></td>
+                    <td style="color:var(--accent);">$200M</td>
+                    <td>$0</td>
+                    <td style="font-weight:700;">$200M</td>
+                </tr>
+                <tr>
+                    <td><span class="highlight-green">Bruno</span></td>
+                    <td>$0</td>
+                    <td style="color:var(--green);">$150M</td>
+                    <td style="font-weight:700;">$150M</td>
+                </tr>
+                <tr>
+                    <td><span class="highlight-green">Camila</span></td>
+                    <td>$0</td>
+                    <td style="color:var(--green);">$150M</td>
+                    <td style="font-weight:700;">$150M</td>
+                </tr>
+                <tr>
+                    <td><span class="highlight-blue">Pedro</span></td>
+                    <td style="color:var(--blue);">$100M</td>
+                    <td>&mdash;</td>
+                    <td style="font-weight:700;">$100M</td>
+                </tr>
+            </tbody>
+        </table>
+        <p style="text-align:center; margin-top:24px; font-size:24px; color:var(--dim);">Libre disposición restante: <span style="color:var(--accent); font-weight:700; font-size:28px;">$300M</span></p>
+    </div>
+    <div class="speaker-notes">Ana queda con más que sus hermanos ($200M vs $150M), pero eso esta permitido &mdash; el exceso de $50M sobre su legitima se permite porque se imputa a la libre disposición. Si la donación hubiera sido más grande y no hubiera libre disposición suficiente, los hermanos podrian pedir restitución.</div>
+</section>
+
+<!-- ======== SLIDE 16: CASO PORTADA ======== -->
+<section class="slide" id="slide-16">
+    <div class="slide-inner" style="text-align:center;">
+        <h2 style="font-size:22px; color:var(--dim); letter-spacing:3px; text-transform:uppercase; margin-bottom:32px;">Caso jurisprudencial</h2>
+        <h1 style="font-size:52px;">El fideicomiso de Marina Joya</h1>
+        <p class="subtitle" style="color:var(--blue);">CSJ, Sent. SC2119-2025</p>
+        <p style="font-size:20px; color:var(--dim); margin-top:20px; font-family:monospace;">Rad. 15001-31-53-004-2020-00085-01</p>
+    </div>
+    <div class="speaker-notes">Este caso es de diciembre 2025 &mdash; esta fresquisimo. Muestra los riesgos de intentar eludir legitimas con figuras como el fideicomiso civil.</div>
+</section>
+
+<!-- ======== SLIDE 17: LOS HECHOS ======== -->
+<section class="slide" id="slide-17">
+    <div class="slide-inner">
+        <h1>Qué pasó?</h1>
+        <ul style="list-style:none; padding-left:0;">
+            <li style="margin-bottom:16px; padding-left:32px; position:relative;"><span style="position:absolute; left:0; color:var(--blue);">&#9654;</span> <span class="highlight-blue">Marina Joya de Fonseca</span>, madre de varios hijos</li>
+            <li style="margin-bottom:16px; padding-left:32px; position:relative;"><span style="position:absolute; left:0; color:var(--blue);">&#9654;</span> 2 de agosto de 2019: constituyó <span class="highlight">fideicomiso civil</span> (E.P. 1139, Notaria 1a de Tunja)</li>
+            <li style="margin-bottom:16px; padding-left:32px; position:relative;"><span style="position:absolute; left:0; color:var(--blue);">&#9654;</span> Transfirió <span class="highlight" style="color:#e05c5c;">CASI TODOS</span> sus bienes al fideicomiso</li>
+            <li style="margin-bottom:16px; padding-left:32px; position:relative;"><span style="position:absolute; left:0; color:var(--blue);">&#9654;</span> Se designó a si misma como fiduciaria</li>
+            <li style="margin-bottom:16px; padding-left:32px; position:relative;"><span style="position:absolute; left:0; color:var(--blue);">&#9654;</span> Beneficiarios: <span class="highlight">Eliana y Alberto</span> (dos de sus hijos)</li>
+            <li style="margin-bottom:16px; padding-left:32px; position:relative;"><span style="position:absolute; left:0; color:var(--blue);">&#9654;</span> Restitución: al morir Marina</li>
+            <li style="margin-bottom:16px; padding-left:32px; position:relative;"><span style="position:absolute; left:0; color:var(--blue);">&#9654;</span> Marina murió poco despues</li>
+            <li style="margin-bottom:16px; padding-left:32px; position:relative;"><span style="position:absolute; left:0; color:var(--accent);">&#9654;</span> <span class="highlight">Javier</span> (otro hijo) demandó: <em>"Eso no es fideicomiso, es donación encubierta"</em></li>
+        </ul>
+    </div>
+    <div class="speaker-notes">Noten el patron: una madre, cerca de la muerte, transfiere casi todo su patrimonio a un fideicomiso que beneficia solo a algunos de sus hijos. Los demás quedan practicamente sin herencia. Les suena a desheredamiento tacito?</div>
+</section>
+
+<!-- ======== SLIDE 18: PROBLEMA JURIDICO ======== -->
+<section class="slide" id="slide-18">
+    <div class="slide-inner">
+        <h1>La muerte: condición o plazo?</h1>
+        <div class="two-col" style="margin-top:20px;">
+            <div class="col" style="border-top:3px solid #e05c5c; text-align:center;">
+                <h2 style="color:#e05c5c; font-size:32px;">CONDICION</h2>
+                <p style="font-size:26px;">Hecho futuro e <strong>INCIERTO</strong></p>
+                <p style="font-size:22px; color:var(--dim);">Puede o no ocurrir</p>
+            </div>
+            <div class="col" style="border-top:3px solid var(--green); text-align:center;">
+                <h2 style="color:var(--green); font-size:32px;">PLAZO</h2>
+                <p style="font-size:26px;">Hecho futuro <strong>CIERTO</strong></p>
+                <p style="font-size:22px; color:var(--dim);">Va a ocurrir seguro</p>
+            </div>
+        </div>
+        <div style="text-align:center; margin-top:28px;">
+            <p style="font-size:32px;">La muerte es... <span class="highlight-green" style="font-size:40px;">CIERTA</span> &rarr; es <span class="highlight-green" style="font-size:40px;">PLAZO</span></p>
+        </div>
+        <div class="article-box" style="margin-top:20px;">
+            <span class="article-label">Art. 794 CC</span>
+            La propiedad fiduciaria debe estar sujeta a CONDICION. Sin condición &rarr; NO HAY fideicomiso.
+        </div>
+    </div>
+    <div class="speaker-notes">Esta es la distincion más importante del caso. La Corte dijo: la muerte es un hecho CIERTO. Va a pasar. No sabemos cuando, pero sabemos que va a pasar. Eso lo hace PLAZO, no condición. Y sin condición, el fideicomiso no cumple su elemento esencial.</div>
+</section>
+
+<!-- ======== SLIDE 19: LO QUE DIJO LA CORTE ======== -->
+<section class="slide" id="slide-19">
+    <div class="slide-inner">
+        <h1>Ratio decidendi</h1>
+        <ol class="numbered-list">
+            <li>El fideicomiso es <span class="highlight" style="color:#e05c5c;">INEXISTENTE</span> (no nulo &mdash; nunca existio)</li>
+            <li>La muerte del constituyente <span class="highlight">no es condición</span></li>
+            <li>Los bienes <span class="highlight-green">nunca salieron válidamente</span> del patrimonio</li>
+            <li>El acto puede "degenerar" en donación (<span class="highlight-blue">teoria de la conversión</span>)</li>
+            <li>Si es donación &rarr; necesitaba <span class="highlight">insinuación</span> (Decreto 1712/1989)</li>
+            <li>Si es donación a legitimarios &rarr; <span class="highlight">ACERVO IMAGINARIO</span></li>
+        </ol>
+    </div>
+    <div class="speaker-notes">La Corte no declaró nulidad &mdash; declaró INEXISTENCIA. Es más radical. El fideicomiso nunca existio como tal. Los bienes nunca salieron del patrimonio de Marina. Y si se trata de reconvertir el acto en donación, entonces entran a jugar los acervos imaginarios y la insinuación.</div>
+</section>
+
+<!-- ======== SLIDE 20: LECCION ======== -->
+<section class="slide" id="slide-20">
+    <div class="slide-inner">
+        <h1>Qué aprendemos?</h1>
+        <ol class="numbered-list" style="margin-top:24px;">
+            <li style="font-size:30px;">Las legitimas son <span class="highlight">IMPERATIVAS</span> &mdash; no se pueden eludir con ingenieria jurídica</li>
+            <li style="font-size:30px;">Usar fideicomisos para "sacar" bienes del patrimonio antes de morir es <span style="color:#e05c5c; font-weight:700;">riesgoso</span></li>
+            <li style="font-size:30px;">Los legitimarios <span class="highlight-green">SIEMPRE</span> pueden atacar actos que menoscaben sus legitimas</li>
+            <li style="font-size:30px;">Los acervos imaginarios son la <span class="highlight">herramienta</span> para restaurar el equilibrio</li>
+        </ol>
+    </div>
+    <div class="speaker-notes">Mensaje final: las normas de familia y sucesiones son de orden público. No importa que tan creativa sea la planeacion patrimonial &mdash; si viola legitimas, los legitimarios tienen herramientas para atacarla. Los acervos imaginarios son la principal.</div>
+</section>
+
+<!-- ======== SLIDE 21: FUENTES ======== -->
+<section class="slide" id="slide-21">
+    <div class="slide-inner">
+        <h1>Fuentes</h1>
+        <ul style="list-style:none; padding-left:0; margin-top:20px;">
+            <li style="margin-bottom:18px; padding-left:28px; position:relative; font-size:24px;"><span style="position:absolute; left:0; color:var(--accent);">&#9632;</span> Código Civil colombiano, Arts. 1239&ndash;1264</li>
+            <li style="margin-bottom:18px; padding-left:28px; position:relative; font-size:24px;"><span style="position:absolute; left:0; color:var(--accent);">&#9632;</span> Ley 1934 de 2018</li>
+            <li style="margin-bottom:18px; padding-left:28px; position:relative; font-size:24px;"><span style="position:absolute; left:0; color:var(--blue);">&#9632;</span> Sentencia SC2119-2025, CSJ Sala Civil (Rad. 15001-31-53-004-2020-00085-01)</li>
+            <li style="margin-bottom:18px; padding-left:28px; position:relative; font-size:24px;"><span style="position:absolute; left:0; color:var(--green);">&#9632;</span> Revista de Derecho Privado, U. Externado &mdash; "La evolución del regimen sucesoral" (Scielo)</li>
+            <li style="margin-bottom:18px; padding-left:28px; position:relative; font-size:24px;"><span style="position:absolute; left:0; color:var(--green);">&#9632;</span> ICDP &mdash; "La muerte en la fiducia civil: sistema, codificación y coherencia dogmatica"</li>
+        </ul>
+    </div>
+    <div class="speaker-notes"></div>
+</section>
+
+<!-- ======== SLIDE 22: CIERRE ======== -->
+<section class="slide" id="slide-22">
+    <div class="slide-inner" style="text-align:center;">
+        <h1 style="font-size:72px; margin-bottom:32px;">Preguntas?</h1>
+        <p class="subtitle">Andres Cardona &middot; EAFIT &middot; 2026</p>
+    </div>
+    <div class="speaker-notes">Abrir preguntas. Si preguntan por casos similares de planeacion patrimonial que se podrian atacar, mencionar: sociedades familiares constituidas para eludir legitimas, donaciones disfrazadas de compraventas con precios irrisorios, constitucion de usufructos vitalicios.</div>
+</section>
+
+<script>
+(function() {
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    const indicator = document.getElementById('slide-indicator');
+    const progressBar = document.getElementById('progress-bar');
+    let currentSlide = 0;
+    let notesVisible = false;
+
+    function updateSlide() {
+        indicator.textContent = (currentSlide + 1) + ' / ' + totalSlides;
+        progressBar.style.width = ((currentSlide + 1) / totalSlides * 100) + '%';
+
+        slides.forEach(function(s, i) {
+            if (i === currentSlide) {
+                s.classList.add('active');
+            } else {
+                s.classList.remove('active');
+            }
+        });
+    }
+
+    function goToSlide(index) {
+        if (index < 0) index = 0;
+        if (index >= totalSlides) index = totalSlides - 1;
+        currentSlide = index;
+        slides[currentSlide].scrollIntoView({ behavior: 'smooth' });
+        updateSlide();
+    }
+
+    function toggleNotes() {
+        notesVisible = !notesVisible;
+        document.querySelectorAll('.speaker-notes').forEach(function(n) {
+            if (notesVisible) {
+                n.classList.add('visible');
+            } else {
+                n.classList.remove('visible');
+            }
+        });
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') {
+            e.preventDefault();
+            goToSlide(currentSlide + 1);
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'PageUp') {
+            e.preventDefault();
+            goToSlide(currentSlide - 1);
+        } else if (e.key === 'Home') {
+            e.preventDefault();
+            goToSlide(0);
+        } else if (e.key === 'End') {
+            e.preventDefault();
+            goToSlide(totalSlides - 1);
+        } else if (e.key === 'n' || e.key === 'N') {
+            toggleNotes();
+        } else if (e.key === 'f' || e.key === 'F') {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+    });
+
+    // Click navigation
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.speaker-notes')) return;
+        var rect = document.body.getBoundingClientRect();
+        var x = e.clientX;
+        if (x > window.innerWidth * 0.3) {
+            goToSlide(currentSlide + 1);
+        } else {
+            goToSlide(currentSlide - 1);
+        }
+    });
+
+    // Scroll detection to sync indicator
+    var scrollTimeout;
+    window.addEventListener('scroll', function() {
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(function() {
+            var viewportCenter = window.innerHeight / 2;
+            for (var i = 0; i < slides.length; i++) {
+                var rect = slides[i].getBoundingClientRect();
+                if (rect.top <= viewportCenter && rect.bottom > viewportCenter) {
+                    currentSlide = i;
+                    updateSlide();
+                    break;
+                }
+            }
+        }, 100);
+    });
+
+    // Touch support
+    var touchStartY = 0;
+    var touchStartX = 0;
+    document.addEventListener('touchstart', function(e) {
+        touchStartY = e.touches[0].clientY;
+        touchStartX = e.touches[0].clientX;
+    });
+
+    document.addEventListener('touchend', function(e) {
+        var dy = e.changedTouches[0].clientY - touchStartY;
+        var dx = e.changedTouches[0].clientX - touchStartX;
+        if (Math.abs(dy) > 50 || Math.abs(dx) > 50) {
+            if (Math.abs(dx) > Math.abs(dy)) {
+                if (dx < 0) goToSlide(currentSlide + 1);
+                else goToSlide(currentSlide - 1);
+            } else {
+                if (dy < 0) goToSlide(currentSlide + 1);
+                else goToSlide(currentSlide - 1);
+            }
+        }
+    });
+
+    // Initialize
+    slides[0].classList.add('active');
+    updateSlide();
+})();
+</script>
+
+</body>
+</html>
