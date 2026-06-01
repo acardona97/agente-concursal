@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>022 - Claude Code: Workflow Real para Quarta</title>
+<style>
+:root {
+  --bg:#0d0f0e; --surface:#131615; --border:#1e2420;
+  --gold:#c9a84c; --gold-dim:#7a6230;
+  --text:#e8e4d9; --text-dim:#7a7568;
+  --green:#2d4a3e; --blue:#1e3a5f;
+  --font-body:'Georgia',serif;
+  --font-mono:'Courier New',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);line-height:1.7;min-height:100vh}
+.progress-bar-container{position:fixed;top:0;left:0;right:0;height:3px;background:var(--border);z-index:100}
+.progress-bar{height:100%;background:var(--gold);transition:width 0.3s}
+.nav{position:fixed;top:3px;left:0;right:0;background:rgba(13,15,14,0.95);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;justify-content:space-between;align-items:center;z-index:99;backdrop-filter:blur(8px)}
+.nav-brand{color:var(--gold);font-family:var(--font-mono);font-size:0.8rem;letter-spacing:2px}
+.nav-links{display:flex;gap:8px}
+.nav-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);padding:5px 14px;border-radius:4px;cursor:pointer;font-family:var(--font-mono);font-size:0.75rem;text-decoration:none;transition:all 0.2s}
+.nav-btn:hover,.nav-btn.active{border-color:var(--gold);color:var(--gold)}
+.container{max-width:860px;margin:0 auto;padding:80px 24px 60px}
+h1{font-size:1.9rem;color:var(--gold);margin-bottom:8px;line-height:1.3}
+.meta{color:var(--text-dim);font-family:var(--font-mono);font-size:0.8rem;margin-bottom:32px;display:flex;gap:20px;flex-wrap:wrap}
+h2{font-size:1.25rem;color:var(--gold);margin:40px 0 16px;border-left:3px solid var(--gold-dim);padding-left:12px}
+h3{font-size:1.05rem;color:var(--text);margin:24px 0 10px}
+p{margin-bottom:14px;color:var(--text)}
+ul,ol{margin:0 0 14px 20px;color:var(--text)}
+li{margin-bottom:6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;margin:20px 0}
+.card-gold{border-color:var(--gold-dim)}
+.card-blue{border-color:#1e3a5f;background:#0d1a2e}
+.card-green{border-color:#1e3a2e;background:#0a1a12}
+code{font-family:var(--font-mono);background:#1a1e1c;padding:2px 6px;border-radius:3px;font-size:0.88rem;color:#a8d4b0}
+pre{background:#0a0c0b;border:1px solid var(--border);border-radius:6px;padding:18px;overflow-x:auto;margin:16px 0}
+pre code{background:none;padding:0;color:#a8d4b0;font-size:0.84rem;line-height:1.6}
+.highlight{color:var(--gold)}
+.dim{color:var(--text-dim)}
+.analogy{background:#1a1a0d;border:1px solid #3a3a1e;border-radius:6px;padding:16px;margin:16px 0}
+.analogy::before{content:"⚖ Analogía";display:block;color:var(--gold-dim);font-family:var(--font-mono);font-size:0.75rem;margin-bottom:8px}
+.quiz{background:#0d1a12;border:1px solid #1e3a2e;border-radius:8px;padding:20px;margin:32px 0}
+.quiz h3{color:#4caf7d;margin-top:0}
+.quiz-item{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.quiz-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.quiz-q{color:var(--text);margin-bottom:10px;font-weight:bold}
+.quiz-options label{display:block;padding:7px 12px;margin:4px 0;border-radius:4px;cursor:pointer;border:1px solid var(--border);transition:all 0.2s;font-size:0.9rem}
+.quiz-options label:hover{border-color:var(--gold-dim);background:var(--surface)}
+.quiz-options input{margin-right:8px}
+.quiz-result{display:none;margin-top:10px;padding:8px 12px;border-radius:4px;font-size:0.88rem;font-family:var(--font-mono)}
+.correct-msg{background:#0d2a1a;border:1px solid #2d6a4a;color:#4caf7d}
+.wrong-msg{background:#2a0d0d;border:1px solid #6a2d2d;color:#f47070}
+.btn{background:var(--surface);border:1px solid var(--gold-dim);color:var(--gold);padding:8px 20px;border-radius:4px;cursor:pointer;font-family:var(--font-mono);font-size:0.85rem;transition:all 0.2s;margin-top:10px}
+.btn:hover{background:var(--gold);color:var(--bg)}
+.completed-section{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px;margin-top:40px;display:flex;align-items:center;gap:14px}
+.completed-section label{cursor:pointer;color:var(--text-dim);font-size:0.9rem}
+input[type="checkbox"]{width:18px;height:18px;cursor:pointer;accent-color:var(--gold)}
+.tag{display:inline-block;background:var(--green);color:#4caf7d;font-family:var(--font-mono);font-size:0.72rem;padding:2px 8px;border-radius:3px;margin-right:6px}
+.flow-step{border:1px solid var(--border);border-radius:8px;padding:16px;margin:10px 0;display:grid;grid-template-columns:44px 1fr;gap:14px;align-items:start;background:var(--surface)}
+.flow-num{background:var(--gold-dim);color:var(--bg);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:0.9rem;font-weight:bold;flex-shrink:0}
+.flow-connector{width:2px;height:16px;background:var(--border);margin:0 auto}
+.vs-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+@media(max-width:600px){.vs-grid{grid-template-columns:1fr}}
+.vs-card{border-radius:6px;padding:14px}
+.vs-vibe{background:#1a1a0d;border:1px solid #3a3a1e}
+.vs-prec{background:#0d1a2e;border:1px solid #1e3a5f}
+.vs-card h4{font-family:var(--font-mono);font-size:0.9rem;margin-bottom:8px}
+.chat-msg{border-radius:6px;padding:12px 14px;margin:8px 0;font-size:0.9rem}
+.chat-user{background:#1a2a1a;border-left:3px solid #4caf7d}
+.chat-claude{background:#1a1a2a;border-left:3px solid #5b9bd5}
+.chat-prefix{font-family:var(--font-mono);font-size:0.75rem;margin-bottom:4px}
+.chat-user .chat-prefix{color:#4caf7d}
+.chat-claude .chat-prefix{color:#5b9bd5}
+</style>
+</head>
+<body>
+
+<div class="progress-bar-container">
+  <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<nav class="nav">
+  <span class="nav-brand">QUARTA FLIGHT SCHOOL</span>
+  <div class="nav-links">
+    <a href="021-hooks-automatizacion-claude-code.html" class="nav-btn">← Anterior</a>
+    <span class="nav-btn active">022</span>
+    <a href="023-micro-agentes-financieros-intro.html" class="nav-btn">Siguiente →</a>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="meta">
+    <span><span class="tag">BLOQUE 4</span> Claude Code</span>
+    <span>🕐 30 min</span>
+    <span class="dim">Clase 022 / 026</span>
+  </div>
+
+  <h1>Claude Code: Workflow Real para Quarta</h1>
+  <p class="dim">Cómo Anthropic usa Claude Code internamente — y cómo Andrés puede replicar ese flujo para el Agente Concursal.</p>
+
+  <!-- ============================================================ -->
+  <h2>1. Cómo Anthropic usa Claude Code internamente</h2>
+
+  <p>Anthropic usa Claude Code para construir el propio Claude Code. No es marketing — es el principio de "eat your own dog food". Del repositorio <code>how-we-claude-code</code>, los patrones más relevantes:</p>
+
+  <div class="card card-gold">
+    <h3>Los 5 principios de Anthropic para usar Claude Code</h3>
+    <ol>
+      <li><strong>Context primero:</strong> Cada sesión empieza dando a Claude el contexto completo del sistema. No asumen que sabe nada.</li>
+      <li><strong>Tests ANTES del código:</strong> Escriben el test que debe pasar, luego le piden a Claude que escriba el código que lo pase.</li>
+      <li><strong>Revisión humana de diffs:</strong> Siempre revisar el diff antes del commit. Claude Code nunca pushea directo a main.</li>
+      <li><strong>Iteración corta:</strong> Tareas pequeñas y verificables, no "refactoriza toda la aplicación".</li>
+      <li><strong>CLAUDE.md vivo:</strong> Actualizan el CLAUDE.md cuando aprenden algo nuevo sobre el proyecto.</li>
+    </ol>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>2. Vibe Coding vs Precision Coding</h2>
+
+  <div class="vs-grid">
+    <div class="vs-card vs-vibe">
+      <h4 style="color:#c9a84c">Vibe Coding</h4>
+      <p style="font-size:0.88rem">"Hazme una página para ver las consultas del agente"</p>
+      <p style="font-size:0.85rem;color:var(--text-dim)">Claude elige la arquitectura, los archivos, el diseño. Tú apruebas o pides cambios.</p>
+      <p style="font-size:0.85rem"><strong>Úsalo para:</strong> prototipos, UI inicial, features de baja criticidad, explorar posibilidades.</p>
+      <p style="font-size:0.85rem;color:#f47070"><strong>No usar en:</strong> lógica de negocio crítica, endpoints de seguridad, migraciones de datos.</p>
+    </div>
+    <div class="vs-card vs-prec">
+      <h4 style="color:#5b9bd5">Precision Coding</h4>
+      <p style="font-size:0.88rem">"Agrega el endpoint POST /api/v1/plazos con la lógica exacta que describes en este spec"</p>
+      <p style="font-size:0.85rem;color:var(--text-dim)">Tú defines exactamente qué quieres. Claude implementa. Tú verificas línea por línea.</p>
+      <p style="font-size:0.85rem"><strong>Úsalo para:</strong> cálculo de plazos procesales, seguridad, integridad de datos, lógica que tiene consecuencias legales.</p>
+    </div>
+  </div>
+
+  <div class="analogy">
+    En derecho: vibe coding es como pedirle al paralegal que redacte el borrador inicial de un escrito.
+    Precision coding es como dictarte a ti mismo, punto por punto, la demanda. Para un acuerdo de
+    reorganización (donde cada cláusula importa) vas a precision. Para el README del repo, vibe coding
+    está perfecto.
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>3. Eval-Driven Development — Test antes de código</h2>
+
+  <p>El patrón más poderoso del how-we-claude-code: escribir el test ANTES de pedir la feature. Esto fuerza claridad en qué quieres exactamente, y Claude tiene una definición de "terminado" concreta.</p>
+
+<pre><code><span class="highlight"># Flujo Eval-Driven para el Agente Concursal:</span>
+
+<span class="highlight"># PASO 1: Escribe el test primero (tú o Claude)</span>
+<span class="dim"># tests/test_plazos.py</span>
+
+def test_calcular_plazo_verificacion_creditos():
+    """
+    Ley 1116 Art. 29: La verificación de créditos debe realizarse
+    dentro de los 20 días hábiles siguientes al auto de apertura.
+    """
+    from app import calcular_plazo
+
+    fecha_auto = "2024-01-15"
+    resultado = calcular_plazo(
+        tipo="verificacion_creditos",
+        fecha_inicio=fecha_auto
+    )
+
+    <span class="dim"># 20 días hábiles desde 2024-01-15 = 2024-02-12</span>
+    assert resultado["fecha_vencimiento"] == "2024-02-12"
+    assert resultado["dias_habiles"] == 20
+    assert resultado["articulo"] == "Art. 29 Ley 1116/2006"
+    assert resultado["alerta"] == True  <span class="dim"># si faltan < 5 días</span>
+
+
+<span class="highlight"># PASO 2: Pedirle a Claude que escriba el código que PASE ese test</span>
+<span class="dim"># En Claude Code:</span>
+"Lee tests/test_plazos.py. Implementa la función calcular_plazo()
+en app.py para que este test pase. Considera días hábiles colombianos
+(excluye domingos y festivos del Decreto 2663/2022)."
+
+<span class="highlight"># PASO 3: Verificar</span>
+pytest tests/test_plazos.py -v</code></pre>
+
+  <!-- ============================================================ -->
+  <h2>4. Multi-agent: Orquestar Varios Agentes</h2>
+
+  <div class="card card-blue">
+    <h3>Cuándo necesitas multi-agent</h3>
+    <p>Una sola sesión de Claude Code tiene límite de contexto. Para tareas muy grandes (refactorizar toda la base de código, analizar 100 documentos legales, etc.), la solución es dividir en agentes especializados.</p>
+  </div>
+
+<pre><code><span class="highlight"># Patrón básico: agente orquestador + agentes trabajadores</span>
+<span class="dim"># orquestador.py — coordina el trabajo</span>
+
+import subprocess
+import anthropic
+
+client = anthropic.Anthropic()
+
+def orquestar_analisis_expediente(expediente_path: str):
+    """
+    Divide el análisis del expediente en sub-tareas
+    y las asigna a instancias paralelas de Claude Code.
+    """
+
+    <span class="highlight"># Agente 1: Extrae y clasifica los créditos</span>
+    resultado_creditos = subprocess.run([
+        "claude", "--print",
+        f"Lee {expediente_path}/creditos/ y genera creditos.json con la lista de acreedores, montos y clasificación según Ley 1116 Art. 2."
+    ], capture_output=True, text=True)
+
+    <span class="highlight"># Agente 2: Analiza los plazos procesales</span>
+    resultado_plazos = subprocess.run([
+        "claude", "--print",
+        f"Lee {expediente_path}/auto_apertura.txt y calcula todos los plazos procesales. Genera plazos.json."
+    ], capture_output=True, text=True)
+
+    <span class="highlight"># Orquestador: consolida y genera el reporte</span>
+    reporte = client.messages.create(
+        model="claude-opus-4-5",
+        max_tokens=2000,
+        messages=[{
+            "role": "user",
+            "content": f"""
+            Consolida este análisis del expediente concursal:
+
+            CRÉDITOS: {resultado_creditos.stdout}
+            PLAZOS: {resultado_plazos.stdout}
+
+            Genera un reporte ejecutivo para el abogado.
+            """
+        }]
+    )
+
+    return reporte.content[0].text</code></pre>
+
+  <!-- ============================================================ -->
+  <h2>5. Integración con Railway: Deploy desde Claude Code</h2>
+
+<pre><code><span class="highlight"># Claude Code puede hacer el deploy completo:</span>
+
+<span class="dim"># En sesión de Claude Code, después de completar la feature:</span>
+"Corre los tests. Si todos pasan, haz commit con mensaje descriptivo,
+pushea a main, y despliega en Railway con 'railway up'.
+Luego verifica que el health check en /api/health retorne 200."
+
+<span class="highlight"># Claude ejecuta en secuencia:</span>
+pytest tests/ -v                    <span class="dim"># → todos pasan</span>
+git add -A
+git commit -m "feat(plazos): agregar cálculo de plazos procesales Ley 1116"
+git push origin main
+railway up                          <span class="dim"># → deploy</span>
+curl https://agente-concursal.railway.app/api/health  <span class="dim"># → {"status":"ok"}</span></code></pre>
+
+  <div class="card card-gold">
+    <h3>Agregar Railway al CLAUDE.md</h3>
+<pre><code><span class="highlight">## DEPLOYMENT</span>
+- Plataforma: Railway
+- URL producción: https://agente-concursal.railway.app
+- Comando deploy: `railway up`
+- Health check: GET /api/health → {"status":"ok"}
+- Variables entorno en Railway: ANTHROPIC_API_KEY (configurada)
+- REGLA: solo deployar desde main, solo si todos los tests pasan</code></pre>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>6. QUARTA: Caso Práctico Completo</h2>
+
+  <div class="card card-green">
+    <h3>Feature: Análisis automático de términos procesales (plazos Ley 1116) con alertas</h3>
+    <p class="dim">Flujo completo, paso a paso.</p>
+  </div>
+
+  <div class="flow-step">
+    <div class="flow-num">1</div>
+    <div>
+      <strong>Feature Request</strong><br>
+      <span class="dim">Andrés identifica que los abogados pierden plazos procesales críticos. Necesita que el sistema calcule y alerte automáticamente.</span>
+    </div>
+  </div>
+  <div class="flow-connector"></div>
+
+  <div class="flow-step">
+    <div class="flow-num">2</div>
+    <div>
+      <strong>Actualizar CLAUDE.md</strong><br>
+<pre style="margin:8px 0"><code><span class="highlight">## PRIORIDAD ACTUAL</span>
+Agregar módulo de plazos procesales:
+- Función: calcular_plazo(tipo, fecha_inicio)
+- Tipos: verificacion_creditos, objecion_creditos,
+  audiencia_calificacion, formulacion_acuerdo
+- Días hábiles colombianos (excluir domingos + festivos)
+- Alertas cuando faltan < 5 días</code></pre>
+    </div>
+  </div>
+  <div class="flow-connector"></div>
+
+  <div class="flow-step">
+    <div class="flow-num">3</div>
+    <div>
+      <strong>Escribir el test primero</strong><br>
+      <div class="chat-msg chat-user">
+        <div class="chat-prefix">ANDRÉS →</div>
+        Lee CLAUDE.md y tests/. Escribe tests para la función calcular_plazo() según los requisitos del CLAUDE.md. No implementes la función todavía.
+      </div>
+      <div class="chat-msg chat-claude">
+        <div class="chat-prefix">CLAUDE CODE →</div>
+        Creando tests/test_plazos.py con 6 casos de prueba: verificacion_creditos (20 días), objecion_creditos (10 días), audiencia_calificacion (30 días)...
+      </div>
+    </div>
+  </div>
+  <div class="flow-connector"></div>
+
+  <div class="flow-step">
+    <div class="flow-num">4</div>
+    <div>
+      <strong>Plan mode + implementación</strong><br>
+      <div class="chat-msg chat-user">
+        <div class="chat-prefix">ANDRÉS →</div>
+        /plan — Implementa calcular_plazo() en app.py para que pasen todos los tests de test_plazos.py. Incluye el endpoint POST /api/v1/plazos.
+      </div>
+      <div class="chat-msg chat-claude">
+        <div class="chat-prefix">CLAUDE CODE (PLAN) →</div>
+        Plan:<br>
+        1. Agregar holidays colombianos en utils/fechas.py<br>
+        2. Implementar calcular_plazo() en app.py<br>
+        3. Agregar endpoint POST /api/v1/plazos<br>
+        4. Agregar función de alertas check_alertas()<br>
+        ¿Proceder? [y/n]
+      </div>
+    </div>
+  </div>
+  <div class="flow-connector"></div>
+
+  <div class="flow-step">
+    <div class="flow-num">5</div>
+    <div>
+      <strong>Revisar el diff</strong><br>
+      <div class="chat-msg chat-user">
+        <div class="chat-prefix">ANDRÉS →</div>
+        /diff — muéstrame exactamente qué cambió
+      </div>
+      <span class="dim">Claude muestra el diff de cada archivo. Andrés verifica que la lógica de días hábiles es correcta según la Ley 1116.</span>
+    </div>
+  </div>
+  <div class="flow-connector"></div>
+
+  <div class="flow-step">
+    <div class="flow-num">6</div>
+    <div>
+      <strong>Tests + deploy</strong><br>
+      <div class="chat-msg chat-user">
+        <div class="chat-prefix">ANDRÉS →</div>
+        Corre pytest. Si pasan, commit "feat(plazos): cálculo automático de plazos procesales Ley 1116 con alertas" y deploy a Railway.
+      </div>
+      <div class="chat-msg chat-claude">
+        <div class="chat-prefix">CLAUDE CODE →</div>
+        pytest: 6/6 tests passed ✓<br>
+        git commit: feat(plazos): cálculo automático... ✓<br>
+        railway up: deploy exitoso ✓<br>
+        health check: {"status":"ok","version":"1.2.0"} ✓
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>Quiz — 3 preguntas sobre workflow</h2>
+
+  <div class="quiz">
+    <h3>Verifica lo que aprendiste</h3>
+
+    <div class="quiz-item" id="q1">
+      <p class="quiz-q">1. Andrés quiere agregar la lógica que calcula si un crédito laboral tiene prelación sobre uno hipotecario según la Ley 1116. ¿Vibe coding o precision coding?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q1" value="a"> Vibe coding — es solo lógica de negocio interna</label>
+        <label><input type="radio" name="q1" value="b"> Precision coding — tiene consecuencias legales directas, debe ser exacta</label>
+        <label><input type="radio" name="q1" value="c"> No importa, son equivalentes para este caso</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q1','b','✓ Correcto. Clasificación y graduación de créditos en Ley 1116 tiene consecuencias jurídicas directas. Precision coding: defines el spec exacto, Claude implementa, tú verificas.')">Verificar</button>
+      <div class="quiz-result" id="q1-result"></div>
+    </div>
+
+    <div class="quiz-item" id="q2">
+      <p class="quiz-q">2. ¿Cuál es el orden correcto del flujo Eval-Driven Development?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q2" value="a"> Código → test → deploy</label>
+        <label><input type="radio" name="q2" value="b"> Test → código → verificar que el test pase</label>
+        <label><input type="radio" name="q2" value="c"> Deploy → código → test retrospectivo</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q2','b','✓ Correcto. Test primero define exactamente qué quieres. Claude tiene una meta concreta. El código solo termina cuando el test pasa.')">Verificar</button>
+      <div class="quiz-result" id="q2-result"></div>
+    </div>
+
+    <div class="quiz-item" id="q3">
+      <p class="quiz-q">3. ¿Por qué el multi-agent es útil para analizar un expediente concursal completo?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q3" value="a"> Porque es más barato usar múltiples instancias pequeñas</label>
+        <label><input type="radio" name="q3" value="b"> Porque divide el trabajo: un agente analiza créditos, otro analiza plazos, el orquestador consolida — cada uno especializado sin saturar el contexto</label>
+        <label><input type="radio" name="q3" value="c"> Porque Railway no soporta una sola instancia grande</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q3','b','✓ Correcto. El contexto de Claude tiene límites. Dividir tareas grandes en agentes especializados que trabajan en paralelo y luego consolidan es el patrón de Anthropic.')">Verificar</button>
+      <div class="quiz-result" id="q3-result"></div>
+    </div>
+  </div>
+
+  <div class="completed-section">
+    <input type="checkbox" id="completado" onchange="marcarCompletada()">
+    <label for="completado">Clase completada — Claude Code Workflow Real para Quarta</label>
+  </div>
+
+</div>
+
+<script>
+const TOTAL=26,CLASE=22;
+function updateProgress(){let c=0;for(let i=1;i<=TOTAL;i++)if(localStorage.getItem('clase_completada_'+String(i).padStart(3,'0')))c++;document.getElementById('progressBar').style.width=(c/TOTAL*100)+'%';}
+function marcarCompletada(){const key='clase_completada_'+String(CLASE).padStart(3,'0');document.getElementById('completado').checked?localStorage.setItem(key,'1'):localStorage.removeItem(key);updateProgress();}
+window.addEventListener('DOMContentLoaded',()=>{const key='clase_completada_'+String(CLASE).padStart(3,'0');if(localStorage.getItem(key))document.getElementById('completado').checked=true;updateProgress();});
+function checkAnswer(qId,correct,msg){const sel=document.querySelector(`input[name="${qId}"]:checked`);const el=document.getElementById(qId+'-result');if(!sel){el.style.display='block';el.className='quiz-result wrong-msg';el.textContent='Selecciona una opción.';return;}el.style.display='block';if(sel.value===correct){el.className='quiz-result correct-msg';el.textContent=msg;}else{el.className='quiz-result wrong-msg';el.textContent='✗ No exactamente. '+msg;}}
+</script>
+</body>
+</html>

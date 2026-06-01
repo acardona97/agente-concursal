@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>007 · Chain-of-Thought y Thinking Mode</title>
+<style>
+  :root {
+    --bg: #0d0f0e; --surface: #131615; --border: #1e2420;
+    --gold: #c9a84c; --gold-dim: #7a6230;
+    --text: #e8e4d9; --text-dim: #7a7568;
+    --green: #2d4a3e; --green-lit: #5db88a;
+    --code-bg: #0a0c0b; --accent: #3d6b58;
+    --purple-dim: #2a1a40; --purple-lit: #a07ae0;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: Georgia, serif; font-size: 17px; line-height: 1.7; }
+  #progress-bar-container { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: var(--surface); border-bottom: 1px solid var(--border); padding: 8px 24px; display: flex; align-items: center; gap: 14px; }
+  #progress-track { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  #progress-fill { height: 100%; background: linear-gradient(90deg, var(--gold-dim), var(--gold)); border-radius: 3px; transition: width 0.4s ease; }
+  #progress-label { font-family: 'Courier New', monospace; font-size: 11px; color: var(--text-dim); white-space: nowrap; }
+  .page-wrap { max-width: 860px; margin: 0 auto; padding: 80px 28px 60px; }
+  .clase-header { border-left: 3px solid var(--gold); padding-left: 20px; margin-bottom: 40px; }
+  .clase-meta { font-family: 'Courier New', monospace; font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+  .clase-meta span { color: var(--gold); }
+  .clase-titulo { font-size: 28px; font-weight: normal; margin-bottom: 6px; }
+  .clase-sub { font-size: 14px; color: var(--text-dim); font-style: italic; }
+  .seccion { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 24px 28px; margin-bottom: 24px; }
+  .seccion-titulo { font-family: 'Courier New', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+  .seccion p { margin-bottom: 14px; }
+  .seccion p:last-child { margin-bottom: 0; }
+  .seccion ul, .seccion ol { padding-left: 22px; }
+  .seccion li { margin-bottom: 8px; }
+  .code-wrap { position: relative; margin: 20px 0; }
+  pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 20px 22px; overflow-x: auto; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.65; color: #c8d3c0; }
+  .copy-btn { position: absolute; top: 10px; right: 10px; background: rgba(201,168,76,0.1); border: 1px solid var(--gold-dim); color: var(--gold); font-family: 'Courier New', monospace; font-size: 10px; padding: 4px 10px; border-radius: 4px; cursor: pointer; transition: all 0.2s; }
+  .copy-btn:hover { background: rgba(201,168,76,0.2); }
+  .copy-btn.copied { color: var(--green-lit); border-color: var(--green-lit); }
+  .highlight-box { background: rgba(201,168,76,0.05); border: 1px solid var(--gold-dim); border-radius: 6px; padding: 16px 20px; margin: 16px 0; }
+  .highlight-box strong { color: var(--gold); }
+  .thinking-box { background: rgba(42,26,64,0.4); border: 1px solid var(--purple-dim); border-radius: 6px; padding: 16px 20px; margin: 16px 0; font-style: italic; font-family: 'Courier New', monospace; font-size: 13px; color: var(--purple-lit); line-height: 1.7; }
+  .thinking-box::before { content: 'Thinking interno de Claude (no visible al usuario)'; display: block; font-style: normal; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(160,122,224,0.5); margin-bottom: 10px; }
+  .cot-compare { display: grid; gap: 16px; margin: 16px 0; }
+  .cot-item { padding: 16px 20px; border-radius: 6px; border: 1px solid; }
+  .cot-item.sin { background: rgba(92,32,32,0.15); border-color: #5c2020; }
+  .cot-item.con { background: rgba(45,74,62,0.2); border-color: var(--green); }
+  .cot-label { font-family: 'Courier New', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+  .cot-item.sin .cot-label { color: #c97070; }
+  .cot-item.con .cot-label { color: var(--green-lit); }
+  .cot-content { font-size: 14px; color: var(--text-dim); line-height: 1.6; }
+  .when-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 16px 0; }
+  .when-card { padding: 16px; border-radius: 6px; background: var(--code-bg); border: 1px solid var(--border); font-size: 14px; }
+  .when-card h4 { font-family: 'Courier New', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+  .when-card.si h4 { color: var(--green-lit); }
+  .when-card.no h4 { color: #c97070; }
+  .when-card ul { padding-left: 16px; }
+  .when-card li { margin-bottom: 6px; color: var(--text-dim); }
+  /* Quiz */
+  .quiz-seccion { background: var(--surface); border: 1px solid var(--gold-dim); border-radius: 8px; padding: 24px 28px; margin-bottom: 24px; }
+  .quiz-titulo { font-family: 'Courier New', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold); margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+  .quiz-pregunta { margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+  .quiz-pregunta:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .quiz-num { font-family: 'Courier New', monospace; font-size: 11px; color: var(--gold-dim); margin-bottom: 8px; }
+  .quiz-texto { font-size: 15px; margin-bottom: 12px; }
+  .ver-respuesta-btn { font-family: 'Courier New', monospace; font-size: 11px; padding: 7px 16px; background: transparent; border: 1px solid var(--gold-dim); color: var(--gold); border-radius: 4px; cursor: pointer; transition: all 0.2s; }
+  .ver-respuesta-btn:hover { background: rgba(201,168,76,0.1); }
+  .respuesta-oculta { display: none; margin-top: 12px; padding: 14px 16px; background: rgba(45,74,62,0.2); border: 1px solid var(--accent); border-radius: 6px; font-size: 14px; color: var(--text-dim); line-height: 1.6; }
+  .respuesta-oculta strong { color: var(--green-lit); }
+  .completado-wrap { display: flex; align-items: center; gap: 12px; margin: 28px 0; padding: 16px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; user-select: none; transition: border-color 0.2s; }
+  .completado-wrap:hover { border-color: var(--gold-dim); }
+  .completado-wrap input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--gold); cursor: pointer; }
+  .completado-wrap label { cursor: pointer; font-size: 14px; color: var(--text-dim); }
+  .completado-wrap.done label { color: var(--green-lit); }
+  .nav-clases { display: flex; justify-content: space-between; gap: 12px; margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'Courier New', monospace; font-size: 12px; padding: 10px 20px; border-radius: 6px; cursor: pointer; text-decoration: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+  .nav-btn.siguiente { background: linear-gradient(135deg, var(--gold-dim), var(--gold)); color: #0d0f0e; border: none; font-weight: bold; }
+  .nav-btn.siguiente:hover { opacity: 0.9; }
+  .nav-btn.anterior { background: transparent; border: 1px solid var(--border); color: var(--text-dim); }
+  .nav-btn.anterior:hover { border-color: var(--gold-dim); color: var(--gold); }
+  .cm { color: #5a7a60; } .kw { color: #c9a84c; } .st { color: #8ecfb0; } .fn { color: #7ab3e0; } .nu { color: #e0a0a0; }
+  @media (max-width: 600px) { .when-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div id="progress-bar-container">
+  <div id="progress-track"><div id="progress-fill" style="width:0%"></div></div>
+  <div id="progress-label">0 / 26 clases completadas</div>
+</div>
+
+<div class="page-wrap">
+
+  <div class="clase-header">
+    <div class="clase-meta">
+      Clase <span>007</span> · Bloque 1: Prompt Engineering Avanzado · <span>~30 min</span>
+    </div>
+    <h1 class="clase-titulo">Chain-of-Thought y Thinking Mode</h1>
+    <div class="clase-sub">Cómo forzar razonamiento explícito — y cuándo pagar el costo del thinking</div>
+  </div>
+
+  <!-- CONCEPTO -->
+  <div class="seccion">
+    <div class="seccion-titulo">Concepto</div>
+    <p>
+      <strong>Chain-of-Thought (CoT)</strong> es pedirle a Claude que "piense en voz alta"
+      antes de responder. En lugar de saltar directo a la conclusión, el modelo
+      descompone el problema en pasos, los escribe explícitamente, y solo al final produce
+      el output. Esto reduce errores de razonamiento lógico significativamente.
+    </p>
+    <p>
+      <strong>Extended Thinking</strong> es diferente: es un modo de Claude 3.7 Sonnet y
+      superiores donde el modelo tiene un proceso de razonamiento <em>interno</em> (no visible
+      por defecto), mucho más profundo, antes de responder. No lo activas con texto en el
+      prompt — lo activas con un parámetro en la API: <code>thinking: {"type": "enabled", "budget_tokens": 8000}</code>.
+    </p>
+
+    <div class="highlight-box">
+      <strong>Diferencia clave:</strong> CoT básico = escribes "Piensa paso a paso" en el prompt.
+      Extended Thinking = parámetro en la API que activa razonamiento interno oculto.
+      El primero es gratis (son tokens del output). El segundo consume tokens adicionales del presupuesto.
+    </div>
+  </div>
+
+  <!-- CÓMO FUNCIONA CoT -->
+  <div class="seccion">
+    <div class="seccion-titulo">Chain-of-Thought — el patrón básico</div>
+
+    <p>Comparación para análisis de graduación de crédito:</p>
+
+    <div class="cot-compare">
+      <div class="cot-item sin">
+        <div class="cot-label">Sin CoT — respuesta directa (puede equivocarse)</div>
+        <div class="cot-content">
+          <strong>Prompt:</strong> "¿Un crédito del SENA por aportes parafiscales se clasifica como primera o segunda clase bajo la Ley 1116?"<br><br>
+          <strong>Claude:</strong> "Segunda clase, como crédito fiscal."<br><br>
+          <em>← Puede estar mal. Saltó a la conclusión sin verificar el artículo correcto.</em>
+        </div>
+      </div>
+      <div class="cot-item con">
+        <div class="cot-label">Con CoT — razonamiento visible</div>
+        <div class="cot-content">
+          <strong>Prompt:</strong> "Analiza paso a paso: ¿Un crédito del SENA por aportes parafiscales es primera o segunda clase bajo Ley 1116 Art. 2495 C.C. y normas concordantes?"<br><br>
+          <strong>Claude:</strong> "Paso 1: Identificar la naturaleza del crédito — aportes parafiscales al SENA son de naturaleza fiscal... Paso 2: Art. 2495 C.C. define primera clase... Paso 3: La Ley 1116 Art. 34 establece... Conclusión: primera clase, privilegio general."<br><br>
+          <em>← Razonamiento trazable, verificable por el abogado.</em>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXTENDED THINKING -->
+  <div class="seccion">
+    <div class="seccion-titulo">Extended Thinking — cuándo activarlo</div>
+
+    <p>
+      Extended Thinking es la herramienta para problemas complejos de múltiples pasos
+      donde el razonamiento estándar falla. Para derecho concursal: análisis de prelación
+      en casos con créditos de múltiples clases, solapamientos normativos, o aplicación
+      de decretos de emergencia sobre la Ley 1116.
+    </p>
+
+    <div class="thinking-box">
+Hmm, este crédito tiene naturaleza híbrida — parte laboral, parte indemnización.
+Bajo el Art. 2495 C.C., la indemnización por despido se asimila a acreencias laborales...
+pero el parágrafo del Art. 35 de la Ley 1116 limita los créditos de primera clase a...
+Necesito verificar si el Decreto 772 modifica esta regla para empresas en reorganización...
+Sí, el Art. 8 del Decreto 772 crea una excepción temporal que...
+Entonces la clasificación correcta es: primera clase por el componente laboral,
+segunda clase por el componente de multa contractual...
+    </div>
+
+    <div class="when-grid">
+      <div class="when-card si">
+        <h4>Activar Thinking cuando:</h4>
+        <ul>
+          <li>Graduación de créditos con múltiples clases y conflictos normativos</li>
+          <li>Aplicar excepciones del Decreto 772 sobre regla general Ley 1116</li>
+          <li>Análisis de viabilidad de un acuerdo de reorganización</li>
+          <li>Problema con más de 3 variables legales interdependientes</li>
+        </ul>
+      </div>
+      <div class="when-card no">
+        <h4>No activar Thinking cuando:</h4>
+        <ul>
+          <li>Consultas factuales simples ("¿cuántos días para objetar?")</li>
+          <li>Redacción estándar de memoriales con formato claro</li>
+          <li>Búsquedas en la base vectorial de ChromaDB</li>
+          <li>Output repetitivo y estructurado (tablas de acreedores)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- CÓDIGO -->
+  <div class="seccion">
+    <div class="seccion-titulo">Código — CoT básico vs Extended Thinking</div>
+
+    <div class="code-wrap">
+      <button class="copy-btn" onclick="copiar(this, 'code-cot')">Copiar</button>
+      <pre id="code-cot"><span class="kw">import</span> anthropic
+
+client = anthropic.Anthropic()
+
+<span class="cm"># ── Opción 1: CoT básico (texto en el prompt) ──</span>
+<span class="cm"># Funciona con cualquier modelo, costo normal</span>
+<span class="kw">def</span> <span class="fn">analizar_con_cot</span>(consulta_legal: str):
+    respuesta = client.messages.create(
+        model=<span class="st">"claude-opus-4-5"</span>,
+        max_tokens=<span class="nu">2048</span>,
+        system=<span class="st">"Eres agente concursal colombiano experto en Ley 1116."</span>,
+        messages=[{
+            <span class="st">"role"</span>: <span class="st">"user"</span>,
+            <span class="st">"content"</span>: <span class="st">f"""Analiza paso a paso el siguiente problema legal.
+Muestra tu razonamiento antes de dar la conclusión.
+
+&lt;problema&gt;
+{consulta_legal}
+&lt;/problema&gt;
+
+Estructura: 1) Identificar hechos relevantes 2) Normas aplicables
+3) Análisis de cada norma 4) Conclusión fundamentada"""</span>
+        }]
+    )
+    <span class="kw">return</span> respuesta.content[<span class="nu">0</span>].text
+
+
+<span class="cm"># ── Opción 2: Extended Thinking (parámetro API) ──</span>
+<span class="cm"># Solo claude-3-7-sonnet-20250219 o superior</span>
+<span class="cm"># budget_tokens = cuántos tokens "invisibles" puede usar para pensar</span>
+<span class="kw">def</span> <span class="fn">analizar_con_thinking</span>(consulta_legal: str, budget: int = <span class="nu">8000</span>):
+    respuesta = client.messages.create(
+        model=<span class="st">"claude-3-7-sonnet-20250219"</span>,
+        max_tokens=<span class="nu">16000</span>,  <span class="cm"># debe ser > budget_tokens</span>
+        thinking={
+            <span class="st">"type"</span>: <span class="st">"enabled"</span>,
+            <span class="st">"budget_tokens"</span>: budget  <span class="cm"># tokens para el razonamiento interno</span>
+        },
+        messages=[{
+            <span class="st">"role"</span>: <span class="st">"user"</span>,
+            <span class="st">"content"</span>: consulta_legal
+        }]
+    )
+    <span class="cm"># El response tiene bloques: thinking (interno) + text (visible)</span>
+    pensamiento = <span class="st">""</span>
+    respuesta_final = <span class="st">""</span>
+    <span class="kw">for</span> bloque <span class="kw">in</span> respuesta.content:
+        <span class="kw">if</span> bloque.type == <span class="st">"thinking"</span>:
+            pensamiento = bloque.thinking  <span class="cm"># razonamiento interno</span>
+        <span class="kw">elif</span> bloque.type == <span class="st">"text"</span>:
+            respuesta_final = bloque.text  <span class="cm"># respuesta visible</span>
+    <span class="kw">return</span> respuesta_final, pensamiento</pre>
+    </div>
+  </div>
+
+  <!-- QUARTA -->
+  <div class="seccion">
+    <div class="seccion-titulo">Quarta — análisis de créditos con y sin CoT</div>
+    <p>
+      El caso más frecuente en Quarta donde CoT agrega valor: análisis de la clase de un
+      crédito con naturaleza mixta (parte laboral + parte contractual, o crédito de entidad
+      pública con privilegio especial).
+    </p>
+    <p>
+      Ejemplo concreto — Ley 1116 Art. 49 y 52, graduación de acreencias con el SENA:
+      el crédito por aportes parafiscales en mora tiene componentes de primera clase
+      (privilegio fiscal) pero el recargo de intereses cae en segunda clase. Sin CoT,
+      Claude puede mezclarlos. Con CoT, el razonamiento es trazable y el abogado
+      puede verificar cada paso antes de firmar el proyecto de calificación.
+    </p>
+
+    <div class="highlight-box">
+      <strong>Regla práctica para el agente concursal:</strong> agrega esta línea al final
+      de solicitudes de análisis de graduación:
+      <br><br>
+      <code>"Antes de clasificar, razona explícitamente: (1) naturaleza jurídica del crédito,
+      (2) norma aplicable de la Ley 1116, (3) si hay norma especial que excepciona la regla general."</code>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="quiz-seccion">
+    <div class="quiz-titulo">Quiz — 3 preguntas</div>
+
+    <div class="quiz-pregunta">
+      <div class="quiz-num">Pregunta 1 / 3</div>
+      <div class="quiz-texto">
+        ¿Cuál es la diferencia entre activar CoT con "piensa paso a paso" en el prompt
+        versus activar Extended Thinking con <code>thinking: {"type": "enabled"}</code> en la API?
+      </div>
+      <button class="ver-respuesta-btn" onclick="toggleRespuesta(this)">Ver respuesta</button>
+      <div class="respuesta-oculta">
+        <strong>CoT textual:</strong> el razonamiento aparece en el output visible, consume tokens
+        del output estándar, funciona con cualquier modelo Claude.
+        <strong>Extended Thinking:</strong> el razonamiento es interno (oculto al usuario por defecto),
+        requiere un parámetro de API específico, solo disponible en claude-3-7-sonnet o superior,
+        y los tokens de pensamiento se cobran por separado. El thinking interno es más profundo
+        porque no está limitado por coherencia narrativa para el usuario.
+      </div>
+    </div>
+
+    <div class="quiz-pregunta">
+      <div class="quiz-num">Pregunta 2 / 3</div>
+      <div class="quiz-texto">
+        Para una consulta simple como "¿cuál es el término para presentar objeciones al
+        proyecto de calificación?", ¿deberías activar Extended Thinking? ¿Por qué?
+      </div>
+      <button class="ver-respuesta-btn" onclick="toggleRespuesta(this)">Ver respuesta</button>
+      <div class="respuesta-oculta">
+        <strong>No.</strong> Extended Thinking tiene un costo real en tokens (los del "budget")
+        y una latencia mayor. Para consultas factuales directas donde la respuesta está
+        en el contexto RAG (la Ley 1116 dice exactamente el término), el thinking no agrega valor.
+        Solo activa thinking para problemas que requieren razonamiento multi-paso con
+        variables interdependientes — análisis de prelación compleja, interpretación de conflictos
+        normativos, o evaluación de viabilidad de acuerdos.
+      </div>
+    </div>
+
+    <div class="quiz-pregunta">
+      <div class="quiz-num">Pregunta 3 / 3</div>
+      <div class="quiz-texto">
+        Un abogado de Quarta nota que el agente clasifica mal los créditos de naturaleza
+        mixta (laboral + fiscal). Tiene dos opciones: (A) agregar más ejemplos al RAG,
+        (B) agregar CoT en la solicitud de clasificación. ¿Cuál es el primer paso y por qué?
+      </div>
+      <button class="ver-respuesta-btn" onclick="toggleRespuesta(this)">Ver respuesta</button>
+      <div class="respuesta-oculta">
+        <strong>B primero, luego evaluar si necesitas A.</strong> El error de clasificación en créditos
+        mixtos es típicamente un error de razonamiento (saltar a la conclusión sin desglosar
+        los componentes), no un error de información (el modelo no sabe el artículo).
+        CoT fuerza al modelo a identificar los componentes separados antes de clasificar.
+        Si después de CoT el error persiste, ahí investigas el RAG — puede que los fragmentos
+        relevantes no estén siendo recuperados (problema de retrieve en clase 003).
+      </div>
+    </div>
+  </div>
+
+  <!-- Checkbox -->
+  <div class="completado-wrap" id="completado-wrap" onclick="toggleCompletado()">
+    <input type="checkbox" id="check-completado" />
+    <label for="check-completado">Marcar clase 007 como completada</label>
+  </div>
+
+  <div class="nav-clases">
+    <a href="006-prompt-engineering-estrategias-avanzadas.html" class="nav-btn anterior">← 006</a>
+    <a href="008-prompt-caching-y-optimizacion.html" class="nav-btn siguiente">Siguiente → 008</a>
+  </div>
+
+</div>
+
+<script>
+  const CLASE_ID = '007';
+  const TOTAL_CLASES = 26;
+
+  function toggleRespuesta(btn) {
+    const respuesta = btn.nextElementSibling;
+    const visible = respuesta.style.display === 'block';
+    respuesta.style.display = visible ? 'none' : 'block';
+    btn.textContent = visible ? 'Ver respuesta' : 'Ocultar respuesta';
+  }
+
+  function copiar(btn, id) {
+    const texto = document.getElementById(id).innerText;
+    navigator.clipboard.writeText(texto).then(() => {
+      btn.textContent = '✓ Copiado';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  function actualizarProgreso() {
+    let completadas = 0;
+    for (let i = 1; i <= TOTAL_CLASES; i++) {
+      const key = 'clase_completada_' + String(i).padStart(3, '0');
+      if (localStorage.getItem(key) === 'true') completadas++;
+    }
+    const pct = Math.round((completadas / TOTAL_CLASES) * 100);
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-label').textContent = completadas + ' / ' + TOTAL_CLASES + ' clases completadas';
+  }
+
+  function toggleCompletado() {
+    const key = 'clase_completada_' + CLASE_ID;
+    const actual = localStorage.getItem(key) === 'true';
+    localStorage.setItem(key, !actual);
+    document.getElementById('check-completado').checked = !actual;
+    document.getElementById('completado-wrap').classList.toggle('done', !actual);
+    actualizarProgreso();
+  }
+
+  (function init() {
+    const key = 'clase_completada_' + CLASE_ID;
+    const completada = localStorage.getItem(key) === 'true';
+    document.getElementById('check-completado').checked = completada;
+    document.getElementById('completado-wrap').classList.toggle('done', completada);
+    actualizarProgreso();
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>026 - Polymarket: Mercados de Predicción con IA</title>
+<style>
+:root {
+  --bg:#0d0f0e; --surface:#131615; --border:#1e2420;
+  --gold:#c9a84c; --gold-dim:#7a6230;
+  --text:#e8e4d9; --text-dim:#7a7568;
+  --green:#2d4a3e; --blue:#1e3a5f;
+  --font-body:'Georgia',serif;
+  --font-mono:'Courier New',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);line-height:1.7;min-height:100vh}
+.progress-bar-container{position:fixed;top:0;left:0;right:0;height:3px;background:var(--border);z-index:100}
+.progress-bar{height:100%;background:var(--gold);transition:width 0.3s}
+.nav{position:fixed;top:3px;left:0;right:0;background:rgba(13,15,14,0.95);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;justify-content:space-between;align-items:center;z-index:99;backdrop-filter:blur(8px)}
+.nav-brand{color:var(--gold);font-family:var(--font-mono);font-size:0.8rem;letter-spacing:2px}
+.nav-links{display:flex;gap:8px}
+.nav-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);padding:5px 14px;border-radius:4px;cursor:pointer;font-family:var(--font-mono);font-size:0.75rem;text-decoration:none;transition:all 0.2s}
+.nav-btn:hover,.nav-btn.active{border-color:var(--gold);color:var(--gold)}
+.container{max-width:860px;margin:0 auto;padding:80px 24px 60px}
+h1{font-size:1.9rem;color:var(--gold);margin-bottom:8px;line-height:1.3}
+.meta{color:var(--text-dim);font-family:var(--font-mono);font-size:0.8rem;margin-bottom:32px;display:flex;gap:20px;flex-wrap:wrap}
+h2{font-size:1.25rem;color:var(--gold);margin:40px 0 16px;border-left:3px solid var(--gold-dim);padding-left:12px}
+h3{font-size:1.05rem;color:var(--text);margin:24px 0 10px}
+p{margin-bottom:14px;color:var(--text)}
+ul,ol{margin:0 0 14px 20px;color:var(--text)}
+li{margin-bottom:6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;margin:20px 0}
+.card-gold{border-color:var(--gold-dim)}
+.card-blue{border-color:#1e3a5f;background:#0d1a2e}
+.card-green{border-color:#1e3a2e;background:#0a1a12}
+.card-red{border-color:#3a1e1e;background:#1a0d0d}
+code{font-family:var(--font-mono);background:#1a1e1c;padding:2px 6px;border-radius:3px;font-size:0.88rem;color:#a8d4b0}
+pre{background:#0a0c0b;border:1px solid var(--border);border-radius:6px;padding:18px;overflow-x:auto;margin:16px 0}
+pre code{background:none;padding:0;color:#a8d4b0;font-size:0.83rem;line-height:1.65}
+.highlight{color:var(--gold)}
+.dim{color:var(--text-dim)}
+.analogy{background:#1a1a0d;border:1px solid #3a3a1e;border-radius:6px;padding:16px;margin:16px 0}
+.analogy::before{content:"⚖ Analogía";display:block;color:var(--gold-dim);font-family:var(--font-mono);font-size:0.75rem;margin-bottom:8px}
+.quiz{background:#0d1a12;border:1px solid #1e3a2e;border-radius:8px;padding:20px;margin:32px 0}
+.quiz h3{color:#4caf7d;margin-top:0}
+.quiz-item{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.quiz-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.quiz-q{color:var(--text);margin-bottom:10px;font-weight:bold}
+.quiz-options label{display:block;padding:7px 12px;margin:4px 0;border-radius:4px;cursor:pointer;border:1px solid var(--border);transition:all 0.2s;font-size:0.9rem}
+.quiz-options label:hover{border-color:var(--gold-dim);background:var(--surface)}
+.quiz-options input{margin-right:8px}
+.quiz-result{display:none;margin-top:10px;padding:8px 12px;border-radius:4px;font-size:0.88rem;font-family:var(--font-mono)}
+.correct-msg{background:#0d2a1a;border:1px solid #2d6a4a;color:#4caf7d}
+.wrong-msg{background:#2a0d0d;border:1px solid #6a2d2d;color:#f47070}
+.btn{background:var(--surface);border:1px solid var(--gold-dim);color:var(--gold);padding:8px 20px;border-radius:4px;cursor:pointer;font-family:var(--font-mono);font-size:0.85rem;transition:all 0.2s;margin-top:10px}
+.btn:hover{background:var(--gold);color:var(--bg)}
+.completed-section{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px;margin-top:40px;display:flex;align-items:center;gap:14px}
+.completed-section label{cursor:pointer;color:var(--text-dim);font-size:0.9rem}
+input[type="checkbox"]{width:18px;height:18px;cursor:pointer;accent-color:var(--gold)}
+.tag{display:inline-block;background:var(--green);color:#4caf7d;font-family:var(--font-mono);font-size:0.72rem;padding:2px 8px;border-radius:3px;margin-right:6px}
+.market-card{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:14px;margin:8px 0}
+.market-card .mq{color:var(--text);font-size:0.92rem;margin-bottom:8px}
+.market-bar{height:8px;border-radius:4px;background:#1a1a2e;margin:6px 0;position:relative;overflow:hidden}
+.market-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#2d6a4a,#4caf7d)}
+.market-prob{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:0.78rem;color:var(--text-dim)}
+.discrepancia-pos{color:#4caf7d}
+.discrepancia-neg{color:#f47070}
+.ventaja-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
+@media(max-width:600px){.ventaja-grid{grid-template-columns:1fr}}
+.ventaja-card{border-radius:6px;padding:14px}
+.ventaja-mercado{background:#1a1a2e;border:1px solid #2e2e5a}
+.ventaja-andres{background:#0a1a12;border:1px solid #1e3a2e}
+.ventaja-card h4{font-size:0.88rem;margin-bottom:6px;font-family:var(--font-mono)}
+.nichos-list{list-style:none;margin:0;padding:0}
+.nichos-list li{padding:10px 14px;margin:8px 0;border:1px solid var(--border);border-radius:6px;background:var(--surface);font-size:0.88rem}
+.nichos-list li::before{content:"→ ";color:var(--gold)}
+.nichos-list .desc{color:var(--text-dim);font-size:0.82rem;margin-top:4px;display:block}
+</style>
+</head>
+<body>
+
+<div class="progress-bar-container">
+  <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<nav class="nav">
+  <span class="nav-brand">QUARTA FLIGHT SCHOOL</span>
+  <div class="nav-links">
+    <a href="025-analisis-mercado-con-claude.html" class="nav-btn">← Anterior</a>
+    <span class="nav-btn active">026</span>
+    <span class="nav-btn" style="color:var(--text-dim);cursor:default">FIN DEL CURSO</span>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="meta">
+    <span><span class="tag">BLOQUE 5</span> Finanzas e Inversión con IA</span>
+    <span>🕐 30 min</span>
+    <span class="dim">Clase 026 / 026 · ÚLTIMA CLASE</span>
+  </div>
+
+  <h1>Polymarket — Mercados de Predicción con IA</h1>
+  <p class="dim">El lugar donde el conocimiento legal de Andrés se convierte en ventaja competitiva financiera.</p>
+
+  <!-- ============================================================ -->
+  <h2>1. Qué es Polymarket y cómo funciona</h2>
+
+  <p>Polymarket es un mercado de predicción descentralizado. En vez de apostar por si sube o baja un activo, apuestas por si un evento ocurre o no. Las respuestas son binarias: SÍ o NO.</p>
+
+  <div class="analogy">
+    Imagina que la Superintendencia de Sociedades va a decidir si aprueba o rechaza un acuerdo de
+    reorganización de una empresa importante. En Polymarket, podrías comprar "SÍ" a que lo aprueba.
+    Si lo aprueba: te pagan $1 por acción. Si lo rechaza: pierdes lo que invertiste.
+    El precio actual de ese "SÍ" (ej: $0.65) refleja lo que el mercado cree que es la probabilidad
+    de que ocurra (65%). Si tú crees que la probabilidad real es 80% (porque eres abogado y entiendes
+    el caso), comprando a $0.65 tienes una ventaja esperada positiva.
+  </div>
+
+  <div class="card card-blue">
+    <h3>La mecánica en 3 puntos</h3>
+    <ol>
+      <li><strong>Eventos con fecha de resolución:</strong> "¿Subirá BTC a $100K antes del 31 de dic?" o "¿Ganará X la elección?"</li>
+      <li><strong>Precios = probabilidades implícitas:</strong> precio $0.30 = el mercado dice 30% de probabilidad</li>
+      <li><strong>Ventaja = cuando tu estimación &gt; precio del mercado:</strong> si crees que es 60% y cotiza a 30%, hay ventaja esperada</li>
+    </ol>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>2. Tipos de Eventos en Polymarket</h2>
+
+  <div class="market-card">
+    <div class="mq">¿Subirá Bitcoin a $100,000 antes del 31 de diciembre 2024?</div>
+    <div class="market-bar"><div class="market-bar-fill" style="width:72%"></div></div>
+    <div class="market-prob"><span>SÍ: 72¢</span><span>Volumen: $4.2M</span><span>NO: 28¢</span></div>
+  </div>
+
+  <div class="market-card">
+    <div class="mq">¿Ganará el partido X las próximas elecciones presidenciales?</div>
+    <div class="market-bar"><div class="market-bar-fill" style="width:45%"></div></div>
+    <div class="market-prob"><span>SÍ: 45¢</span><span>Volumen: $8.1M</span><span>NO: 55¢</span></div>
+  </div>
+
+  <div class="market-card">
+    <div class="mq">¿Reducirá la Fed las tasas de interés en marzo 2024?</div>
+    <div class="market-bar"><div class="market-bar-fill" style="width:38%"></div></div>
+    <div class="market-prob"><span>SÍ: 38¢</span><span>Volumen: $12.3M</span><span>NO: 62¢</span></div>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>3. La API de Polymarket</h2>
+
+<pre><code><span class="highlight"># API pública de Polymarket — no requiere autenticación para lectura</span>
+<span class="dim"># Documentación: https://docs.polymarket.com/</span>
+
+<span class="highlight"># Obtener lista de mercados activos:</span>
+GET https://gamma-api.polymarket.com/markets?active=true&limit=20
+
+<span class="highlight"># Buscar mercados por keyword:</span>
+GET https://gamma-api.polymarket.com/markets?keyword=bitcoin&active=true
+
+<span class="highlight"># Obtener datos de un mercado específico:</span>
+GET https://gamma-api.polymarket.com/markets/{market_id}
+
+<span class="highlight"># Respuesta ejemplo:</span>
+{
+  "id": "0x1234...",
+  "question": "Will Bitcoin reach $100K before Dec 31, 2024?",
+  "outcomePrices": ["0.72", "0.28"],  <span class="dim"># YES, NO</span>
+  "volume": "4200000",
+  "liquidity": "850000",
+  "endDate": "2024-12-31T23:59:59Z",
+  "active": true
+}</code></pre>
+
+  <!-- ============================================================ -->
+  <h2>4. Código Completo — Agente de Análisis Polymarket</h2>
+
+<pre><code><span class="highlight">#!/usr/bin/env python3</span>
+<span class="dim">"""
+Agente de Análisis Polymarket para Quarta
+==========================================
+Conecta a la API pública de Polymarket, filtra mercados relevantes
+(legales, regulatorios, Colombia), y usa Claude para estimar
+la probabilidad real vs la del mercado.
+
+Instalación:
+  pip install anthropic requests python-dotenv
+"""</span>
+
+import os
+import json
+import requests
+from datetime import datetime
+from dotenv import load_dotenv
+import anthropic
+
+load_dotenv()
+cliente = anthropic.Anthropic()
+MODELO = "claude-opus-4-5"
+
+<span class="dim"># Keywords que interesan a Andrés (ajustar según intereses)</span>
+KEYWORDS_RELEVANTES = [
+    "colombia", "bitcoin", "crypto", "regulation",
+    "fed", "interest rate", "election", "legal",
+    "sec", "court", "supreme court"
+]
+
+<span class="dim"># Categorías de alta ventaja para Andrés</span>
+KEYWORDS_VENTAJA = [
+    "colombia", "legal", "court", "regulation",
+    "crypto regulation", "sec"
+]
+
+
+<span class="highlight"># ─── 1. OBTENER MERCADOS ────────────────────────────────────────</span>
+
+def obtener_mercados(limit: int = 50) -> list:
+    """
+    Obtiene los mercados activos de Polymarket.
+    Retorna lista de mercados con sus precios y metadatos.
+    """
+    url = "https://gamma-api.polymarket.com/markets"
+    params = {
+        "active": "true",
+        "limit": limit,
+        "order": "volume",
+        "ascending": "false"  <span class="dim"># los de mayor volumen primero</span>
+    }
+    try:
+        r = requests.get(url, params=params, timeout=15)
+        r.raise_for_status()
+        return r.json()
+    except requests.RequestException as e:
+        print(f"[POLY][ERROR] No se pudo conectar a Polymarket: {e}")
+        return _mercados_simulados()  <span class="dim"># fallback con datos de ejemplo</span>
+
+
+def _mercados_simulados() -> list:
+    """
+    Datos simulados para cuando la API no está disponible.
+    Útil para desarrollo offline (ej: en el avión).
+    """
+    return [
+        {
+            "id": "sim-001",
+            "question": "Will the SEC approve a Bitcoin ETF options trading before 2025?",
+            "outcomePrices": ["0.68", "0.32"],
+            "volume": "2500000",
+            "liquidity": "500000",
+            "endDate": "2024-12-31T23:59:59Z"
+        },
+        {
+            "id": "sim-002",
+            "question": "Will Colombia legalize crypto trading for institutional investors in 2024?",
+            "outcomePrices": ["0.25", "0.75"],
+            "volume": "45000",
+            "liquidity": "12000",
+            "endDate": "2024-12-31T23:59:59Z"
+        },
+        {
+            "id": "sim-003",
+            "question": "Will Bitcoin reach $80K before end of Q1 2025?",
+            "outcomePrices": ["0.54", "0.46"],
+            "volume": "8900000",
+            "liquidity": "2100000",
+            "endDate": "2025-03-31T23:59:59Z"
+        },
+        {
+            "id": "sim-004",
+            "question": "Will the Corte Constitucional rule on crypto tax regulation?",
+            "outcomePrices": ["0.18", "0.82"],
+            "volume": "8500",
+            "liquidity": "2000",
+            "endDate": "2024-12-31T23:59:59Z"
+        }
+    ]
+
+
+def filtrar_mercados_relevantes(mercados: list) -> list:
+    """
+    Filtra mercados que son relevantes para el perfil de Andrés.
+    Prioriiza temas legales, regulatorios y cripto.
+    """
+    relevantes = []
+    for m in mercados:
+        pregunta = m.get("question", "").lower()
+        if any(kw in pregunta for kw in KEYWORDS_RELEVANTES):
+            m["tiene_ventaja"] = any(kw in pregunta for kw in KEYWORDS_VENTAJA)
+            relevantes.append(m)
+    return relevantes
+
+
+<span class="highlight"># ─── 2. ANALIZAR CON CLAUDE ──────────────────────────────────────</span>
+
+def analizar_mercado(mercado: dict) -> dict:
+    """
+    Claude analiza un mercado de Polymarket y genera:
+    - Probabilidad estimada propia (0-100%)
+    - Comparación con el precio del mercado
+    - Razonamiento
+    - Nivel de ventaja de Andrés en este mercado
+    """
+    precio_si = float(mercado["outcomePrices"][0])
+    prob_mercado = round(precio_si * 100, 1)
+
+    tiene_ventaja = mercado.get("tiene_ventaja", False)
+    contexto_ventaja = ""
+    if tiene_ventaja:
+        contexto_ventaja = """
+NOTA: Este mercado está relacionado con derecho colombiano, regulación cripto,
+o temas judiciales. El analista tiene experiencia como abogado colombiano
+especializado en derecho concursal y propiedad intelectual, con conocimiento
+de la Superintendencia de Sociedades, la SIC, la DIAN, y los tribunales colombianos.
+Su estimación en estos temas puede diferir significativamente del mercado general."""
+
+    prompt = f"""Eres un analista de mercados de predicción con expertise en derecho,
+regulación y mercados financieros.
+
+Analiza el siguiente mercado de Polymarket:
+
+PREGUNTA: {mercado['question']}
+PROBABILIDAD ACTUAL DEL MERCADO: {prob_mercado}% (precio SÍ: ${precio_si:.2f})
+VOLUMEN TOTAL: ${float(mercado.get('volume', 0)):,.0f}
+FECHA DE RESOLUCIÓN: {mercado.get('endDate', 'N/A')}
+{contexto_ventaja}
+
+Responde en JSON con este formato exacto:
+{{
+  "prob_estimada": <número 0-100>,
+  "razonamiento": "<2-3 oraciones explicando tu estimación>",
+  "factores_clave": ["factor 1", "factor 2"],
+  "discrepancia": <prob_estimada - prob_mercado>,
+  "nivel_oportunidad": "ALTA|MEDIA|BAJA|NINGUNA",
+  "ventaja_dominio": "<si tienes ventaja de conocimiento específico, explicar>",
+  "confianza": "ALTA|MEDIA|BAJA",
+  "nota": "Esto es análisis especulativo, no consejo financiero"
+}}"""
+
+    try:
+        respuesta = cliente.messages.create(
+            model=MODELO,
+            max_tokens=600,
+            messages=[{"role": "user", "content": prompt}]
+        )
+        texto = respuesta.content[0].text.strip()
+        inicio = texto.find('{')
+        fin = texto.rfind('}') + 1
+        if inicio >= 0 and fin > inicio:
+            return json.loads(texto[inicio:fin])
+    except Exception as e:
+        print(f"[POLY][ERROR] Análisis Claude: {e}")
+
+    return {
+        "prob_estimada": prob_mercado,
+        "razonamiento": "Error en análisis",
+        "discrepancia": 0,
+        "nivel_oportunidad": "BAJA",
+        "confianza": "BAJA"
+    }
+
+
+<span class="highlight"># ─── 3. MOSTRAR RESULTADOS ──────────────────────────────────────</span>
+
+def mostrar_analisis(mercado: dict, analisis: dict):
+    """Muestra el análisis de un mercado en formato legible."""
+    reset = "\033[0m"
+    gold = "\033[33m"
+    green = "\033[92m"
+    yellow = "\033[93m"
+    red = "\033[91m"
+    dim = "\033[90m"
+
+    precio_si = float(mercado["outcomePrices"][0])
+    prob_mercado = precio_si * 100
+    prob_estimada = analisis.get("prob_estimada", prob_mercado)
+    discrepancia = analisis.get("discrepancia", 0)
+
+    <span class="dim"># Color de la discrepancia</span>
+    if abs(discrepancia) > 15:
+        color_disc = green if discrepancia > 0 else red
+        oportunidad = "★★★"
+    elif abs(discrepancia) > 8:
+        color_disc = yellow
+        oportunidad = "★★"
+    else:
+        color_disc = dim
+        oportunidad = "★"
+
+    print(f"\n{gold}{'─'*56}{reset}")
+    print(f"{gold}  {mercado['question'][:55]}{reset}")
+    print(f"  Mercado: {prob_mercado:.0f}%  →  Claude: {prob_estimada:.0f}%  {color_disc}(Δ {discrepancia:+.0f}pp){reset}  {oportunidad}")
+    print(f"  Volumen: ${float(mercado.get('volume',0)):,.0f}   Nivel: {analisis.get('nivel_oportunidad','N/A')}")
+    print(f"\n  {analisis.get('razonamiento','')[:200]}")
+
+    if analisis.get("ventaja_dominio"):
+        print(f"\n  {green}VENTAJA:{reset} {analisis['ventaja_dominio'][:150]}")
+
+
+<span class="highlight"># ─── 4. FUNCIÓN PRINCIPAL ───────────────────────────────────────</span>
+
+def ejecutar_agente_polymarket(solo_ventaja: bool = False):
+    """
+    Orquesta el análisis completo de mercados Polymarket.
+    Si solo_ventaja=True, analiza solo los mercados donde Andrés tiene ventaja.
+    """
+    print("[POLY][INFO] Conectando a Polymarket...")
+    mercados = obtener_mercados(limit=50)
+
+    print(f"[POLY][INFO] {len(mercados)} mercados totales. Filtrando relevantes...")
+    relevantes = filtrar_mercados_relevantes(mercados)
+
+    if solo_ventaja:
+        relevantes = [m for m in relevantes if m.get("tiene_ventaja", False)]
+
+    print(f"[POLY][INFO] {len(relevantes)} mercados relevantes para analizar.")
+    print(f"[POLY][INFO] Analizando con Claude (puede tomar 1-2 min)...\n")
+
+    resultados = []
+    for i, mercado in enumerate(relevantes[:10], 1):  <span class="dim"># máximo 10 para controlar costos</span>
+        print(f"[POLY][INFO] Analizando {i}/{min(10, len(relevantes))}...")
+        analisis = analizar_mercado(mercado)
+        mostrar_analisis(mercado, analisis)
+        resultados.append({"mercado": mercado, "analisis": analisis})
+
+    <span class="dim"># Resumen final: mercados con mayor oportunidad</span>
+    print(f"\n\033[33m{'═'*56}\033[0m")
+    print(f"\033[33m  TOP OPORTUNIDADES (discrepancia > 10pp)\033[0m")
+    print(f"\033[33m{'═'*56}\033[0m")
+
+    top = sorted(resultados,
+                 key=lambda x: abs(x["analisis"].get("discrepancia", 0)),
+                 reverse=True)[:3]
+
+    for r in top:
+        disc = r["analisis"].get("discrepancia", 0)
+        pregunta = r["mercado"]["question"][:60]
+        print(f"  {'↑' if disc > 0 else '↓'} {pregunta}")
+        print(f"    Discrepancia: {disc:+.0f}pp   Confianza: {r['analisis'].get('confianza','N/A')}")
+
+    print(f"\n\033[90m  Disclaimer: Polymarket no está disponible para usuarios en Colombia.\033[0m")
+    print(f"\033[90m  Este análisis es solo educativo. Verifica regulaciones locales.\033[0m\n")
+
+    return resultados
+
+
+if __name__ == "__main__":
+    ejecutar_agente_polymarket(solo_ventaja=False)
+</code></pre>
+
+  <!-- ============================================================ -->
+  <h2>5. QUARTA — La ventaja competitiva de Andrés en Polymarket</h2>
+
+  <div class="card card-gold">
+    <h3>Por qué el conocimiento legal colombiano da ventaja</h3>
+    <p>La mayoría de participantes en Polymarket son traders estadounidenses y europeos. Sus modelos son buenos para política americana, cripto, y macro global. Pero para eventos regulatorios colombianos:</p>
+
+    <div class="ventaja-grid">
+      <div class="ventaja-card ventaja-mercado">
+        <h4 style="color:#5b9bd5">El mercado piensa</h4>
+        <ul style="font-size:0.85rem">
+          <li>Basado en noticias internacionales</li>
+          <li>Sin contexto institucional colombiano</li>
+          <li>Sin leer fallos anteriores de la SIC</li>
+          <li>Sin entender la dinámica política de la Supersociedades</li>
+        </ul>
+      </div>
+      <div class="ventaja-card ventaja-andres">
+        <h4 style="color:#4caf7d">Andrés sabe</h4>
+        <ul style="font-size:0.85rem">
+          <li>Cómo razona la Supersociedades en casos similares</li>
+          <li>Precedentes de la SIC en PI</li>
+          <li>Velocidad real de procesos de la DIAN</li>
+          <li>Si un acuerdo de reorganización tiene viabilidad real</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <h3>Nichos específicos de alta ventaja</h3>
+
+  <ul class="nichos-list">
+    <li>
+      Decisiones de la Superintendencia de Sociedades en casos de reorganización de empresas conocidas
+      <span class="desc">Andrés conoce el proceso por dentro: plazos reales, criterios de aprobación, tendencias recientes</span>
+    </li>
+    <li>
+      Fallos de la SIC sobre propiedad intelectual y marcas en Colombia
+      <span class="desc">Área de expertise de Quarta — puede estimar probabilidades con alta confianza</span>
+    </li>
+    <li>
+      Regulación de criptomonedas en Colombia (DIAN, URF, Superfinanciera)
+      <span class="desc">Conoce el ritmo legislativo colombiano mejor que un trader de New York</span>
+    </li>
+    <li>
+      Decisiones de la Corte Constitucional o el Consejo de Estado sobre temas económicos
+      <span class="desc">Entiende los argumentos legales en juego y el historial de estas cortes</span>
+    </li>
+  </ul>
+
+  <div class="card card-red">
+    <h3 style="color:#f47070">Aviso legal importante</h3>
+    <p>Polymarket opera en blockchain (Polygon) y usa USDC. En Colombia, la regulación de mercados de predicción y apuestas es compleja. Antes de participar con dinero real, verificar:</p>
+    <ul>
+      <li>Restricciones de acceso para usuarios colombianos (Polymarket tiene geo-restricciones)</li>
+      <li>Tratamiento tributario de ganancias en DIAN</li>
+      <li>Si tus conocimientos como abogado constituyen "información privilegiada" en algún caso específico</li>
+    </ul>
+    <p><strong>Para fines de este curso:</strong> el agente de análisis tiene valor total como herramienta de entrenamiento y análisis académico, independientemente de si participas en Polymarket.</p>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>Quiz — 3 preguntas sobre estrategia en Polymarket</h2>
+
+  <div class="quiz">
+    <h3>Verifica lo que aprendiste</h3>
+
+    <div class="quiz-item" id="q1">
+      <p class="quiz-q">1. Un mercado de Polymarket cotiza "¿Aprobará la Supersociedades el acuerdo de reorganización de Empresa X?" al 30% (SÍ). Andrés, como abogado concursal, estima que la probabilidad real es 70%. ¿Qué significa esto?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q1" value="a"> El mercado está definitivamente equivocado</label>
+        <label><input type="radio" name="q1" value="b"> Hay una discrepancia de 40 puntos porcentuales — si la estimación de Andrés es correcta, hay ventaja esperada significativa al comprar SÍ a $0.30</label>
+        <label><input type="radio" name="q1" value="c"> No tiene sentido — el mercado siempre tiene razón</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q1','b','✓ Correcto. Si compras SÍ a $0.30 y la probabilidad real es 70%, tu retorno esperado es positivo. El mercado subestima por falta de contexto legal colombiano.')">Verificar</button>
+      <div class="quiz-result" id="q1-result"></div>
+    </div>
+
+    <div class="quiz-item" id="q2">
+      <p class="quiz-q">2. ¿Por qué los mercados de baja liquidez (volumen < $10,000) pueden ser MEJORES para Andrés?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q2" value="a"> Porque tienen menor riesgo de perder dinero</label>
+        <label><input type="radio" name="q2" value="b"> Porque en mercados pequeños hay menos participantes sofisticados — la "eficiencia" del precio es menor, dejando más oportunidades para quien tiene información superior</label>
+        <label><input type="radio" name="q2" value="c"> Porque la API de Polymarket los procesa más rápido</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q2','b','✓ Correcto. Los mercados grandes (millones de dólares) tienen muchos expertos participando — difícil tener ventaja. Los mercados nicho de Colombia con $10K de liquidez: el mercado no conoce el tema y el precio puede estar muy lejos de la realidad.')">Verificar</button>
+      <div class="quiz-result" id="q2-result"></div>
+    </div>
+
+    <div class="quiz-item" id="q3">
+      <p class="quiz-q">3. ¿Cuál es el rol de Claude en el agente de Polymarket?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q3" value="a"> Claude ejecuta las transacciones automáticamente cuando encuentra discrepancias</label>
+        <label><input type="radio" name="q3" value="b"> Claude genera una estimación propia de la probabilidad y la compara con el precio del mercado — Andrés decide si actuar con base en el análisis</label>
+        <label><input type="radio" name="q3" value="c"> Claude solo formatea los datos de la API de Polymarket</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q3','b','✓ Correcto. Claude razona sobre la probabilidad del evento. Andrés, con su contexto legal, puede agregar información adicional. La decisión final siempre es humana.')">Verificar</button>
+      <div class="quiz-result" id="q3-result"></div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <div class="card card-gold" style="margin-top:40px;text-align:center">
+    <h2 style="margin:0 0 12px;border:none;padding:0">FIN DEL CURSO</h2>
+    <p>26 clases. Claude Code, MCP, agentes financieros, Polymarket.<br>
+    De abogado autodidacta a builder de IA.</p>
+    <p class="dim">El conocimiento más valioso que tienes ahora: sabes que ningún agente reemplaza tu criterio.<br>
+    Pero un agente bien construido multiplica tu alcance.</p>
+  </div>
+
+  <div class="completed-section">
+    <input type="checkbox" id="completado" onchange="marcarCompletada()">
+    <label for="completado">Clase completada — Polymarket: Mercados de Predicción con IA · CURSO COMPLETO</label>
+  </div>
+
+</div>
+
+<script>
+const TOTAL=26,CLASE=26;
+function updateProgress(){let c=0;for(let i=1;i<=TOTAL;i++)if(localStorage.getItem('clase_completada_'+String(i).padStart(3,'0')))c++;document.getElementById('progressBar').style.width=(c/TOTAL*100)+'%';}
+function marcarCompletada(){const key='clase_completada_'+String(CLASE).padStart(3,'0');document.getElementById('completado').checked?localStorage.setItem(key,'1'):localStorage.removeItem(key);updateProgress();}
+window.addEventListener('DOMContentLoaded',()=>{const key='clase_completada_'+String(CLASE).padStart(3,'0');if(localStorage.getItem(key))document.getElementById('completado').checked=true;updateProgress();});
+function checkAnswer(qId,correct,msg){const sel=document.querySelector(`input[name="${qId}"]:checked`);const el=document.getElementById(qId+'-result');if(!sel){el.style.display='block';el.className='quiz-result wrong-msg';el.textContent='Selecciona una opción.';return;}el.style.display='block';if(sel.value===correct){el.className='quiz-result correct-msg';el.textContent=msg;}else{el.className='quiz-result wrong-msg';el.textContent='✗ No exactamente. '+msg;}}
+</script>
+</body>
+</html>

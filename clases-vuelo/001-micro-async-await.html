@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>001 · Async/Await — Curso Anthropic</title>
+<style>
+  :root {
+    --bg: #0d0f0e;
+    --surface: #161a18;
+    --surface2: #1e2421;
+    --border: #2a3330;
+    --text: #e8e4d9;
+    --muted: #8a9490;
+    --gold: #c9a84c;
+    --gold-dim: #7a5f28;
+    --green: #4caf7a;
+    --red: #e05c5c;
+    --blue: #5c9de0;
+    --code-bg: #111614;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Georgia', serif; font-size: 17px; line-height: 1.7; }
+
+  /* PROGRESS BAR */
+  #progress-bar-wrap {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 8px 20px; display: flex; align-items: center; gap: 12px;
+  }
+  #progress-bar-track {
+    flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;
+  }
+  #progress-bar-fill {
+    height: 100%; background: var(--gold); border-radius: 3px; transition: width 0.4s ease;
+  }
+  #progress-label { color: var(--gold); font-size: 13px; font-family: monospace; white-space: nowrap; }
+
+  /* LAYOUT */
+  .page { max-width: 860px; margin: 0 auto; padding: 90px 24px 60px; }
+
+  /* HEADER */
+  .header { border-bottom: 2px solid var(--gold-dim); padding-bottom: 20px; margin-bottom: 36px; }
+  .header-meta { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  .tag {
+    font-size: 12px; font-family: monospace; padding: 3px 10px;
+    border-radius: 3px; border: 1px solid var(--border); color: var(--muted);
+  }
+  .tag-bloque { border-color: var(--gold-dim); color: var(--gold); }
+  .tag-micro { background: #1a2218; border-color: var(--green); color: var(--green); }
+  h1 { font-size: 28px; color: var(--gold); font-weight: normal; letter-spacing: 0.5px; }
+  .header-sub { color: var(--muted); font-size: 14px; margin-top: 8px; font-family: monospace; }
+
+  /* SECTIONS */
+  .section { margin-bottom: 40px; }
+  .section-label {
+    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--gold); font-family: monospace; margin-bottom: 14px;
+    padding-bottom: 6px; border-bottom: 1px solid var(--gold-dim);
+  }
+  h2 { font-size: 20px; color: var(--text); font-weight: normal; margin-bottom: 14px; }
+  p { margin-bottom: 14px; color: #ccc8be; }
+  ul, ol { padding-left: 24px; margin-bottom: 14px; }
+  li { margin-bottom: 8px; color: #ccc8be; }
+
+  /* ANALOGY BOX */
+  .analogy {
+    background: #161f1a; border-left: 3px solid var(--gold);
+    padding: 16px 20px; border-radius: 0 6px 6px 0; margin: 20px 0;
+  }
+  .analogy-label { font-size: 11px; color: var(--gold); letter-spacing: 2px; font-family: monospace; margin-bottom: 8px; }
+
+  /* CODE */
+  .code-block {
+    background: var(--code-bg); border: 1px solid var(--border);
+    border-radius: 6px; overflow: hidden; margin: 16px 0;
+  }
+  .code-header {
+    background: var(--surface2); padding: 8px 16px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .code-lang { font-size: 12px; color: var(--muted); font-family: monospace; }
+  .copy-btn {
+    background: none; border: 1px solid var(--border); color: var(--muted);
+    padding: 4px 12px; border-radius: 3px; cursor: pointer; font-size: 12px;
+    font-family: monospace; transition: all 0.2s;
+  }
+  .copy-btn:hover { border-color: var(--gold); color: var(--gold); }
+  pre { padding: 20px; overflow-x: auto; }
+  code { font-family: 'Courier New', monospace; font-size: 14px; line-height: 1.6; color: #d4e8d0; }
+  .cm { color: #5a7a60; } /* comment */
+  .ck { color: #7ab8e0; } /* keyword */
+  .cs { color: #c9a84c; } /* string */
+  .cf { color: #a8d4a0; } /* function */
+  .cn { color: #e0b87a; } /* number */
+
+  /* ASCII DIAGRAM */
+  .ascii-box {
+    background: var(--code-bg); border: 1px solid var(--border);
+    border-radius: 6px; padding: 20px; font-family: monospace;
+    font-size: 13px; line-height: 1.8; color: #9ec4a0; overflow-x: auto;
+    margin: 16px 0;
+  }
+
+  /* QUARTA BOX */
+  .quarta-box {
+    background: #0f1a14; border: 1px solid #2a4a35;
+    border-radius: 8px; padding: 20px 24px; margin: 20px 0;
+  }
+  .quarta-label {
+    font-size: 11px; color: #4caf7a; letter-spacing: 2px;
+    font-family: monospace; margin-bottom: 12px;
+  }
+
+  /* NEXT NOTE */
+  .next-note {
+    background: #14181a; border: 1px solid #2a3a4a;
+    border-radius: 6px; padding: 16px 20px; margin-top: 32px;
+    font-size: 15px; color: var(--muted);
+  }
+  .next-note strong { color: var(--blue); }
+
+  /* COMPLETED */
+  .completed-wrap {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; padding: 14px 20px; margin: 32px 0;
+    cursor: pointer; transition: border-color 0.2s;
+  }
+  .completed-wrap:hover { border-color: var(--gold); }
+  .completed-wrap input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--gold); cursor: pointer; }
+  .completed-wrap label { cursor: pointer; color: var(--muted); font-size: 15px; }
+  .completed-wrap.done label { color: var(--gold); }
+
+  /* NAVIGATION */
+  .nav { display: flex; justify-content: space-between; align-items: center; padding-top: 24px; border-top: 1px solid var(--border); margin-top: 40px; }
+  .nav-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); padding: 10px 20px; border-radius: 5px;
+    text-decoration: none; font-family: monospace; font-size: 14px;
+    transition: all 0.2s;
+  }
+  .nav-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .nav-placeholder { width: 120px; }
+</style>
+</head>
+<body>
+
+<!-- PROGRESS BAR -->
+<div id="progress-bar-wrap">
+  <div id="progress-bar-track"><div id="progress-bar-fill" style="width:0%"></div></div>
+  <div id="progress-label">0 / 26 clases</div>
+</div>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-meta">
+      <span class="tag tag-bloque">Bloque 0</span>
+      <span class="tag tag-micro">Micro-clase · 7 min</span>
+      <span class="tag">001 / 026</span>
+      <span class="tag">Calibración</span>
+    </div>
+    <h1>Async / Await — Código que no bloquea</h1>
+    <div class="header-sub">Fundamentos de Calibración · Ya tienes principios de esto · Expandimos</div>
+  </header>
+
+  <!-- CONCEPTO -->
+  <section class="section">
+    <div class="section-label">Concepto</div>
+    <p>
+      El código normal corre de arriba hacia abajo, línea a línea, esperando que cada operación termine antes de pasar a la siguiente. Si una operación tarda (llamar a una API, consultar una base de datos), el programa se <em>congela</em> esperando.
+    </p>
+    <p>
+      <strong>Código asíncrono</strong> dice: "Inicia esta operación lenta — yo sigo trabajando. Cuando termines, avísame." Las palabras <code>async</code> y <code>await</code> son la forma en que Python (y JavaScript) expresan esa idea.
+    </p>
+    <p>
+      <code>async def</code> declara una función que puede pausarse. <code>await</code> es el punto de pausa: "espera esto sin bloquear a otros."
+    </p>
+
+    <div class="analogy">
+      <div class="analogy-label">Analogía Legal</div>
+      Envías un memorial al juzgado y no te quedas parado en la ventanilla esperando el sello. Vuelves a tu oficina, sigues preparando otros escritos, atendiendo clientes. Cuando llega la notificación de recibo, la manejas. Eso es async/await: inicias una tarea que tomará tiempo y sigues con otras cosas.
+    </div>
+  </section>
+
+  <!-- CÓMO FUNCIONA -->
+  <section class="section">
+    <div class="section-label">Cómo Funciona</div>
+    <h2>Síncrono vs Asíncrono</h2>
+    <div class="ascii-box">
+SÍNCRONO (bloqueante):
+─────────────────────
+ Programa ──► Llama API ──► ESPERA... ──► ESPERA... ──► Respuesta ──► Sigue
+
+ Durante "ESPERA": el programa no hace NADA más.
+ Si tienes 10 consultas, cada una espera a que termine la anterior.
+ Tiempo total = suma de todos los tiempos.
+
+
+ASÍNCRONO (no bloqueante):
+──────────────────────────
+ Programa ──► Inicia consulta 1 ──► Inicia consulta 2 ──► Inicia consulta 3
+                    │                      │                      │
+                    ▼                      ▼                      ▼
+             [esperando...]         [esperando...]         [esperando...]
+                    │
+                    ▼ (llega respuesta 2 primero)
+             Procesa respuesta 2
+                    │
+                    ▼ (llega respuesta 1)
+             Procesa respuesta 1 ...
+
+ Tiempo total ≈ tiempo de la consulta MÁS LENTA (no la suma).
+
+
+EN AGENTES (por qué importa):
+──────────────────────────────
+ Agente Concursal recibe 5 preguntas simultáneas
+
+ Síncrono:  P1 ► P2 ► P3 ► P4 ► P5   (5 usuarios esperan en fila)
+ Asíncrono: P1 │                       (todos responden casi al mismo tiempo)
+            P2 │ ← ChromaDB busca en paralelo
+            P3 │ ← Claude API procesa en paralelo
+            P4 │
+            P5 │
+    </div>
+  </section>
+
+  <!-- CÓDIGO -->
+  <section class="section">
+    <div class="section-label">Código</div>
+    <h2>Ejemplo mínimo en Python</h2>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">python</span>
+        <button class="copy-btn" onclick="copiarCodigo(this)">Copiar</button>
+      </div>
+      <pre><code><span class="cm"># async_ejemplo.py — Ejemplo mínimo de async/await</span>
+<span class="ck">import</span> asyncio
+
+<span class="cm"># "async def" convierte esta función en una "coroutine"
+# Una coroutine es una función que PUEDE pausarse y reanudarse</span>
+<span class="ck">async def</span> <span class="cf">consultar_juzgado</span>(radicado: str) -> str:
+    <span class="cs">"""Simula una consulta lenta a un sistema externo."""</span>
+
+    <span class="cm"># "await" dice: "pausa aquí, deja que otros corran, y cuando
+    # asyncio.sleep termine, reanúdame"
+    # asyncio.sleep simula una operación lenta (API, DB, etc.)</span>
+    <span class="ck">await</span> asyncio.sleep(<span class="cn">1</span>)  <span class="cm"># simula 1 segundo de espera</span>
+
+    <span class="ck">return</span> <span class="cs">f"Radicado {radicado}: Auto de apertura recibido"</span>
+
+
+<span class="ck">async def</span> <span class="cf">procesar_multiples_consultas</span>():
+    <span class="cs">"""Consulta 3 radicados en PARALELO usando asyncio.gather."""</span>
+
+    radicados = [<span class="cs">"2025-0500"</span>, <span class="cs">"2025-0501"</span>, <span class="cs">"2025-0502"</span>]
+
+    <span class="cm"># Sin async: 3 segundos (1+1+1)
+    # Con asyncio.gather: ~1 segundo (corren en paralelo)</span>
+    resultados = <span class="ck">await</span> asyncio.gather(
+        *[consultar_juzgado(r) <span class="ck">for</span> r <span class="ck">in</span> radicados]
+    )
+
+    <span class="ck">for</span> resultado <span class="ck">in</span> resultados:
+        <span class="cf">print</span>(resultado)
+
+
+<span class="cm"># Para correr código async, necesitas el "event loop"
+# asyncio.run() crea ese loop y ejecuta la función principal</span>
+asyncio.run(procesar_multiples_consultas())
+
+
+<span class="cm"># ─── En Flask (como tu agente concursal) ───
+# Flask por defecto es síncrono.
+# Puedes usar Flask con async views así:</span>
+
+<span class="ck">from</span> flask <span class="ck">import</span> Flask
+app = Flask(__name__)
+
+<span class="cm"># Con "async def" Flask maneja la coroutine automáticamente
+# (requiere pip install flask[async] o instalar "asgiref")</span>
+<span class="ck">async def</span> <span class="cf">consulta_async</span>():
+    resultado = <span class="ck">await</span> consultar_juzgado(<span class="cs">"2025-0500"</span>)
+    <span class="ck">return</span> resultado</code></pre>
+    </div>
+
+    <div class="quarta-box">
+      <div class="quarta-label">Quarta — Agente Concursal</div>
+      <p>Tu agente actual (<code>agente.py</code>) usa <code>_anthropic.messages.create()</code> — llamada <strong>síncrona</strong>. Mientras Claude responde (puede tardar 3-15 segundos), Flask bloquea esa conexión. Con Railway en plan gratuito eso no es problema para uso personal.</p>
+      <p>En la clase 006 verás cómo agregar <code>stream=True</code> para que el texto aparezca mientras se genera — eso usa una forma de async. Por ahora el código síncrono está bien para tu caso de uso.</p>
+    </div>
+  </section>
+
+  <!-- SIGUIENTE -->
+  <div class="next-note">
+    En la clase <strong>006</strong> verás async/await en acción cuando implementemos <strong>streaming con la API de Claude</strong> — el texto del agente aparecerá palabra por palabra en lugar de esperar la respuesta completa.
+  </div>
+
+  <!-- COMPLETADO -->
+  <div class="completed-wrap" id="completed-wrap" onclick="toggleCompletado()">
+    <input type="checkbox" id="check-completado" />
+    <label for="check-completado">Marcar clase 001 como completada</label>
+  </div>
+
+  <!-- NAVIGATION -->
+  <nav class="nav">
+    <div class="nav-placeholder"></div>
+    <a href="002-micro-embeddings.html" class="nav-btn">Siguiente → 002</a>
+  </nav>
+
+</div>
+
+<script>
+// ── PROGRESS BAR ──────────────────────────────────────────
+const TOTAL_CLASES = 26;
+const CLASE_ID = '001';
+
+function calcularProgreso() {
+  let completadas = 0;
+  for (let i = 1; i <= TOTAL_CLASES; i++) {
+    const id = String(i).padStart(3, '0');
+    if (localStorage.getItem('clase_completada_' + id) === 'true') completadas++;
+  }
+  return completadas;
+}
+
+function actualizarBarra() {
+  const completadas = calcularProgreso();
+  const pct = Math.round((completadas / TOTAL_CLASES) * 100);
+  document.getElementById('progress-bar-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = completadas + ' / ' + TOTAL_CLASES + ' clases';
+}
+
+function toggleCompletado() {
+  const check = document.getElementById('check-completado');
+  const wrap = document.getElementById('completed-wrap');
+  const nuevoEstado = !check.checked;
+  check.checked = nuevoEstado;
+  localStorage.setItem('clase_completada_' + CLASE_ID, nuevoEstado ? 'true' : 'false');
+  wrap.classList.toggle('done', nuevoEstado);
+  actualizarBarra();
+}
+
+// Inicializar estado
+window.addEventListener('DOMContentLoaded', () => {
+  const completada = localStorage.getItem('clase_completada_' + CLASE_ID) === 'true';
+  document.getElementById('check-completado').checked = completada;
+  document.getElementById('completed-wrap').classList.toggle('done', completada);
+  actualizarBarra();
+});
+
+// ── COPIAR CÓDIGO ─────────────────────────────────────────
+function copiarCodigo(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  const texto = pre.innerText;
+  navigator.clipboard.writeText(texto).then(() => {
+    btn.textContent = '✓ Copiado';
+    setTimeout(() => btn.textContent = 'Copiar', 2000);
+  }).catch(() => {
+    // fallback
+    const ta = document.createElement('textarea');
+    ta.value = texto; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    btn.textContent = '✓ Copiado';
+    setTimeout(() => btn.textContent = 'Copiar', 2000);
+  });
+}
+</script>
+</body>
+</html>

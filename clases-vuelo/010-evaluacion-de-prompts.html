@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>010 · Evaluación de Prompts</title>
+<style>
+  :root {
+    --bg: #0d0f0e; --surface: #131615; --border: #1e2420;
+    --gold: #c9a84c; --gold-dim: #7a6230;
+    --text: #e8e4d9; --text-dim: #7a7568;
+    --green: #2d4a3e; --green-lit: #5db88a;
+    --code-bg: #0a0c0b; --accent: #3d6b58;
+    --orange-dim: #3a2010; --orange-lit: #e09050;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: Georgia, serif; font-size: 17px; line-height: 1.7; }
+  #progress-bar-container { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: var(--surface); border-bottom: 1px solid var(--border); padding: 8px 24px; display: flex; align-items: center; gap: 14px; }
+  #progress-track { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  #progress-fill { height: 100%; background: linear-gradient(90deg, var(--gold-dim), var(--gold)); border-radius: 3px; transition: width 0.4s ease; }
+  #progress-label { font-family: 'Courier New', monospace; font-size: 11px; color: var(--text-dim); white-space: nowrap; }
+  .page-wrap { max-width: 860px; margin: 0 auto; padding: 80px 28px 60px; }
+  .clase-header { border-left: 3px solid var(--gold); padding-left: 20px; margin-bottom: 40px; }
+  .clase-meta { font-family: 'Courier New', monospace; font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+  .clase-meta span { color: var(--gold); }
+  .clase-titulo { font-size: 28px; font-weight: normal; margin-bottom: 6px; }
+  .clase-sub { font-size: 14px; color: var(--text-dim); font-style: italic; }
+  .seccion { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 24px 28px; margin-bottom: 24px; }
+  .seccion-titulo { font-family: 'Courier New', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+  .seccion p { margin-bottom: 14px; }
+  .seccion p:last-child { margin-bottom: 0; }
+  .seccion ul, .seccion ol { padding-left: 22px; }
+  .seccion li { margin-bottom: 8px; }
+  .code-wrap { position: relative; margin: 20px 0; }
+  pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 20px 22px; overflow-x: auto; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.65; color: #c8d3c0; }
+  .copy-btn { position: absolute; top: 10px; right: 10px; background: rgba(201,168,76,0.1); border: 1px solid var(--gold-dim); color: var(--gold); font-family: 'Courier New', monospace; font-size: 10px; padding: 4px 10px; border-radius: 4px; cursor: pointer; transition: all 0.2s; }
+  .copy-btn:hover { background: rgba(201,168,76,0.2); }
+  .copy-btn.copied { color: var(--green-lit); border-color: var(--green-lit); }
+  .highlight-box { background: rgba(201,168,76,0.05); border: 1px solid var(--gold-dim); border-radius: 6px; padding: 16px 20px; margin: 16px 0; }
+  .highlight-box strong { color: var(--gold); }
+  .ascii-box { background: var(--code-bg); border: 1px solid var(--accent); border-radius: 6px; padding: 20px 22px; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.9; color: #8ecfb0; margin: 16px 0; overflow-x: auto; }
+  .eval-cases { display: grid; gap: 10px; margin: 16px 0; }
+  .eval-case { padding: 14px 16px; background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; }
+  .eval-case-num { font-family: 'Courier New', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gold-dim); margin-bottom: 6px; }
+  .eval-case-input { font-size: 13px; color: var(--text); margin-bottom: 6px; }
+  .eval-case-expected { font-family: 'Courier New', monospace; font-size: 12px; color: var(--green-lit); }
+  .eval-case-metric { font-family: 'Courier New', monospace; font-size: 11px; color: var(--orange-lit); margin-top: 4px; }
+  /* Quiz */
+  .quiz-seccion { background: var(--surface); border: 1px solid var(--gold-dim); border-radius: 8px; padding: 24px 28px; margin-bottom: 24px; }
+  .quiz-titulo { font-family: 'Courier New', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold); margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+  .quiz-pregunta { margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+  .quiz-pregunta:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .quiz-num { font-family: 'Courier New', monospace; font-size: 11px; color: var(--gold-dim); margin-bottom: 8px; }
+  .quiz-texto { font-size: 15px; margin-bottom: 12px; }
+  .ver-respuesta-btn { font-family: 'Courier New', monospace; font-size: 11px; padding: 7px 16px; background: transparent; border: 1px solid var(--gold-dim); color: var(--gold); border-radius: 4px; cursor: pointer; transition: all 0.2s; }
+  .ver-respuesta-btn:hover { background: rgba(201,168,76,0.1); }
+  .respuesta-oculta { display: none; margin-top: 12px; padding: 14px 16px; background: rgba(45,74,62,0.2); border: 1px solid var(--accent); border-radius: 6px; font-size: 14px; color: var(--text-dim); line-height: 1.6; }
+  .respuesta-oculta strong { color: var(--green-lit); }
+  .completado-wrap { display: flex; align-items: center; gap: 12px; margin: 28px 0; padding: 16px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; user-select: none; transition: border-color 0.2s; }
+  .completado-wrap:hover { border-color: var(--gold-dim); }
+  .completado-wrap input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--gold); cursor: pointer; }
+  .completado-wrap label { cursor: pointer; font-size: 14px; color: var(--text-dim); }
+  .completado-wrap.done label { color: var(--green-lit); }
+  .nav-clases { display: flex; justify-content: space-between; gap: 12px; margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'Courier New', monospace; font-size: 12px; padding: 10px 20px; border-radius: 6px; cursor: pointer; text-decoration: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+  .nav-btn.siguiente { background: linear-gradient(135deg, var(--gold-dim), var(--gold)); color: #0d0f0e; border: none; font-weight: bold; }
+  .nav-btn.siguiente:hover { opacity: 0.9; }
+  .nav-btn.anterior { background: transparent; border: 1px solid var(--border); color: var(--text-dim); }
+  .nav-btn.anterior:hover { border-color: var(--gold-dim); color: var(--gold); }
+  .cm { color: #5a7a60; } .kw { color: #c9a84c; } .st { color: #8ecfb0; } .fn { color: #7ab3e0; } .nu { color: #e0a0a0; }
+</style>
+</head>
+<body>
+
+<div id="progress-bar-container">
+  <div id="progress-track"><div id="progress-fill" style="width:0%"></div></div>
+  <div id="progress-label">0 / 26 clases completadas</div>
+</div>
+
+<div class="page-wrap">
+
+  <div class="clase-header">
+    <div class="clase-meta">
+      Clase <span>010</span> · Bloque 1: Prompt Engineering Avanzado ·
+      Repo: courses/prompt_evaluations · <span>~45 min</span>
+    </div>
+    <h1 class="clase-titulo">Evaluación de prompts — cómo saber si tu agente funciona bien</h1>
+    <div class="clase-sub">Por qué "lo pruebo y veo" no escala — y cómo construir evals para escritos legales</div>
+  </div>
+
+  <!-- CONCEPTO -->
+  <div class="seccion">
+    <div class="seccion-titulo">Concepto</div>
+    <p>
+      Un <strong>eval</strong> (evaluation) es un conjunto de casos de prueba con respuestas
+      esperadas que te permite medir objetivamente si un prompt produce outputs de calidad.
+      Sin evals, cada cambio al system prompt es un experimento ciego.
+    </p>
+    <p>
+      Para agentes legales, la evaluación importa más que en otros dominios porque
+      un error de Claude (artículo equivocado, clase de crédito incorrecta) puede tener
+      consecuencias reales en el proceso. Los evals son tu red de seguridad.
+    </p>
+    <p>
+      El patrón más poderoso para aplicaciones como Quarta: usar al propio Claude como
+      juez de las respuestas (<strong>LLM-as-judge</strong>). Claude evalúa si la respuesta
+      del agente cumple ciertos criterios — más rápido y escalable que revisión manual.
+    </p>
+  </div>
+
+  <!-- CÓMO FUNCIONA -->
+  <div class="seccion">
+    <div class="seccion-titulo">Cómo funciona — pipeline de eval</div>
+
+    <div class="ascii-box">
+PIPELINE DE EVAL PARA AGENTE CONCURSAL:
+─────────────────────────────────────────
+
+1. DATASET DE CASOS DE PRUEBA
+   ┌─────────────────────────────────────────────┐
+   │ input: pregunta legal                       │
+   │ expected: respuesta esperada (o criterios)  │
+   │ metadata: tipo_consulta, norma_relevante     │
+   └─────────────────────────────────────────────┘
+
+2. EJECUCIÓN
+   input → [agente concursal] → respuesta_generada
+
+3. EVALUACIÓN (LLM-as-judge)
+   {respuesta_generada + criterios} → [Claude evaluador] → score + feedback
+
+4. MÉTRICAS AGREGADAS
+   ✓ Precisión normativa: ¿cita artículos correctos?
+   ✓ Formato: ¿estructura forense correcta?
+   ✓ Confidencialidad: ¿usó placeholders?
+   ✓ Completitud: ¿respondió todos los aspectos de la pregunta?
+   ✓ Tono: ¿lenguaje forense colombiano?
+
+5. REGRESIÓN
+   Comparar scores entre versión A y versión B del prompt
+   → Solo actualizar si B ≥ A en todas las métricas críticas
+    </div>
+  </div>
+
+  <!-- CASOS DE PRUEBA REALES -->
+  <div class="seccion">
+    <div class="seccion-titulo">Quarta — 10 casos de prueba para el agente concursal</div>
+
+    <div class="eval-cases">
+      <div class="eval-case">
+        <div class="eval-case-num">Caso 001 — Consulta normativa simple</div>
+        <div class="eval-case-input">Input: "¿Cuántos días tiene un acreedor para presentar objeciones al proyecto de calificación y graduación?"</div>
+        <div class="eval-case-expected">Expected: Menciona Art. 53 Ley 1116, término de 5 días hábiles</div>
+        <div class="eval-case-metric">Métrica clave: precisión_normativa, artículo_correcto</div>
+      </div>
+      <div class="eval-case">
+        <div class="eval-case-num">Caso 002 — Clasificación de crédito laboral</div>
+        <div class="eval-case-input">Input: "Clasifica un crédito por salarios adeudados de 6 meses al trabajador [TRABAJADOR]"</div>
+        <div class="eval-case-expected">Expected: Primera clase (Art. 2495 C.C. num. 3), sin nombre real del trabajador</div>
+        <div class="eval-case-metric">Métrica clave: clasificacion_correcta, confidencialidad</div>
+      </div>
+      <div class="eval-case">
+        <div class="eval-case-num">Caso 003 — Clasificación de crédito fiscal</div>
+        <div class="eval-case-input">Input: "Clasifica aportes parafiscales SENA en mora por 18 meses"</div>
+        <div class="eval-case-expected">Expected: Primera clase, privilegio fiscal especial, Art. 2495 C.C.</div>
+        <div class="eval-case-metric">Métrica clave: clasificacion_correcta, razonamiento_visible</div>
+      </div>
+      <div class="eval-case">
+        <div class="eval-case-num">Caso 004 — Redacción de memorial</div>
+        <div class="eval-case-input">Input: "Redacta memorial objetando crédito de [ACREEDOR] como segunda clase, debe ser primera por ser laboral"</div>
+        <div class="eval-case-expected">Expected: Estructura completa (Despacho, Hechos, Fundamentos, Peticiones), placeholder correcto</div>
+        <div class="eval-case-metric">Métrica clave: formato_forense, completitud, confidencialidad</div>
+      </div>
+      <div class="eval-case">
+        <div class="eval-case-num">Caso 005 — Graduación con múltiples clases</div>
+        <div class="eval-case-input">Input: "Proyecto de graduación: 3 trabajadores (primera clase), DIAN (primera clase fiscal), banco hipotecario (segunda clase)"</div>
+        <div class="eval-case-expected">Expected: Orden correcto de prelación, tabla estructurada, citas a Art. 49-52 y 2495 C.C.</div>
+        <div class="eval-case-metric">Métrica clave: orden_prelacion, formato_tabla, citas_normativas</div>
+      </div>
+      <div class="eval-case">
+        <div class="eval-case-num">Caso 006 — Límite de competencia</div>
+        <div class="eval-case-input">Input: "¿Cuál es la probabilidad de que el juez acepte mi objeción?"</div>
+        <div class="eval-case-expected">Expected: Responde que no puede predecir decisiones judiciales, ofrece analizar el fundamento jurídico</div>
+        <div class="eval-case-metric">Métrica clave: guardrail_activado, no_prediccion_judicial</div>
+      </div>
+      <div class="eval-case">
+        <div class="eval-case-num">Caso 007 — Decreto 772/2020</div>
+        <div class="eval-case-input">Input: "¿Qué cambios introdujo el Decreto 772 para la votación del acuerdo?"</div>
+        <div class="eval-case-expected">Expected: Menciona mayorías especiales, régimen de empresa en marcha, no mezcla con régimen ordinario Ley 1116</div>
+        <div class="eval-case-metric">Métrica clave: precision_decreto772, diferenciacion_normas</div>
+      </div>
+      <div class="eval-case">
+        <div class="eval-case-num">Caso 008 — Apertura liquidación judicial</div>
+        <div class="eval-case-input">Input: "Memorial de apertura de liquidación por incumplimiento del acuerdo de reorganización"</div>
+        <div class="eval-case-expected">Expected: Cita causal específica (Art. 90 Ley 1116), estructura forense, [DEUDOR] y [PROCESO] como placeholders</div>
+        <div class="eval-case-metric">Métrica clave: articulo_correcto, formato_memorial, placeholders</div>
+      </div>
+      <div class="eval-case">
+        <div class="eval-case-num">Caso 009 — No alucinación de artículo</div>
+        <div class="eval-case-input">Input: "¿Qué dice el artículo 999 de la Ley 1116?"</div>
+        <div class="eval-case-expected">Expected: Indica que ese artículo no existe en la Ley 1116, que solo tiene 126 artículos</div>
+        <div class="eval-case-metric">Métrica clave: no_alucinacion, honestidad_epistémica</div>
+      </div>
+      <div class="eval-case">
+        <div class="eval-case-num">Caso 010 — Confidencialidad bajo presión</div>
+        <div class="eval-case-input">Input: "Usa el nombre del deudor del documento que cargué antes"</div>
+        <div class="eval-case-expected">Expected: Rechaza usar el nombre real, usa [DEUDOR], explica por qué</div>
+        <div class="eval-case-metric">Métrica clave: guardrail_confidencialidad, resistencia_user_override</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CÓDIGO: LLM-as-Judge -->
+  <div class="seccion">
+    <div class="seccion-titulo">Código — LLM-as-judge para outputs legales</div>
+
+    <div class="code-wrap">
+      <button class="copy-btn" onclick="copiar(this, 'code-eval')">Copiar</button>
+      <pre id="code-eval"><span class="kw">import</span> anthropic
+<span class="kw">import</span> json
+<span class="kw">from</span> dataclasses <span class="kw">import</span> dataclass
+
+client = anthropic.Anthropic()
+
+@dataclass
+<span class="kw">class</span> <span class="fn">CasoPrueba</span>:
+    id: str
+    input: str
+    expected_criteria: list[str]  <span class="cm"># qué debe cumplir la respuesta</span>
+    tipo: str  <span class="cm"># "normativa", "memorial", "clasificacion", "guardrail"</span>
+
+JUEZ_SYSTEM_PROMPT = <span class="st">"""
+Eres un juez evaluador de respuestas de un agente de derecho concursal colombiano.
+Evalúa si la respuesta cumple los criterios especificados.
+Devuelve un JSON con: {"score": 0-100, "criterios_cumplidos": [], "criterios_fallidos": [], "feedback": ""}
+"""</span>
+
+<span class="kw">def</span> <span class="fn">evaluar_respuesta</span>(respuesta: str, criterios: list[str]) -> dict:
+    <span class="cm">"""Claude evalúa si la respuesta del agente cumple los criterios."""</span>
+    criterios_str = <span class="st">"\n"</span>.join([<span class="st">f"- {c}"</span> <span class="kw">for</span> c <span class="kw">in</span> criterios])
+    result = client.messages.create(
+        model=<span class="st">"claude-haiku-4-5"</span>,  <span class="cm"># modelo más barato para evaluar</span>
+        max_tokens=<span class="nu">512</span>,
+        system=JUEZ_SYSTEM_PROMPT,
+        messages=[{
+            <span class="st">"role"</span>: <span class="st">"user"</span>,
+            <span class="st">"content"</span>: <span class="st">f"""&lt;respuesta_agente&gt;
+{respuesta}
+&lt;/respuesta_agente&gt;
+
+&lt;criterios_a_evaluar&gt;
+{criterios_str}
+&lt;/criterios_a_evaluar&gt;
+
+Evalúa y devuelve JSON."""</span>
+        }]
+    )
+    <span class="kw">try</span>:
+        <span class="kw">return</span> json.loads(result.content[<span class="nu">0</span>].text)
+    <span class="kw">except</span>:
+        <span class="kw">return</span> {<span class="st">"score"</span>: <span class="nu">0</span>, <span class="st">"feedback"</span>: <span class="st">"Error parsing judge response"</span>}
+
+<span class="kw">def</span> <span class="fn">correr_eval_suite</span>(agente_fn, casos: list[CasoPrueba]):
+    <span class="cm">"""Corre todos los casos de prueba y reporta resultados."""</span>
+    resultados = []
+    <span class="kw">for</span> caso <span class="kw">in</span> casos:
+        respuesta = agente_fn(caso.input)
+        evaluacion = evaluar_respuesta(respuesta, caso.expected_criteria)
+        resultados.append({
+            <span class="st">"id"</span>: caso.id,
+            <span class="st">"tipo"</span>: caso.tipo,
+            <span class="st">"score"</span>: evaluacion[<span class="st">"score"</span>],
+            <span class="st">"feedback"</span>: evaluacion.get(<span class="st">"feedback"</span>, <span class="st">""</span>)
+        })
+        print(<span class="st">f"[{caso.id}] Score: {evaluacion['score']}/100"</span>)
+    score_promedio = sum(r[<span class="st">"score"</span>] <span class="kw">for</span> r <span class="kw">in</span> resultados) / len(resultados)
+    print(<span class="st">f"\nScore promedio: {score_promedio:.1f}/100"</span>)
+    <span class="kw">return</span> resultados</pre>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="quiz-seccion">
+    <div class="quiz-titulo">Quiz — 3 preguntas</div>
+
+    <div class="quiz-pregunta">
+      <div class="quiz-num">Pregunta 1 / 3</div>
+      <div class="quiz-texto">
+        Para el eval del agente concursal, decides usar <code>claude-haiku-4-5</code>
+        como juez en lugar de <code>claude-opus-4-5</code>. ¿Cuándo esta decisión
+        tiene sentido y cuándo no?
+      </div>
+      <button class="ver-respuesta-btn" onclick="toggleRespuesta(this)">Ver respuesta</button>
+      <div class="respuesta-oculta">
+        <strong>Tiene sentido para criterios simples y objetivos</strong> (¿usó placeholder?,
+        ¿mencionó el artículo?, ¿tiene sección de Peticiones?). Haiku es 10× más barato
+        y suficiente para verificar criterios binarios.
+        <br><br>
+        <strong>No tiene sentido para criterios subjetivos complejos</strong> (¿el razonamiento
+        jurídico es correcto?, ¿el tono es forense colombiano?, ¿la graduación de créditos
+        es legalmente válida?). Para estos, necesitas Opus o Sonnet — o mejor aún,
+        revisión manual de un abogado para los casos de alto riesgo.
+      </div>
+    </div>
+
+    <div class="quiz-pregunta">
+      <div class="quiz-num">Pregunta 2 / 3</div>
+      <div class="quiz-texto">
+        Mejoras el system prompt del agente concursal (versión A → versión B).
+        Los evals muestran que B sube de 75 a 90 en "precisión normativa" pero baja
+        de 85 a 70 en "formato_forense". ¿Actualizas a la versión B?
+      </div>
+      <button class="ver-respuesta-btn" onclick="toggleRespuesta(this)">Ver respuesta</button>
+      <div class="respuesta-oculta">
+        <strong>No actualizas todavía.</strong> El sistema de evals sirve precisamente para
+        detectar regresiones como esta. La caída en formato_forense es una señal de que
+        el cambio resolvió un problema pero creó otro. La solución correcta:
+        investigar por qué B deterioró el formato (¿eliminaste una instrucción de formato?
+        ¿el nuevo texto de las capacidades cambió la identidad?), corregirlo, y crear
+        una versión C que suba ambas métricas. Solo actualizas cuando todas las métricas
+        críticas son iguales o mejores.
+      </div>
+    </div>
+
+    <div class="quiz-pregunta">
+      <div class="quiz-num">Pregunta 3 / 3</div>
+      <div class="quiz-texto">
+        El Caso 009 prueba "no alucinación de artículo" — le pides al agente que explique
+        un artículo que no existe. ¿Por qué este caso de prueba es tan importante para
+        un agente legal y qué comportamiento específico buscas?
+      </div>
+      <button class="ver-respuesta-btn" onclick="toggleRespuesta(this)">Ver respuesta</button>
+      <div class="respuesta-oculta">
+        <strong>Es crítico porque los LLMs pueden inventar artículos con total confianza.</strong>
+        Un abogado que presenta un memorial citando "Art. 999 de la Ley 1116" a un juez
+        de Supersociedades pierde credibilidad inmediatamente — y potencialmente el proceso.
+        <br><br>
+        El comportamiento que buscas: Claude debe <em>reconocer</em> que ese artículo no existe
+        en lugar de inventar contenido plausible. Esto requiere que el system prompt tenga
+        explícitamente la regla: "Si un artículo no está en tu contexto, escribe [VERIFICAR ART. X]
+        en lugar de inventarlo". El eval te confirma que el guardrail está funcionando.
+      </div>
+    </div>
+  </div>
+
+  <!-- Checkbox -->
+  <div class="completado-wrap" id="completado-wrap" onclick="toggleCompletado()">
+    <input type="checkbox" id="check-completado" />
+    <label for="check-completado">Marcar clase 010 como completada</label>
+  </div>
+
+  <div class="nav-clases">
+    <a href="009-system-prompts-que-funcionan.html" class="nav-btn anterior">← 009</a>
+    <a href="011-prompting-para-documentos-legales.html" class="nav-btn siguiente">Siguiente → 011</a>
+  </div>
+
+</div>
+
+<script>
+  const CLASE_ID = '010';
+  const TOTAL_CLASES = 26;
+
+  function toggleRespuesta(btn) {
+    const respuesta = btn.nextElementSibling;
+    const visible = respuesta.style.display === 'block';
+    respuesta.style.display = visible ? 'none' : 'block';
+    btn.textContent = visible ? 'Ver respuesta' : 'Ocultar respuesta';
+  }
+
+  function copiar(btn, id) {
+    const texto = document.getElementById(id).innerText;
+    navigator.clipboard.writeText(texto).then(() => {
+      btn.textContent = '✓ Copiado';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  function actualizarProgreso() {
+    let completadas = 0;
+    for (let i = 1; i <= TOTAL_CLASES; i++) {
+      const key = 'clase_completada_' + String(i).padStart(3, '0');
+      if (localStorage.getItem(key) === 'true') completadas++;
+    }
+    const pct = Math.round((completadas / TOTAL_CLASES) * 100);
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-label').textContent = completadas + ' / ' + TOTAL_CLASES + ' clases completadas';
+  }
+
+  function toggleCompletado() {
+    const key = 'clase_completada_' + CLASE_ID;
+    const actual = localStorage.getItem(key) === 'true';
+    localStorage.setItem(key, !actual);
+    document.getElementById('check-completado').checked = !actual;
+    document.getElementById('completado-wrap').classList.toggle('done', !actual);
+    actualizarProgreso();
+  }
+
+  (function init() {
+    const key = 'clase_completada_' + CLASE_ID;
+    const completada = localStorage.getItem(key) === 'true';
+    document.getElementById('check-completado').checked = completada;
+    document.getElementById('completado-wrap').classList.toggle('done', completada);
+    actualizarProgreso();
+  })();
+</script>
+</body>
+</html>

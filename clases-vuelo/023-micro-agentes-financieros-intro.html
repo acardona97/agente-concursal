@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>023 - Micro: Agentes Financieros — Introducción</title>
+<style>
+:root {
+  --bg:#0d0f0e; --surface:#131615; --border:#1e2420;
+  --gold:#c9a84c; --gold-dim:#7a6230;
+  --text:#e8e4d9; --text-dim:#7a7568;
+  --green:#2d4a3e; --blue:#1e3a5f;
+  --font-body:'Georgia',serif;
+  --font-mono:'Courier New',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);line-height:1.7;min-height:100vh}
+.progress-bar-container{position:fixed;top:0;left:0;right:0;height:3px;background:var(--border);z-index:100}
+.progress-bar{height:100%;background:var(--gold);transition:width 0.3s}
+.nav{position:fixed;top:3px;left:0;right:0;background:rgba(13,15,14,0.95);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;justify-content:space-between;align-items:center;z-index:99;backdrop-filter:blur(8px)}
+.nav-brand{color:var(--gold);font-family:var(--font-mono);font-size:0.8rem;letter-spacing:2px}
+.nav-links{display:flex;gap:8px}
+.nav-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);padding:5px 14px;border-radius:4px;cursor:pointer;font-family:var(--font-mono);font-size:0.75rem;text-decoration:none;transition:all 0.2s}
+.nav-btn:hover,.nav-btn.active{border-color:var(--gold);color:var(--gold)}
+.container{max-width:860px;margin:0 auto;padding:80px 24px 60px}
+h1{font-size:1.9rem;color:var(--gold);margin-bottom:8px;line-height:1.3}
+.meta{color:var(--text-dim);font-family:var(--font-mono);font-size:0.8rem;margin-bottom:32px;display:flex;gap:20px;flex-wrap:wrap}
+h2{font-size:1.25rem;color:var(--gold);margin:40px 0 16px;border-left:3px solid var(--gold-dim);padding-left:12px}
+h3{font-size:1.05rem;color:var(--text);margin:24px 0 10px}
+p{margin-bottom:14px;color:var(--text)}
+ul,ol{margin:0 0 14px 20px;color:var(--text)}
+li{margin-bottom:6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;margin:20px 0}
+.card-gold{border-color:var(--gold-dim)}
+.card-blue{border-color:#1e3a5f;background:#0d1a2e}
+.card-green{border-color:#1e3a2e;background:#0a1a12}
+.card-red{border-color:#3a1e1e;background:#1a0d0d}
+code{font-family:var(--font-mono);background:#1a1e1c;padding:2px 6px;border-radius:3px;font-size:0.88rem;color:#a8d4b0}
+.highlight{color:var(--gold)}
+.dim{color:var(--text-dim)}
+.analogy{background:#1a1a0d;border:1px solid #3a3a1e;border-radius:6px;padding:16px;margin:16px 0}
+.analogy::before{content:"⚖ Analogía";display:block;color:var(--gold-dim);font-family:var(--font-mono);font-size:0.75rem;margin-bottom:8px}
+.tag{display:inline-block;background:var(--green);color:#4caf7d;font-family:var(--font-mono);font-size:0.72rem;padding:2px 8px;border-radius:3px;margin-right:6px}
+.tag-micro{background:#3a1a2e;color:#d47daf}
+.micro-badge{display:inline-block;background:#3a1a2e;border:1px solid #6a2a5e;color:#d47daf;font-family:var(--font-mono);font-size:0.8rem;padding:4px 12px;border-radius:20px;margin-bottom:16px}
+.tipo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:20px 0}
+@media(max-width:640px){.tipo-grid{grid-template-columns:1fr}}
+.tipo-card{border-radius:8px;padding:18px;text-align:center}
+.tipo-analisis{background:#0d1a2e;border:1px solid #1e3a5f}
+.tipo-ejecucion{background:#2a0d0d;border:1px solid #5a1e1e}
+.tipo-monitoreo{background:#0a1a12;border:1px solid #1e3a2e}
+.tipo-card .icon{font-size:2rem;margin-bottom:10px}
+.tipo-card h4{font-size:0.95rem;margin-bottom:8px}
+.tipo-card p{font-size:0.83rem;color:var(--text-dim);margin:0}
+.can-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:0.88rem}
+.can-table th{background:#0a0c0b;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);font-family:var(--font-mono)}
+.can-table td{padding:9px 12px;border-bottom:1px solid #16191a;vertical-align:top}
+.can-table .yes{color:#4caf7d}
+.can-table .no{color:#f47070}
+.completed-section{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px;margin-top:40px;display:flex;align-items:center;gap:14px}
+.completed-section label{cursor:pointer;color:var(--text-dim);font-size:0.9rem}
+input[type="checkbox"]{width:18px;height:18px;cursor:pointer;accent-color:var(--gold)}
+.next-block{background:var(--surface);border:1px solid var(--gold-dim);border-radius:8px;padding:20px;margin:24px 0}
+.next-block h3{color:var(--gold);margin-top:0}
+.next-list{list-style:none;margin:0;padding:0}
+.next-list li{padding:8px 0;border-bottom:1px solid var(--border);font-size:0.9rem}
+.next-list li:last-child{border-bottom:none}
+.next-list a{color:#5b9bd5;text-decoration:none}
+.next-list a:hover{color:var(--gold)}
+</style>
+</head>
+<body>
+
+<div class="progress-bar-container">
+  <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<nav class="nav">
+  <span class="nav-brand">QUARTA FLIGHT SCHOOL</span>
+  <div class="nav-links">
+    <a href="022-claude-code-quarta-workflow-real.html" class="nav-btn">← Anterior</a>
+    <span class="nav-btn active">023</span>
+    <a href="024-agente-trading-btc-arquitectura.html" class="nav-btn">Siguiente →</a>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="meta">
+    <span><span class="tag">BLOQUE 5</span> Finanzas e Inversión con IA</span>
+    <span>🕐 8 min</span>
+    <span class="dim">Clase 023 / 026</span>
+  </div>
+
+  <div class="micro-badge">MICRO-CLASE · 8 MINUTOS</div>
+
+  <h1>Agentes Financieros con IA — Introducción</h1>
+  <p class="dim">Empezamos desde cero. Qué puede hacer un agente en finanzas, qué NO puede, y el mapa de lo que viene.</p>
+
+  <!-- ============================================================ -->
+  <h2>El punto de partida honesto</h2>
+
+  <p>Si vienes del mundo legal, las finanzas con IA suenan a magia o a fraude. No es ninguna de las dos cosas. Es una herramienta que, como toda herramienta, puede ser poderosa si se usa bien y destructiva si se usa mal.</p>
+
+  <p>Esta micro-clase es la <strong>calibración</strong>: antes de escribir una sola línea de código de trading, necesitas saber exactamente en qué terreno estás pisando.</p>
+
+  <!-- ============================================================ -->
+  <h2>Los 3 Tipos de Agentes Financieros</h2>
+
+  <div class="tipo-grid">
+    <div class="tipo-card tipo-analisis">
+      <div class="icon">🔍</div>
+      <h4 style="color:#5b9bd5">Análisis</h4>
+      <p>Lee datos del mercado, noticias y estados financieros. Genera interpretaciones y reportes. No hace nada — solo informa.</p>
+    </div>
+    <div class="tipo-card tipo-ejecucion">
+      <div class="icon">⚡</div>
+      <h4 style="color:#f47070">Ejecución</h4>
+      <p>Conecta a un exchange. Puede comprar y vender activos reales. Dinero real. Pérdidas reales. Máxima responsabilidad.</p>
+    </div>
+    <div class="tipo-card tipo-monitoreo">
+      <div class="icon">📡</div>
+      <h4 style="color:#4caf7d">Monitoreo</h4>
+      <p>Vigila mercados en tiempo real. Alerta cuando se cumplen condiciones. Como un paralegal que te avisa cuando llega una notificación.</p>
+    </div>
+  </div>
+
+  <div class="card card-gold">
+    <p><strong>Para este bloque de clases, empezamos en modo Análisis + Monitoreo.</strong> El agente de ejecución viene después, cuando entiendas bien el riesgo. Esta es la secuencia correcta.</p>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>Qué PUEDE hacer un agente financiero con IA</h2>
+
+  <table class="can-table">
+    <tr><th>Capacidad</th><th>¿Puede?</th><th>Nivel de confianza</th></tr>
+    <tr><td>Analizar tendencias históricas de precio</td><td class="yes">✓ Sí</td><td>Alto</td></tr>
+    <tr><td>Resumir noticias y evaluar sentimiento</td><td class="yes">✓ Sí</td><td>Alto</td></tr>
+    <tr><td>Identificar patrones técnicos (RSI, MA)</td><td class="yes">✓ Sí</td><td>Alto con datos limpios</td></tr>
+    <tr><td>Generar hipótesis de inversión para revisar</td><td class="yes">✓ Sí</td><td>Medio — requiere revisión humana</td></tr>
+    <tr><td>Predecir el precio de BTC mañana</td><td class="no">✗ No</td><td>Nadie puede. Cuidado con quien diga que sí.</td></tr>
+    <tr><td>Garantizar retornos</td><td class="no">✗ No</td><td>Prohibido incluso para humanos regulados</td></tr>
+    <tr><td>Reemplazar el criterio del inversor</td><td class="no">✗ No</td><td>El agente informa. Tú decides.</td></tr>
+  </table>
+
+  <!-- ============================================================ -->
+  <h2>Por qué la IA en finanzas necesita guardrails especialmente fuertes</h2>
+
+  <div class="analogy">
+    Un agente de seguros puede analizar tu riesgo, recomendarte pólizas, calcular primas. Pero la firma
+    en el contrato — la que te compromete a pagar — es tuya. En finanzas: el agente analiza, recomienda,
+    alerta. El botón de "comprar" lo presionas tú. Siempre. Hasta que tengas suficiente experiencia para
+    definir reglas de ejecución automática con límites claros.
+  </div>
+
+  <div class="card card-red">
+    <h3 style="color:#f47070">Riesgo Real — Lo que no se dice en los tutoriales</h3>
+    <ul>
+      <li>Un agente con acceso a un exchange <strong>puede ejecutar operaciones con dinero real</strong> si comete un error de lógica</li>
+      <li>Los mercados de cripto operan 24/7 — un error puede acumularse mientras duermes</li>
+      <li>Los modelos de IA no tienen "skin in the game" — no pierden nada si su análisis está mal</li>
+      <li>El over-fitting histórico: una estrategia que funciona en datos pasados puede fallar en el futuro</li>
+    </ul>
+    <p style="margin:12px 0 0;color:#f47070"><strong>Regla de oro:</strong> empieza con paper trading (simulado). Mueve capital real solo cuando hayas visto funcionar la estrategia durante semanas en simulación.</p>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>Los guardrails mínimos obligatorios</h2>
+
+  <div class="card">
+    <ol>
+      <li><strong>Modo análisis primero:</strong> el agente genera señales, nunca ejecuta directamente</li>
+      <li><strong>Límites de posición:</strong> si eventualmente automatizas, define el máximo que puede mover (ej: nunca más del 5% del portafolio)</li>
+      <li><strong>Stop loss hardcodeado:</strong> si la pérdida supera X%, el agente se detiene completamente</li>
+      <li><strong>Logs de todo:</strong> cada análisis, cada señal, cada acción — registrado con timestamp</li>
+      <li><strong>Kill switch manual:</strong> siempre tener una forma de detener el agente inmediatamente</li>
+    </ol>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>El mapa de lo que construiremos</h2>
+
+  <div class="next-block">
+    <h3>Clases 024 a 026 — Construimos los 3 agentes desde cero</h3>
+    <ul class="next-list">
+      <li>
+        <a href="024-agente-trading-btc-arquitectura.html">024 — Agente de análisis BTC</a>
+        <span class="dim"> · Obtiene precio, analiza tendencia con Claude, genera señal HOLD/WATCH/ALERT · 45 min</span>
+      </li>
+      <li>
+        <a href="025-analisis-mercado-con-claude.html">025 — Morning brief automático</a>
+        <span class="dim"> · BTC + ETH + SPY + macro, análisis de Claude, formato para leer en terminal · 45 min</span>
+      </li>
+      <li>
+        <a href="026-polymarket-prediccion-eventos.html">026 — Agente de Polymarket</a>
+        <span class="dim"> · Mercados de predicción, nichos legales colombianos, ventaja competitiva de Andrés · 30 min</span>
+      </li>
+    </ul>
+  </div>
+
+  <p style="text-align:center;color:var(--text-dim);font-family:var(--font-mono);font-size:0.85rem;margin-top:32px">
+    Si entendiste esta micro-clase, ya eres más sofisticado que el 80% de las personas que "usan IA para invertir".<br>
+    Sigamos.
+  </p>
+
+  <div class="completed-section">
+    <input type="checkbox" id="completado" onchange="marcarCompletada()">
+    <label for="completado">Micro-clase completada — Agentes Financieros: Introducción</label>
+  </div>
+
+</div>
+
+<script>
+const TOTAL=26,CLASE=23;
+function updateProgress(){let c=0;for(let i=1;i<=TOTAL;i++)if(localStorage.getItem('clase_completada_'+String(i).padStart(3,'0')))c++;document.getElementById('progressBar').style.width=(c/TOTAL*100)+'%';}
+function marcarCompletada(){const key='clase_completada_'+String(CLASE).padStart(3,'0');document.getElementById('completado').checked?localStorage.setItem(key,'1'):localStorage.removeItem(key);updateProgress();}
+window.addEventListener('DOMContentLoaded',()=>{const key='clase_completada_'+String(CLASE).padStart(3,'0');if(localStorage.getItem(key))document.getElementById('completado').checked=true;updateProgress();});
+</script>
+</body>
+</html>

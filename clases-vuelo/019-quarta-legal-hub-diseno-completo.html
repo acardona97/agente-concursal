@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>019 · Quarta Legal Hub — Diseño Completo</title>
+<style>
+:root {
+  --bg:#0d0f0e; --surface:#131615; --border:#1e2420;
+  --gold:#c9a84c; --gold-dim:#7a6230;
+  --text:#e8e4d9; --text-dim:#7a7568;
+  --green:#2d4a3e; --blue:#1e3a5f;
+  --red:#8b3a3a;
+  --font-body:'Georgia',serif;
+  --font-mono:'Courier New',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:17px;line-height:1.7;min-height:100vh}
+a{color:var(--gold);text-decoration:none}
+a:hover{text-decoration:underline}
+header{background:var(--surface);border-bottom:2px solid var(--gold-dim);padding:20px 40px;display:flex;justify-content:space-between;align-items:center}
+.bloque-badge{font-family:var(--font-mono);font-size:11px;background:#2d1a4a;color:#9a7ae0;border:1px solid #4a3a7a;padding:3px 10px;border-radius:4px;letter-spacing:.08em}
+h1{font-size:26px;color:var(--gold);font-weight:normal;margin:0}
+.meta{font-family:var(--font-mono);font-size:11px;color:var(--text-dim);margin-top:4px}
+.progress-container{background:var(--surface);padding:10px 40px;border-bottom:1px solid var(--border)}
+.progress-label{font-family:var(--font-mono);font-size:10px;color:var(--text-dim);margin-bottom:5px}
+.progress-bar{height:4px;background:var(--border);border-radius:2px}
+.progress-fill{height:100%;background:var(--gold);border-radius:2px;transition:width .3s}
+main{max-width:860px;margin:0 auto;padding:40px 24px}
+h2{font-size:20px;color:var(--gold);margin:40px 0 16px;font-weight:normal;border-left:3px solid var(--gold);padding-left:14px}
+h3{font-size:16px;color:var(--gold);margin:28px 0 10px;font-weight:normal;letter-spacing:.04em}
+p{margin-bottom:14px}
+ul,ol{margin:10px 0 16px 22px}
+li{margin-bottom:6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:22px 26px;margin:20px 0}
+.card-gold{border-color:var(--gold-dim)}
+.card-blue{border-color:#1e3a5f;background:#0d1521}
+.card-red{border-color:#5a2a2a;background:#110d0d}
+.card-green{border-color:#1e4a30;background:#0a1510}
+pre,code{font-family:var(--font-mono);font-size:13px}
+pre{background:#0a0c0b;border:1px solid var(--border);border-radius:6px;padding:18px 20px;overflow-x:auto;margin:16px 0;line-height:1.55}
+code{background:#1a1c1a;padding:2px 6px;border-radius:3px;font-size:13px}
+.tag{display:inline-block;font-family:var(--font-mono);font-size:10px;padding:2px 8px;border-radius:3px;margin-right:6px;letter-spacing:.05em}
+.tag-repo{background:#1a2a1a;color:#6aaa6a;border:1px solid #2a4a2a}
+.repos-bar{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px 18px;margin:16px 0;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.warning-box{background:#1a1000;border:1px solid #7a5000;border-radius:6px;padding:14px 18px;margin:20px 0;font-size:15px}
+.warning-box strong{color:#c9a84c}
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0}
+.compare-grid .card{margin:0}
+.compare-grid .card h3{margin-top:0;font-size:14px}
+@media(max-width:600px){.compare-grid{grid-template-columns:1fr}}
+.step-list{counter-reset:steps;list-style:none;margin-left:0}
+.step-list li{counter-increment:steps;padding:10px 10px 10px 46px;position:relative;border-bottom:1px solid var(--border)}
+.step-list li:last-child{border-bottom:none}
+.step-list li::before{content:counter(steps);position:absolute;left:10px;top:10px;background:var(--gold-dim);color:var(--gold);width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:12px}
+.roadmap-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:20px 0}
+@media(max-width:700px){.roadmap-grid{grid-template-columns:1fr}}
+.roadmap-mes{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px 18px}
+.roadmap-mes .mes-num{font-family:var(--font-mono);font-size:10px;color:var(--gold);letter-spacing:.1em;margin-bottom:6px}
+.roadmap-mes ul{margin-left:16px;font-size:14px}
+.quiz-section{background:var(--surface);border:2px solid var(--gold-dim);border-radius:10px;padding:28px 32px;margin:50px 0 30px}
+.quiz-section h2{border:none;padding:0;margin:0 0 24px}
+.question{margin-bottom:28px}
+.question p{font-weight:bold;margin-bottom:12px;color:var(--gold)}
+.options label{display:block;padding:9px 14px;margin:5px 0;border:1px solid var(--border);border-radius:5px;cursor:pointer;transition:border-color .2s,background .2s;font-size:15px}
+.options label:hover{border-color:var(--gold-dim);background:#191c18}
+.options input{margin-right:10px;accent-color:var(--gold)}
+.btn-check{background:var(--gold);color:#0d0f0e;border:none;border-radius:5px;padding:11px 28px;font-family:var(--font-mono);font-size:13px;letter-spacing:.06em;cursor:pointer;font-weight:bold;margin-top:6px}
+.btn-check:hover{background:#e0bc5a}
+.result{margin-top:16px;font-family:var(--font-mono);font-size:13px;padding:10px 14px;border-radius:5px;display:none}
+.result.ok{background:#1a3a25;color:#6aaa6a;border:1px solid #2a5a35}
+.result.fail{background:#3a1515;color:#cc7777;border:1px solid #5a2525}
+.nav-bar{display:flex;justify-content:space-between;align-items:center;padding:24px 0;margin-top:20px;border-top:1px solid var(--border)}
+.nav-btn{font-family:var(--font-mono);font-size:12px;color:var(--gold);border:1px solid var(--gold-dim);padding:8px 18px;border-radius:5px;cursor:pointer;background:transparent;letter-spacing:.06em;transition:background .2s,border-color .2s}
+.nav-btn:hover{background:var(--surface);border-color:var(--gold)}
+.nav-btn.disabled{color:var(--text-dim);border-color:var(--border);cursor:default;pointer-events:none}
+.class-num{font-family:var(--font-mono);font-size:11px;color:var(--text-dim)}
+.diagram-box{background:#0a0c0b;border:1px solid var(--border);border-radius:6px;padding:20px 24px;margin:20px 0;overflow-x:auto}
+.diagram-box pre{background:none;border:none;padding:0;margin:0;font-size:13px;line-height:1.6}
+.interview-box{background:#0d0f0e;border:1px solid var(--gold-dim);border-radius:8px;padding:20px 24px;margin:20px 0}
+.interview-box .q-num{font-family:var(--font-mono);font-size:11px;color:var(--gold);margin-bottom:4px}
+.interview-q{margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:14px}
+.interview-q:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.agent-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px 22px;margin:12px 0;display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start}
+.agent-num{font-family:var(--font-mono);font-size:22px;color:var(--gold-dim);padding-top:2px}
+.agent-body h3{margin-top:0;font-size:15px}
+.agent-body p{font-size:14px;margin-bottom:6px}
+.agent-tag{font-family:var(--font-mono);font-size:10px;background:#1a2a1a;color:#6aaa6a;border:1px solid #2a4a2a;padding:2px 8px;border-radius:3px}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <span class="bloque-badge">AGENTES IA</span>
+    <h1>019 · Quarta Legal Hub — Diseño Completo</h1>
+    <div class="meta">45 min &nbsp;·&nbsp; Clase 19 / 26 &nbsp;·&nbsp; Andrés Cardona · Quarta</div>
+  </div>
+</header>
+
+<div class="progress-container">
+  <div class="progress-label">PROGRESO DEL CURSO — <span id="pct">0%</span></div>
+  <div class="progress-bar"><div class="progress-fill" id="pfill" style="width:0%"></div></div>
+</div>
+
+<main>
+
+<div class="repos-bar">
+  <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim);">REPOS:</span>
+  <span class="tag tag-repo">claude-for-legal (completo)</span>
+  <span class="tag tag-repo">knowledge-work-plugins/legal</span>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     1. ARQUITECTURA DEL CLAUDE-FOR-LEGAL
+════════════════════════════════════════════ -->
+<h2>La arquitectura del claude-for-legal repo</h2>
+
+<p>El repo <strong>claude-for-legal</strong> es la referencia de arquitectura más madura disponible para despachos jurídicos construidos sobre Claude. Lo has explorado en clases anteriores — aquí sintetizamos cómo está construido para que puedas adaptarlo directamente a Quarta.</p>
+
+<div class="card card-gold">
+  <h3>Estructura del repo claude-for-legal</h3>
+  <ul>
+    <li><strong>12 plugins por área de práctica:</strong> corporate, litigation, IP, employment, real-estate, etc. Cada uno es autónomo.</li>
+    <li><strong>Cada plugin tiene 4 carpetas:</strong>
+      <ul>
+        <li><code>CLAUDE.md</code> — practice profile del área: jurisdicción, normas aplicables, tono, restricciones</li>
+        <li><code>skills/</code> — los archivos .md de cada skill (calificación, memoriales, búsqueda)</li>
+        <li><code>agents/</code> — agentes especializados del área (process-watcher, reviewer)</li>
+        <li><code>connectors/</code> — integraciones con sistemas externos (CourtListener, USPTO, EDGAR)</li>
+      </ul>
+    </li>
+    <li><strong>Cold-start interview:</strong> el primer run configura el playbook completo de la firma</li>
+    <li><strong>CLAUDE.md compartido:</strong> fuente de verdad de la firma — aplica a todos los plugins</li>
+  </ul>
+</div>
+
+<div class="card card-blue">
+  <h3>El CLAUDE.md compartido — la fuente de verdad</h3>
+  <p>Hay un <code>CLAUDE.md</code> en la raíz del proyecto que define la identidad del despacho: nombre, jurisdicción principal, áreas de práctica, restricciones éticas (qué no puede hacer el agente), formato de salida estándar, y el tono de los documentos.</p>
+  <p>Todos los plugins y skills heredan este contexto. Si cambias la jurisdicción principal en el CLAUDE.md raíz, afecta a todos los agentes del despacho simultáneamente. Es el único lugar donde se define quién es Quarta.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     2. ADAPTAR A QUARTA COLOMBIA
+════════════════════════════════════════════ -->
+<h2>Adaptar la arquitectura a Quarta Colombia</h2>
+
+<div class="compare-grid">
+  <div class="card">
+    <h3 style="color:#9a7ae0">claude-for-legal (original)</h3>
+    <ul style="font-size:14px">
+      <li>12 áreas de práctica</li>
+      <li>Jurisdicción: EE.UU. (SCOTUS, CAFC)</li>
+      <li>CourtListener como conector judicial</li>
+      <li>USPTO, SEC EDGAR, PACER</li>
+      <li>Common law + citations anglosajones</li>
+    </ul>
+  </div>
+  <div class="card card-green">
+    <h3>Quarta Legal Hub (Colombia)</h3>
+    <ul style="font-size:14px">
+      <li>3 áreas: concursal, PI, litigios</li>
+      <li>Jurisdicción: Colombia + CAN</li>
+      <li>Rama Judicial como conector judicial</li>
+      <li>Supersociedades, SIC, RUES</li>
+      <li>Ley 1116, Decisión 486 CAN, CGP</li>
+    </ul>
+  </div>
+</div>
+
+<h3>La sustitución clave: sistemas colombianos</h3>
+
+<div class="card">
+  <table style="width:100%;border-collapse:collapse;font-size:14px">
+    <tr style="border-bottom:1px solid var(--border)">
+      <th style="text-align:left;padding:8px 12px;color:var(--text-dim);font-weight:normal;font-family:var(--font-mono);font-size:11px">claude-for-legal (USA)</th>
+      <th style="text-align:left;padding:8px 12px;color:var(--text-dim);font-weight:normal;font-family:var(--font-mono);font-size:11px">Quarta (Colombia)</th>
+      <th style="text-align:left;padding:8px 12px;color:var(--text-dim);font-weight:normal;font-family:var(--font-mono);font-size:11px">Para qué sirve</th>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:8px 12px">CourtListener</td>
+      <td style="padding:8px 12px"><strong style="color:var(--gold)">Rama Judicial (CSJ)</strong></td>
+      <td style="padding:8px 12px">Jurisprudencia, estado de procesos</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:8px 12px">SEC EDGAR</td>
+      <td style="padding:8px 12px"><strong style="color:var(--gold)">Supersociedades</strong></td>
+      <td style="padding:8px 12px">Procesos concursales activos, SIREM</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:8px 12px">USPTO</td>
+      <td style="padding:8px 12px"><strong style="color:var(--gold)">SIC</strong></td>
+      <td style="padding:8px 12px">Propiedad industrial, marcas, patentes</td>
+    </tr>
+    <tr>
+      <td style="padding:8px 12px">PACER</td>
+      <td style="padding:8px 12px"><strong style="color:var(--gold)">RUES / Cámara de Comercio</strong></td>
+      <td style="padding:8px 12px">Información societaria, matrículas</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     3. COLD-START INTERVIEW
+════════════════════════════════════════════ -->
+<h2>La "cold-start interview" de Quarta</h2>
+
+<p>La primera vez que un abogado usa el Quarta Hub, en vez de lanzar directamente a consultas, se hace una entrevista de configuración. El resultado es el <code>CLAUDE.md</code> de la firma, completamente personalizado. Sin esta entrevista, el agente usa defaults genéricos — con ella, conoce exactamente cómo trabaja Quarta.</p>
+
+<div class="interview-box">
+  <p style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim);margin-bottom:16px">LAS 10 PREGUNTAS DEL COLD-START DE QUARTA</p>
+
+  <div class="interview-q">
+    <div class="q-num">01</div>
+    <p>¿Cuál es el nombre completo del despacho y su NIT? (Se usará en todos los documentos generados)</p>
+  </div>
+  <div class="interview-q">
+    <div class="q-num">02</div>
+    <p>¿Cuál es su área de práctica principal? (concursal / PI / litigios / mixta). ¿En qué orden de prioridad?</p>
+  </div>
+  <div class="interview-q">
+    <div class="q-num">03</div>
+    <p>¿Actúan como promotores, liquidadores, o solo como abogados de partes en procesos concursales?</p>
+  </div>
+  <div class="interview-q">
+    <div class="q-num">04</div>
+    <p>¿Ante qué juzgado/superintendencia tramitan la mayoría de sus procesos? (Supersociedades / Juzgados civiles del circuito)</p>
+  </div>
+  <div class="interview-q">
+    <div class="q-num">05</div>
+    <p>¿Qué normas aplican con mayor frecuencia? (Ley 1116, Decreto 772, Decreto 842, Decisión 486 CAN, CGP)</p>
+  </div>
+  <div class="interview-q">
+    <div class="q-num">06</div>
+    <p>¿Cómo prefieren que se estructuren los documentos generados? (Plantilla Word propia / formato libre / formato Supersociedades)</p>
+  </div>
+  <div class="interview-q">
+    <div class="q-num">07</div>
+    <p>¿Qué nivel de detalle en los fundamentos normativos? (citar artículo + texto / solo artículo / solo resumen ejecutivo)</p>
+  </div>
+  <div class="interview-q">
+    <div class="q-num">08</div>
+    <p>¿Qué outputs siempre deben marcarse como "BORRADOR — sujeto a revisión"? (¿todos? ¿solo documentos procesales?)</p>
+  </div>
+  <div class="interview-q">
+    <div class="q-num">09</div>
+    <p>¿Cuáles son las 3 consultas más frecuentes del despacho que el agente debería saber responder perfectamente?</p>
+  </div>
+  <div class="interview-q">
+    <div class="q-num">10</div>
+    <div class="q-num">10</div>
+    <p>¿Hay algún criterio que el agente NUNCA debe hacer? (ej: nunca dar consejo sobre reestructuración sin revisar estados financieros, nunca generar demandas sin aprobación del socio)</p>
+  </div>
+</div>
+
+<div class="card card-green">
+  <h3>Resultado: el CLAUDE.md de Quarta</h3>
+  <p>Las respuestas a esas 10 preguntas se convierten automáticamente en el <code>CLAUDE.md</code> del proyecto. Ese archivo es el "ADN" del agente — lo que sabe sobre Quarta, cómo debe responder, qué puede y qué no puede hacer. Todo skill y todo agente del Hub lo leerá como contexto base.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     4. PLUGINS POR ÁREA VS AGENTE UNIFICADO
+════════════════════════════════════════════ -->
+<h2>Plugins por área vs agente unificado</h2>
+
+<div class="compare-grid">
+  <div class="card">
+    <h3>Plugins por área</h3>
+    <p style="font-size:14px">Un plugin independiente para cada área: <code>concursal-legal</code>, <code>pi-legal</code>, <code>litigios-legal</code>. Cada uno tiene su propio CLAUDE.md de área, sus skills específicos, y sus connectors.</p>
+    <ul style="font-size:14px">
+      <li style="color:#6aaa6a">✓ Más simple de construir y probar</li>
+      <li style="color:#6aaa6a">✓ Un fallo no afecta las otras áreas</li>
+      <li style="color:#6aaa6a">✓ Contexto más pequeño y preciso</li>
+      <li style="color:#cc7777">✗ El usuario debe elegir el plugin correcto</li>
+      <li style="color:#cc7777">✗ Casos mixtos requieren cambiar de plugin</li>
+    </ul>
+  </div>
+  <div class="card card-blue">
+    <h3>Agente unificado (v2)</h3>
+    <p style="font-size:14px">Un solo agente que detecta el área de la consulta y delega al skill correcto. El usuario nunca necesita seleccionar el área manualmente.</p>
+    <ul style="font-size:14px">
+      <li style="color:#6aaa6a">✓ Experiencia más fluida para el usuario</li>
+      <li style="color:#6aaa6a">✓ Casos mixtos (ej: concursal + PI) se manejan solos</li>
+      <li style="color:#cc7777">✗ Más complejo de construir correctamente</li>
+      <li style="color:#cc7777">✗ Si el routing falla, el usuario no sabe qué pasó</li>
+      <li style="color:#cc7777">✗ Requiere que los plugins por área estén maduros</li>
+    </ul>
+  </div>
+</div>
+
+<div class="card card-gold">
+  <h3>Recomendacion para Quarta</h3>
+  <p>Empieza con plugins por área. Construye y afina el plugin concursal hasta que funcione perfectamente en 20 consultas reales. Luego añade PI. Cuando los dos estén maduros, el agente unificado es simplemente un orchestrator que enruta entre ellos — el trabajo ya estará hecho.</p>
+  <p>El agente unificado en v2 no es un punto de partida, es la recompensa por haber construido bien los plugins individuales.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     5. LOS 3 AGENTES MÁS URGENTES
+════════════════════════════════════════════ -->
+<h2>Los 3 agentes que Quarta necesita más urgente</h2>
+
+<div class="agent-card">
+  <div class="agent-num">01</div>
+  <div class="agent-body">
+    <h3>proceso-watcher <span class="agent-tag">ALTA PRIORIDAD</span></h3>
+    <p>Monitorea la Rama Judicial por novedades en los procesos activos del despacho. Cada mañana genera un reporte: autos nuevos, traslados, fechas de audiencia, vencimientos de términos.</p>
+    <p><strong>Por qué es urgente:</strong> la Rama Judicial tiene API pública (Consulta de Procesos). El riesgo de perder un término por no ver un auto nuevo es real y costoso. Este agente elimina ese riesgo con automatización simple.</p>
+    <p><strong>Stack:</strong> Python scheduler (APScheduler) + requests a la API de Rama Judicial + ChromaDB para histórico + Claude para resumir novedades.</p>
+  </div>
+</div>
+
+<div class="agent-card">
+  <div class="agent-num">02</div>
+  <div class="agent-body">
+    <h3>calificacion-reviewer <span class="agent-tag">MEDIA PRIORIDAD</span></h3>
+    <p>Recibe un proyecto de calificación de créditos y lo revisa contra la Ley 1116 automáticamente. Detecta: créditos mal clasificados, garantías no verificadas, contradicciones internas en el proyecto, diferencias con la propuesta del promotor.</p>
+    <p><strong>Por qué construirlo segundo:</strong> requiere que el skill de análisis de crédito (clase 018) esté estable. El reviewer es la capa de calidad sobre ese skill — es el "fresh evaluator context" aplicado al caso concreto de Quarta.</p>
+    <p><strong>Output:</strong> reporte de observaciones con artículo fundamento y sugerencia de corrección. Siempre marcado como BORRADOR.</p>
+  </div>
+</div>
+
+<div class="agent-card">
+  <div class="agent-num">03</div>
+  <div class="agent-body">
+    <h3>knowledge-search <span class="agent-tag">MEDIA PRIORIDAD</span></h3>
+    <p>Busca en la base de jurisprudencia y normativa colombiana. Combina ChromaDB (ya operativo) con búsqueda semántica sobre sentencias de Supersociedades, CSJ Sala Civil, y normativa concursal. Devuelve los 5 fragmentos más relevantes con fuente y año.</p>
+    <p><strong>Por qué construirlo tercero:</strong> depende de que la base de conocimiento de ChromaDB esté bien poblada. Los dos primeros agentes generan casos de uso que te muestran qué jurisprudencia falta en la base — así sabes qué ingesta priorizar.</p>
+    <p><strong>Diferenciador:</strong> búsqueda híbrida (semántica + keyword). "Artículo 50 Ley 1116" debe encontrar tanto la norma como la jurisprudencia que la interpreta.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     6. DIAGRAMA ARQUITECTURA FINAL
+════════════════════════════════════════════ -->
+<h2>Diagrama de la arquitectura final del Quarta Legal Hub</h2>
+
+<div class="diagram-box">
+<pre style="color:#e8e4d9">
+┌─────────────────────────────────────────────────────────────────┐
+│                    QUARTA LEGAL HUB                             │
+│                    CLAUDE.md (firma)                            │
+└──────────────────────┬──────────────────────────────────────────┘
+                       │
+          ┌────────────▼────────────┐
+          │    ORCHESTRATOR         │
+          │  (routing por intención)│
+          └──┬───────┬──────────┬──┘
+             │       │          │
+    ┌────────▼──┐ ┌──▼────────┐ ┌▼──────────┐
+    │  PLUGIN   │ │  PLUGIN   │ │  PLUGIN   │
+    │ CONCURSAL │ │    PI     │ │ LITIGIOS  │
+    │           │ │           │ │           │
+    │ skills/   │ │ skills/   │ │ skills/   │
+    │ agents/   │ │ agents/   │ │ agents/   │
+    │ connectors│ │ connectors│ │ connectors│
+    └─────┬─────┘ └─────┬─────┘ └─────┬─────┘
+          │             │             │
+    ┌─────▼─────────────▼─────────────▼─────┐
+    │              TOOLS / MCP               │
+    │                                        │
+    │  [Rama Judicial]  [Supersociedades]    │
+    │  [SIC]            [ChromaDB RAG]       │
+    │  [RUES]           [Generador DOCX]     │
+    └────────────────────────────────────────┘
+
+Agentes autónomos (corren en background):
+  proceso-watcher ──► Rama Judicial API ──► reporte diario
+  calificacion-reviewer ──► ChromaDB ──► observaciones
+  knowledge-search ──► ChromaDB + CSJ ──► fragmentos relevantes
+</pre>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     7. ROADMAP 6 MESES
+════════════════════════════════════════════ -->
+<h2>Roadmap de 6 meses — realista</h2>
+
+<div class="roadmap-grid">
+  <div class="roadmap-mes">
+    <div class="mes-num">MES 1</div>
+    <p style="font-size:13px;color:var(--gold);margin-bottom:8px">Fundamentos</p>
+    <ul>
+      <li>CLAUDE.md de la firma (cold-start)</li>
+      <li>5 skills concursales (calificación, votos, memorial, búsqueda, análisis)</li>
+      <li>Integración con el agente v1 actual</li>
+    </ul>
+  </div>
+  <div class="roadmap-mes">
+    <div class="mes-num">MES 2</div>
+    <p style="font-size:13px;color:var(--gold);margin-bottom:8px">Monitoreo judicial</p>
+    <ul>
+      <li>Conector Rama Judicial (API pública)</li>
+      <li>proceso-watcher operativo</li>
+      <li>Reporte diario de novedades</li>
+    </ul>
+  </div>
+  <div class="roadmap-mes">
+    <div class="mes-num">MES 3</div>
+    <p style="font-size:13px;color:var(--gold);margin-bottom:8px">Supersociedades</p>
+    <ul>
+      <li>Conector Supersociedades + SIREM</li>
+      <li>calificacion-reviewer operativo</li>
+      <li>Integración con agente v2</li>
+    </ul>
+  </div>
+  <div class="roadmap-mes">
+    <div class="mes-num">MES 4</div>
+    <p style="font-size:13px;color:var(--gold);margin-bottom:8px">Plugin PI</p>
+    <ul>
+      <li>Skills de propiedad industrial</li>
+      <li>Conector SIC (marcas, patentes)</li>
+      <li>Primer draft del plugin PI</li>
+    </ul>
+  </div>
+  <div class="roadmap-mes">
+    <div class="mes-num">MES 5</div>
+    <p style="font-size:13px;color:var(--gold);margin-bottom:8px">Base de conocimiento</p>
+    <ul>
+      <li>knowledge-search operativo</li>
+      <li>Ingesta de jurisprudencia CSJ + Supersociedades</li>
+      <li>Búsqueda híbrida semántica + keyword</li>
+    </ul>
+  </div>
+  <div class="roadmap-mes">
+    <div class="mes-num">MES 6</div>
+    <p style="font-size:13px;color:var(--gold);margin-bottom:8px">Agente unificado</p>
+    <ul>
+      <li>Orchestrator unificado (concursal + PI)</li>
+      <li>Plugin Cowork (claude.ai)</li>
+      <li>v2.0 del Quarta Legal Hub</li>
+    </ul>
+  </div>
+</div>
+
+<div class="warning-box">
+  <strong>Nota sobre el roadmap:</strong> estos 6 meses asumen trabajo a tiempo parcial (~5h/semana). Si dedicas más tiempo, cada mes puede comprimirse. La clave es no saltarse el orden: los conectores dependen de que los skills estén estables, y el agente unificado depende de que los plugins estén maduros.
+</div>
+
+<!-- ═══════════════════════════════════════════
+     QUIZ
+════════════════════════════════════════════ -->
+<div class="quiz-section">
+  <h2>Quiz — Clase 19</h2>
+
+  <div class="question" id="q1">
+    <p>1 · ¿Qué hace la "cold-start interview" del claude-for-legal?</p>
+    <div class="options">
+      <label><input type="radio" name="q1" value="a"> Inicializa la base de datos vectorial con embeddings</label>
+      <label><input type="radio" name="q1" value="b"> Configura el CLAUDE.md de la firma con el playbook del abogado a través de preguntas</label>
+      <label><input type="radio" name="q1" value="c"> Actualiza el modelo de Claude a la versión más reciente</label>
+      <label><input type="radio" name="q1" value="d"> Borra el historial de conversaciones anteriores</label>
+    </div>
+    <button class="btn-check" onclick="check('q1','b','✓ Correcto — la cold-start interview transforma las respuestas del abogado en el CLAUDE.md de la firma: el ADN del agente, la fuente de verdad sobre quién es el despacho y cómo trabaja.')">Verificar</button>
+    <div class="result" id="r1"></div>
+  </div>
+
+  <div class="question" id="q2">
+    <p>2 · ¿Cuál es el primer agente que deberías construir para Quarta?</p>
+    <div class="options">
+      <label><input type="radio" name="q2" value="a"> El agente de propiedad industrial, para diversificar antes</label>
+      <label><input type="radio" name="q2" value="b"> El proceso-watcher de Rama Judicial — alto impacto diario y ya existe API pública</label>
+      <label><input type="radio" name="q2" value="c"> El agente unificado, para no tener que migrar después</label>
+      <label><input type="radio" name="q2" value="d"> Un agente de análisis de trading para financiar el desarrollo</label>
+    </div>
+    <button class="btn-check" onclick="check('q2','b','✓ Correcto — el proceso-watcher tiene el mayor impacto inmediato (elimina el riesgo de perder términos procesales) y el menor costo de construcción (API pública de Rama Judicial ya disponible).')">Verificar</button>
+    <div class="result" id="r2"></div>
+  </div>
+
+  <div class="question" id="q3">
+    <p>3 · ¿Por qué empezar con plugins por área en vez de un agente unificado?</p>
+    <div class="options">
+      <label><input type="radio" name="q3" value="a"> El agente unificado no existe en la plataforma Claude</label>
+      <label><input type="radio" name="q3" value="b"> Es más simple construir y probar una área a la vez antes de integrar todo</label>
+      <label><input type="radio" name="q3" value="c"> Los plugins por área son más baratos de operar en Railway</label>
+      <label><input type="radio" name="q3" value="d"> El agente unificado no puede manejar más de un área de práctica</label>
+    </div>
+    <button class="btn-check" onclick="check('q3','b','✓ Correcto — el agente unificado es la recompensa, no el punto de partida. Construir y probar plugin por plugin garantiza que cada área funciona bien antes de añadir la complejidad del routing unificado.')">Verificar</button>
+    <div class="result" id="r3"></div>
+  </div>
+</div>
+
+<!-- Navegación -->
+<div class="nav-bar">
+  <button class="nav-btn" onclick="window.location.href='018-agente-concursal-v2-decomposicion.html'">← 018 · Agente Concursal v2</button>
+  <span class="class-num">019 / 26</span>
+  <button class="nav-btn" onclick="window.location.href='020-mcp-connectors-sistemas-colombianos.html'">020 · Conectores MCP Colombia →</button>
+</div>
+
+</main>
+
+<script>
+// Barra de progreso
+(function(){
+  const TOTAL = 26;
+  const CLASE = 19;
+  const KEY = 'quarta_progreso';
+  let data = JSON.parse(localStorage.getItem(KEY) || '{}');
+  data[CLASE] = true;
+  localStorage.setItem(KEY, JSON.stringify(data));
+  const done = Object.keys(data).length;
+  const pct = Math.round((done / TOTAL) * 100);
+  document.getElementById('pfill').style.width = pct + '%';
+  document.getElementById('pct').textContent = pct + '%';
+})();
+
+function check(qid, correct, msg) {
+  const sel = document.querySelector(`input[name="${qid}"]:checked`);
+  const res = document.getElementById('r' + qid.slice(1));
+  if (!sel) { res.style.display = 'block'; res.className = 'result fail'; res.textContent = 'Selecciona una opción.'; return; }
+  res.style.display = 'block';
+  if (sel.value === correct) {
+    res.className = 'result ok';
+    res.textContent = msg;
+  } else {
+    res.className = 'result fail';
+    res.textContent = '✗ No exactamente — revisa la sección sobre plugins por área y el roadmap de 6 meses.';
+  }
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>013 · Tu Primer MCP Server Avanzado</title>
+<style>
+:root {
+  --bg:#0d0f0e; --surface:#131615; --border:#1e2420;
+  --gold:#c9a84c; --gold-dim:#7a6230;
+  --text:#e8e4d9; --text-dim:#7a7568;
+  --green:#2d4a3e; --blue:#1e3a5f;
+  --red:#8b3a3a;
+  --font-body:'Georgia',serif;
+  --font-mono:'Courier New',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:17px;line-height:1.7;min-height:100vh}
+a{color:var(--gold);text-decoration:none}
+a:hover{text-decoration:underline}
+header{background:var(--surface);border-bottom:2px solid var(--gold-dim);padding:20px 40px;display:flex;justify-content:space-between;align-items:center}
+.bloque-badge{font-family:var(--font-mono);font-size:11px;background:var(--blue);color:#7ab3e0;border:1px solid #2a5285;padding:3px 10px;border-radius:4px;letter-spacing:.08em}
+h1{font-size:26px;color:var(--gold);font-weight:normal;margin:0}
+.meta{font-family:var(--font-mono);font-size:11px;color:var(--text-dim);margin-top:4px}
+.progress-container{background:var(--surface);padding:10px 40px;border-bottom:1px solid var(--border)}
+.progress-label{font-family:var(--font-mono);font-size:10px;color:var(--text-dim);margin-bottom:5px}
+.progress-bar{height:4px;background:var(--border);border-radius:2px}
+.progress-fill{height:100%;background:var(--gold);border-radius:2px;transition:width .3s}
+main{max-width:860px;margin:0 auto;padding:40px 24px}
+h2{font-size:20px;color:var(--gold);margin:40px 0 16px;font-weight:normal;border-left:3px solid var(--gold);padding-left:14px}
+h3{font-size:17px;color:#a8c4b0;margin:28px 0 12px;font-weight:normal}
+p{margin-bottom:14px}
+ul,ol{margin:0 0 14px 24px}
+li{margin-bottom:6px}
+.concept-box{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--gold);border-radius:6px;padding:20px 24px;margin:20px 0}
+.concept-box.blue{border-left-color:#4a8abf}
+.concept-box.green{border-left-color:#4a8a6e}
+.concept-box.red{border-left-color:#bf4a4a}
+code{font-family:var(--font-mono);background:#0a0c0b;border:1px solid var(--border);padding:2px 7px;border-radius:3px;font-size:14px;color:#8ecfb0}
+pre{font-family:var(--font-mono);background:#080a09;border:1px solid var(--border);border-radius:8px;padding:24px;overflow-x:auto;font-size:13px;line-height:1.7;margin:16px 0;color:#c8d8c0}
+pre .comment{color:#4a6a50}
+pre .key{color:#c9a84c}
+pre .val{color:#7ab3e0}
+pre .str{color:#8ecfb0}
+pre .dec{color:#bf7a7a}
+.analogy{background:#0a1a12;border:1px solid var(--green);border-radius:8px;padding:18px 22px;margin:20px 0}
+.analogy-label{font-family:var(--font-mono);font-size:10px;color:#4a8a6e;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+.micro-class{background:#0f0d1a;border:2px solid #4a3a7a;border-radius:10px;padding:24px;margin:28px 0}
+.micro-label{font-family:var(--font-mono);font-size:11px;color:#9a7ae0;text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px}
+.quarta-section{background:#080e0a;border:2px solid var(--gold-dim);border-radius:10px;padding:28px;margin:36px 0}
+.quarta-label{font-family:var(--font-mono);font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:.12em;margin-bottom:16px}
+.quiz-section{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:28px;margin:40px 0}
+.quiz-title{font-family:var(--font-mono);font-size:13px;color:var(--gold);margin-bottom:20px;text-transform:uppercase;letter-spacing:.08em}
+.quiz-q{margin-bottom:20px}
+.quiz-q p{font-weight:bold;margin-bottom:8px;color:#c8d8c0}
+.quiz-opt{display:flex;flex-direction:column;gap:6px}
+.quiz-opt label{display:flex;align-items:flex-start;gap:10px;cursor:pointer;padding:8px 12px;border-radius:5px;border:1px solid var(--border);transition:background .2s;font-size:15px}
+.quiz-opt label:hover{background:#131e15}
+.quiz-opt input[type=radio]{margin-top:3px;flex-shrink:0;accent-color:var(--gold)}
+.quiz-feedback{font-family:var(--font-mono);font-size:12px;margin-top:8px;padding:8px 12px;border-radius:4px;display:none}
+.quiz-feedback.correct{background:#0a1e0f;border:1px solid #2d6b4a;color:#5db88a}
+.quiz-feedback.wrong{background:#1a0d0d;border:1px solid var(--red);color:#c97070}
+.btn-quiz{font-family:var(--font-mono);font-size:12px;padding:8px 20px;background:var(--gold);border:none;border-radius:5px;color:#0d0f0e;cursor:pointer;margin-top:14px;font-weight:bold}
+.btn-quiz:hover{background:#d4b55e}
+.nav-buttons{display:flex;justify-content:space-between;align-items:center;margin:50px 0 30px;padding-top:24px;border-top:1px solid var(--border)}
+.nav-btn{font-family:var(--font-mono);font-size:12px;padding:10px 22px;border:1px solid var(--border);background:transparent;color:var(--text-dim);border-radius:6px;cursor:pointer;text-decoration:none;transition:all .2s}
+.nav-btn:hover{border-color:var(--gold);color:var(--gold);text-decoration:none}
+.nav-btn.next{background:rgba(201,168,76,.1);border-color:var(--gold-dim);color:var(--gold)}
+.nav-btn.next:hover{background:rgba(201,168,76,.2)}
+.complete-check{display:flex;align-items:center;gap:10px;font-family:var(--font-mono);font-size:12px;color:var(--text-dim)}
+.complete-check input{width:18px;height:18px;accent-color:var(--gold);cursor:pointer}
+.complete-check.done{color:#5db88a}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th{font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-dim);padding:10px 14px;border-bottom:2px solid var(--border);text-align:left}
+td{padding:10px 14px;border-bottom:1px solid var(--border)}
+tr:hover td{background:var(--surface)}
+.file-label{font-family:var(--font-mono);font-size:10px;color:var(--text-dim);margin-bottom:4px;text-transform:uppercase;letter-spacing:.07em}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="bloque-badge">BLOQUE 2 · MCP EN PROFUNDIDAD</div>
+    <h1>013 · Tu Primer MCP Server Avanzado</h1>
+    <div class="meta">Tiempo estimado: 45 min &nbsp;·&nbsp; Código completo con comentarios en español</div>
+  </div>
+  <div style="text-align:right;font-family:var(--font-mono);font-size:12px;color:var(--text-dim)">Clase 13 de 26</div>
+</header>
+
+<div class="progress-container">
+  <div class="progress-label">Progreso del curso</div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+</div>
+
+<main>
+
+<p>Pasamos de la teoría al código real. Vas a ver un MCP server completo construido con el SDK oficial de Python, con tipos TypedDict, manejo de errores, autenticación básica y tests unitarios. El ejemplo: un servidor que consulta la Relatoría de la CSJ (simulado, pero con la estructura real que usarías en producción).</p>
+
+<!-- ══════════ MICRO-CLASE: TypedDict ══════════ -->
+<div class="micro-class">
+  <div class="micro-label">Micro-clase · TypedDict en Python (5 min)</div>
+  <h3 style="color:#9a7ae0;margin-top:0">¿Qué es TypedDict y por qué lo necesitas?</h3>
+
+  <p>TypedDict es una forma de decirle a Python (y a tu editor) exactamente qué campos tiene un diccionario y qué tipo tiene cada campo. No es obligatorio en tiempo de ejecución, pero previene errores y hace el código legible.</p>
+
+  <pre><span class="comment"># Sin TypedDict — funciona pero es opaco</span>
+credito = {"acreedor": "ACREEDOR_1", "valor": 50000000, "clase": "primera"}
+
+<span class="comment"># Con TypedDict — Python sabe qué campos existen y de qué tipo</span>
+<span class="key">from</span> typing <span class="key">import</span> TypedDict
+
+<span class="key">class</span> <span class="val">Credito</span>(TypedDict):
+    acreedor: str        <span class="comment"># nombre del acreedor</span>
+    valor:    int        <span class="comment"># valor en pesos colombianos</span>
+    clase:    str        <span class="comment"># "primera", "segunda", etc.</span>
+    radicado: str        <span class="comment"># número de radicación</span>
+
+<span class="comment"># Ahora tu editor te avisa si te equivocas de campo</span>
+credito: <span class="val">Credito</span> = {
+    <span class="str">"acreedor"</span>: <span class="str">"[ACREEDOR]"</span>,
+    <span class="str">"valor"</span>: 50_000_000,
+    <span class="str">"clase"</span>: <span class="str">"primera"</span>,
+    <span class="str">"radicado"</span>: <span class="str">"2024-01234-00"</span>
+}</pre>
+
+  <p style="font-size:15px;color:var(--text-dim)">En MCP lo usas para definir los parámetros de entrada y salida de cada tool. El SDK genera automáticamente el JSON Schema que Claude necesita para saber cómo llamar la tool.</p>
+</div>
+
+<!-- ══════════ 1. INSTALAR SDK ══════════ -->
+<h2>1. El SDK oficial de MCP para Python</h2>
+
+<p>Anthropic publicó un SDK oficial llamado <code>mcp</code>. Es diferente del SDK de Anthropic que ya usas (ese es para llamar a Claude). Este es para <em>construir servidores</em> que Claude puede llamar.</p>
+
+<pre><span class="comment"># Para tu agente concursal — agregar a requirements.txt</span>
+mcp>=1.0.0
+
+<span class="comment"># Instalar localmente</span>
+pip install mcp</pre>
+
+<div class="concept-box blue">
+  <strong>Importante:</strong> El SDK <code>mcp</code> abstrae todo el JSON-RPC. No tienes que escribir los <code>{"jsonrpc": "2.0"...}</code> manualmente. Defines tus tools como funciones Python y el SDK hace el resto.
+</div>
+
+<!-- ══════════ 2. SERVIDOR COMPLETO ══════════ -->
+<h2>2. MCP Server completo — Relatoría CSJ (simulado)</h2>
+
+<p>Este es el código completo de un servidor MCP para consultar jurisprudencia. Cada línea tiene comentario en español. Léelo de arriba a abajo como si fuera un escrito procesal.</p>
+
+<div class="file-label">archivo: mcp_csj_server.py</div>
+<pre><span class="comment">"""
+mcp_csj_server.py
+Servidor MCP para consultar la Relatoría de la CSJ.
+Expone dos tools: buscar_jurisprudencia y obtener_sentencia.
+
+Para correr: python mcp_csj_server.py
+(Usa transport stdio para Claude Code CLI,
+ o HTTP/SSE para conectar desde Claude.ai)
+"""</span>
+
+<span class="comment"># ── Imports ──────────────────────────────────────────────────────────</span>
+<span class="key">import</span> asyncio
+<span class="key">import</span> json
+<span class="key">import</span> os
+<span class="key">from</span> typing <span class="key">import</span> Any, TypedDict
+<span class="key">from</span> datetime <span class="key">import</span> date
+
+<span class="comment"># SDK oficial de MCP — la pieza central</span>
+<span class="key">from</span> mcp.server <span class="key">import</span> Server
+<span class="key">from</span> mcp.server.stdio <span class="key">import</span> stdio_server
+<span class="key">from</span> mcp <span class="key">import</span> types
+
+
+<span class="comment"># ── TypedDicts — contratos de datos ──────────────────────────────────</span>
+
+<span class="key">class</span> <span class="val">BusquedaParams</span>(TypedDict):
+    <span class="str">"""Parámetros para buscar jurisprudencia."""</span>
+    termino:  str   <span class="comment"># palabra clave a buscar</span>
+    sala:     str   <span class="comment"># "Civil", "Penal", "Laboral", "Comercio"</span>
+    año:      int   <span class="comment"># año de la sentencia (ej: 2023)</span>
+
+<span class="key">class</span> <span class="val">SentenciaParams</span>(TypedDict):
+    <span class="str">"""Parámetros para obtener una sentencia específica."""</span>
+    radicado: str   <span class="comment"># número de radicado completo</span>
+
+
+<span class="comment"># ── Instanciar el servidor ───────────────────────────────────────────</span>
+<span class="comment"># "quarta-csj-server" es el nombre que verá Claude</span>
+servidor = Server(<span class="str">"quarta-csj-server"</span>)
+
+
+<span class="comment"># ── Tool 1: buscar_jurisprudencia ────────────────────────────────────</span>
+<span class="comment"># @servidor.list_tools() registra la tool — Claude verá su definición</span>
+<span class="key">@servidor.list_tools</span>()
+<span class="key">async def</span> <span class="val">listar_tools</span>() -> list[types.Tool]:
+    <span class="str">"""
+    Claude llama esto para saber qué tools existen.
+    Retorna la lista completa con sus esquemas JSON.
+    """</span>
+    <span class="key">return</span> [
+        types.Tool(
+            name=<span class="str">"buscar_jurisprudencia"</span>,
+            <span class="comment"># La descripción es CRÍTICA — Claude la usa para decidir cuándo llamar esta tool</span>
+            description=<span class="str">"""Busca sentencias de la Corte Suprema de Justicia colombiana
+en la Relatoría. Útil para encontrar precedentes sobre reorganización,
+liquidación judicial, calificación de créditos y acuerdos de reorganización
+bajo la Ley 1116 de 2006."""</span>,
+            inputSchema={
+                <span class="str">"type"</span>: <span class="str">"object"</span>,
+                <span class="str">"properties"</span>: {
+                    <span class="str">"termino"</span>: {
+                        <span class="str">"type"</span>: <span class="str">"string"</span>,
+                        <span class="str">"description"</span>: <span class="str">"Palabra clave o frase de búsqueda"</span>
+                    },
+                    <span class="str">"sala"</span>: {
+                        <span class="str">"type"</span>: <span class="str">"string"</span>,
+                        <span class="str">"enum"</span>: [<span class="str">"Civil"</span>, <span class="str">"Casacion Civil"</span>, <span class="str">"Laboral"</span>],
+                        <span class="str">"description"</span>: <span class="str">"Sala de la CSJ (default: Casacion Civil)"</span>
+                    },
+                    <span class="str">"año"</span>: {
+                        <span class="str">"type"</span>: <span class="str">"integer"</span>,
+                        <span class="str">"description"</span>: <span class="str">"Año de la sentencia (ej: 2023)"</span>
+                    }
+                },
+                <span class="str">"required"</span>: [<span class="str">"termino"</span>]  <span class="comment"># solo termino es obligatorio</span>
+            }
+        ),
+        types.Tool(
+            name=<span class="str">"obtener_sentencia"</span>,
+            description=<span class="str">"""Obtiene el texto completo de una sentencia de la CSJ
+dado su número de radicado. Usar después de buscar_jurisprudencia
+para obtener el texto completo de un fallo relevante."""</span>,
+            inputSchema={
+                <span class="str">"type"</span>: <span class="str">"object"</span>,
+                <span class="str">"properties"</span>: {
+                    <span class="str">"radicado"</span>: {
+                        <span class="str">"type"</span>: <span class="str">"string"</span>,
+                        <span class="str">"description"</span>: <span class="str">"Número de radicado completo (ej: SC1234-2023)"</span>
+                    }
+                },
+                <span class="str">"required"</span>: [<span class="str">"radicado"</span>]
+            }
+        )
+    ]
+
+
+<span class="comment"># ── Manejador de llamadas a tools ────────────────────────────────────</span>
+<span class="comment"># @servidor.call_tool() se ejecuta CADA VEZ que Claude llama una tool</span>
+<span class="key">@servidor.call_tool</span>()
+<span class="key">async def</span> <span class="val">ejecutar_tool</span>(name: str, arguments: dict[str, Any]) -> list[types.TextContent]:
+    <span class="str">"""
+    Punto de entrada para todas las llamadas a tools.
+    'name' es el nombre de la tool que llamó Claude.
+    'arguments' son los parámetros que Claude eligió enviar.
+    """</span>
+
+    <span class="comment"># ── Despachar según nombre de la tool ───────────────────────────</span>
+    <span class="key">if</span> name == <span class="str">"buscar_jurisprudencia"</span>:
+        <span class="key">return await</span> _buscar_jurisprudencia(arguments)
+
+    <span class="key">elif</span> name == <span class="str">"obtener_sentencia"</span>:
+        <span class="key">return await</span> _obtener_sentencia(arguments)
+
+    <span class="key">else</span>:
+        <span class="comment"># Tool desconocida — error estándar MCP</span>
+        <span class="key">raise</span> <span class="val">ValueError</span>(<span class="str">f"Tool '{name}' no existe en este servidor"</span>)
+
+
+<span class="comment"># ── Implementación de buscar_jurisprudencia ──────────────────────────</span>
+<span class="key">async def</span> <span class="val">_buscar_jurisprudencia</span>(args: dict) -> list[types.TextContent]:
+    <span class="str">"""Busca sentencias en la Relatoría de la CSJ."""</span>
+
+    <span class="comment"># Validar parámetros — nunca confíes en que Claude envió lo correcto</span>
+    termino = args.get(<span class="str">"termino"</span>, <span class="str">""</span>).strip()
+    <span class="key">if not</span> termino:
+        <span class="comment"># Retornar error como texto — MCP no usa excepciones para errores de negocio</span>
+        <span class="key">return</span> [types.TextContent(
+            type=<span class="str">"text"</span>,
+            text=<span class="str">"Error: se requiere un término de búsqueda."</span>
+        )]
+
+    sala = args.get(<span class="str">"sala"</span>, <span class="str">"Casacion Civil"</span>)
+    año  = args.get(<span class="str">"año"</span>, date.today().year)
+
+    <span class="key">try</span>:
+        <span class="comment"># AQUÍ iría la llamada real a la API de la Relatoría CSJ</span>
+        <span class="comment"># Por ahora: datos simulados con estructura real</span>
+        resultados = <span class="key">await</span> _consultar_relatoria_csj(termino, sala, año)
+
+        <span class="comment"># Formatear respuesta — el texto que Claude leerá</span>
+        texto = <span class="str">f"Resultados para '{termino}' en Sala {sala} ({año}):\n\n"</span>
+        <span class="key">for</span> i, r <span class="key">in</span> enumerate(resultados, 1):
+            texto += <span class="str">f"{i}. {r['radicado']} — {r['fecha']}\n"</span>
+            texto += <span class="str">f"   Magistrado: {r['magistrado']}\n"</span>
+            texto += <span class="str">f"   Extracto: {r['extracto']}\n\n"</span>
+
+        <span class="key">return</span> [types.TextContent(type=<span class="str">"text"</span>, text=texto)]
+
+    <span class="key">except</span> ConnectionError <span class="key">as</span> e:
+        <span class="comment"># Error de red — informar a Claude para que informe al usuario</span>
+        <span class="key">return</span> [types.TextContent(
+            type=<span class="str">"text"</span>,
+            text=<span class="str">f"No fue posible conectar con la Relatoría CSJ: {e}. Intenta en unos minutos."</span>
+        )]
+    <span class="key">except Exception</span> <span class="key">as</span> e:
+        <span class="comment"># Error inesperado — loguear y devolver mensaje útil</span>
+        print(<span class="str">f"[ERROR] buscar_jurisprudencia: {e}"</span>)  <span class="comment"># va al log de Railway</span>
+        <span class="key">return</span> [types.TextContent(
+            type=<span class="str">"text"</span>,
+            text=<span class="str">f"Error interno al buscar jurisprudencia. Detalle: {str(e)}"</span>
+        )]
+
+
+<span class="comment"># ── Implementación de obtener_sentencia ──────────────────────────────</span>
+<span class="key">async def</span> <span class="val">_obtener_sentencia</span>(args: dict) -> list[types.TextContent]:
+    <span class="str">"""Obtiene el texto completo de una sentencia."""</span>
+
+    radicado = args.get(<span class="str">"radicado"</span>, <span class="str">""</span>).strip()
+    <span class="key">if not</span> radicado:
+        <span class="key">return</span> [types.TextContent(type=<span class="str">"text"</span>, text=<span class="str">"Error: se requiere el número de radicado."</span>)]
+
+    <span class="key">try</span>:
+        sentencia = <span class="key">await</span> _obtener_texto_sentencia(radicado)
+        <span class="key">return</span> [types.TextContent(type=<span class="str">"text"</span>, text=sentencia)]
+    <span class="key">except</span> FileNotFoundError:
+        <span class="key">return</span> [types.TextContent(
+            type=<span class="str">"text"</span>,
+            text=<span class="str">f"Sentencia {radicado} no encontrada en la Relatoría."</span>
+        )]
+
+
+<span class="comment"># ── Funciones de acceso a datos (simuladas) ──────────────────────────</span>
+<span class="key">async def</span> <span class="val">_consultar_relatoria_csj</span>(termino: str, sala: str, año: int) -> list[dict]:
+    <span class="str">"""
+    EN PRODUCCIÓN: aquí harías una petición HTTP a relatoria.ramajudicial.gov.co
+    o a la API que expongas con un scraper.
+    Por ahora devuelve datos simulados.
+    """</span>
+    <span class="comment"># Simular latencia de red</span>
+    <span class="key">await</span> asyncio.sleep(0.1)
+
+    <span class="key">return</span> [
+        {
+            <span class="str">"radicado"</span>: <span class="str">f"SC{1234 + hash(termino) % 100:04d}-{año}"</span>,
+            <span class="str">"fecha"</span>: <span class="str">f"15 de marzo de {año}"</span>,
+            <span class="str">"magistrado"</span>: <span class="str">"[MAGISTRADO PONENTE]"</span>,
+            <span class="str">"extracto"</span>: <span class="str">f"Sobre {termino}: la Sala estableció que..."</span>
+        },
+        {
+            <span class="str">"radicado"</span>: <span class="str">f"SC{5678 + hash(termino) % 50:04d}-{año}"</span>,
+            <span class="str">"fecha"</span>: <span class="str">f"8 de agosto de {año}"</span>,
+            <span class="str">"magistrado"</span>: <span class="str">"[MAGISTRADO PONENTE]"</span>,
+            <span class="str">"extracto"</span>: <span class="str">f"Reiteración doctrina sobre {termino}..."</span>
+        }
+    ]
+
+<span class="key">async def</span> <span class="val">_obtener_texto_sentencia</span>(radicado: str) -> str:
+    <span class="key">await</span> asyncio.sleep(0.1)
+    <span class="key">return</span> <span class="str">f"""CORTE SUPREMA DE JUSTICIA
+SALA DE CASACIÓN CIVIL
+Radicado: {radicado}
+
+[TEXTO COMPLETO DE LA SENTENCIA]
+[En producción: obtenido de la Relatoría CSJ]"""</span>
+
+
+<span class="comment"># ── Autenticación básica ─────────────────────────────────────────────</span>
+<span class="comment"># Para Railway: el token va en variable de entorno MCP_SECRET_TOKEN</span>
+MCP_TOKEN = os.environ.get(<span class="str">"MCP_SECRET_TOKEN"</span>, <span class="str">""</span>)
+
+<span class="key">def</span> <span class="val">validar_token</span>(request_headers: dict) -> bool:
+    <span class="str">"""Valida que el request viene de un cliente autorizado."""</span>
+    <span class="key">if not</span> MCP_TOKEN:
+        <span class="key">return True</span>  <span class="comment"># sin token configurado = modo desarrollo</span>
+    auth = request_headers.get(<span class="str">"Authorization"</span>, <span class="str">""</span>)
+    <span class="key">return</span> auth == <span class="str">f"Bearer {MCP_TOKEN}"</span>
+
+
+<span class="comment"># ── Entry point ──────────────────────────────────────────────────────</span>
+<span class="key">if</span> __name__ == <span class="str">"__main__"</span>:
+    <span class="comment"># stdio_server conecta con Claude Code CLI via stdin/stdout</span>
+    <span class="comment"># Para HTTP/SSE en Railway, ver mcp_server_http.py</span>
+    asyncio.run(
+        stdio_server(servidor)
+    )</pre>
+
+<!-- ══════════ 3. ERROR HANDLING ══════════ -->
+<h2>3. Error handling en MCP</h2>
+
+<p>MCP distingue dos tipos de errores. Confundirlos causa comportamientos extraños:</p>
+
+<table>
+  <thead><tr><th>Tipo</th><th>Cuándo usarlo</th><th>Cómo hacerlo</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>Error de protocolo</strong></td>
+      <td>Tool no existe, JSON malformado, método desconocido</td>
+      <td>Lanzar <code>ValueError</code> o <code>Exception</code> — MCP lo convierte en error JSON-RPC</td>
+    </tr>
+    <tr>
+      <td><strong>Error de negocio</strong></td>
+      <td>No se encontró la sentencia, la API de CSJ está caída, parámetro inválido</td>
+      <td>Retornar <code>TextContent</code> con el mensaje de error — Claude lo lee y responde al usuario</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="concept-box red">
+  <strong>Regla de oro:</strong> Si el error es "la tool funcionó pero no encontró lo que buscaba" — devuelve texto. Si el error es "algo rompió el protocolo" — lanza excepción. La diferencia es como "sentencia no encontrada" (negocio) vs "el servidor se cayó" (protocolo).
+</div>
+
+<!-- ══════════ 4. TESTS ══════════ -->
+<h2>4. Testing de tools MCP sin Claude</h2>
+
+<p>La ventaja del SDK: puedes probar las tools directamente sin conectar Claude. Son funciones Python normales.</p>
+
+<div class="file-label">archivo: test_mcp_csj.py</div>
+<pre><span class="comment">"""
+Tests para el MCP server de CSJ.
+Correr: python -m pytest test_mcp_csj.py -v
+"""</span>
+
+<span class="key">import</span> asyncio
+<span class="key">import</span> pytest
+
+<span class="comment"># Importamos las funciones internas directamente</span>
+<span class="key">from</span> mcp_csj_server <span class="key">import</span> _buscar_jurisprudencia, _obtener_sentencia, ejecutar_tool
+
+
+<span class="comment"># ── Test 1: búsqueda básica funciona ────────────────────────────────</span>
+<span class="key">def</span> <span class="val">test_busqueda_devuelve_resultados</span>():
+    resultados = asyncio.run(
+        _buscar_jurisprudencia({<span class="str">"termino"</span>: <span class="str">"calificacion creditos"</span>})
+    )
+    <span class="comment"># Debe devolver lista con al menos un TextContent</span>
+    <span class="key">assert</span> len(resultados) > 0
+    <span class="key">assert</span> resultados[0].type == <span class="str">"text"</span>
+    <span class="key">assert</span> <span class="str">"calificacion creditos"</span> <span class="key">in</span> resultados[0].text.lower()
+
+
+<span class="comment"># ── Test 2: término vacío devuelve error útil ────────────────────────</span>
+<span class="key">def</span> <span class="val">test_termino_vacio_retorna_error</span>():
+    resultados = asyncio.run(
+        _buscar_jurisprudencia({<span class="str">"termino"</span>: <span class="str">""</span>})
+    )
+    <span class="key">assert</span> <span class="str">"Error"</span> <span class="key">in</span> resultados[0].text
+
+
+<span class="comment"># ── Test 3: tool desconocida lanza excepción ─────────────────────────</span>
+<span class="key">def</span> <span class="val">test_tool_desconocida_lanza_excepcion</span>():
+    <span class="key">with</span> pytest.raises(ValueError, match=<span class="str">"no existe"</span>):
+        asyncio.run(ejecutar_tool(<span class="str">"tool_que_no_existe"</span>, {}))
+
+
+<span class="comment"># ── Test 4: radicado válido devuelve texto ───────────────────────────</span>
+<span class="key">def</span> <span class="val">test_obtener_sentencia_valida</span>():
+    resultados = asyncio.run(
+        _obtener_sentencia({<span class="str">"radicado"</span>: <span class="str">"SC1234-2023"</span>})
+    )
+    <span class="key">assert</span> <span class="str">"SC1234-2023"</span> <span class="key">in</span> resultados[0].text</pre>
+
+<!-- ══════════ 5. RAILWAY DEPLOYMENT ══════════ -->
+<h2>5. Deployment en Railway (HTTP/SSE)</h2>
+
+<p>Ya conoces Railway. Agregar un MCP server es agregar un nuevo servicio al mismo proyecto.</p>
+
+<div class="file-label">archivo: mcp_server_http.py (versión para Railway)</div>
+<pre><span class="comment">"""
+Versión HTTP/SSE del servidor MCP para Railway.
+Usa la misma lógica de tools, distinto transport.
+"""</span>
+<span class="key">from</span> mcp.server.sse <span class="key">import</span> SseServerTransport
+<span class="key">from</span> starlette.applications <span class="key">import</span> Starlette
+<span class="key">from</span> starlette.routing <span class="key">import</span> Route
+<span class="key">import</span> uvicorn, os
+
+<span class="comment"># Reusar el servidor ya definido en mcp_csj_server.py</span>
+<span class="key">from</span> mcp_csj_server <span class="key">import</span> servidor
+
+sse = SseServerTransport(<span class="str">"/messages/"</span>)
+
+<span class="key">async def</span> <span class="val">handle_sse</span>(request):
+    <span class="key">async with</span> sse.connect_sse(
+        request.scope, request.receive, request._send
+    ) <span class="key">as</span> streams:
+        <span class="key">await</span> servidor.run(
+            streams[0], streams[1],
+            servidor.create_initialization_options()
+        )
+
+<span class="comment"># App ASGI para Railway</span>
+app = Starlette(routes=[
+    Route(<span class="str">"/sse"</span>, endpoint=handle_sse),
+])
+
+<span class="key">if</span> __name__ == <span class="str">"__main__"</span>:
+    port = int(os.environ.get(<span class="str">"PORT"</span>, 8080))
+    uvicorn.run(app, host=<span class="str">"0.0.0.0"</span>, port=port)</pre>
+
+<div class="concept-box green">
+  <strong>En Railway:</strong> Variable de entorno <code>MCP_SECRET_TOKEN</code> con un token secreto. En Claude.ai al configurar el conector: agrega el header <code>Authorization: Bearer TU_TOKEN</code>. Nadie más puede usar tu servidor.
+</div>
+
+<!-- ══════════ QUARTA SECTION ══════════ -->
+<div class="quarta-section">
+  <div class="quarta-label">Quarta Legal Hub · Plan de MCP Server</div>
+
+  <h3 style="color:var(--gold);margin-top:0">Arquitectura del MCP server de Quarta</h3>
+
+  <p>Basado en tu <code>mcp_server.py</code> actual, aquí está el plan de migración al SDK oficial con tools granulares:</p>
+
+  <pre style="font-size:12px"><span class="comment">
+quarta-mcp-server/
+├── server.py              # Entry point — registra todas las tools
+├── tools/
+│   ├── concursal.py       # calificar_credito, generar_votos, redactar_recurso
+│   ├── jurisprudencia.py  # buscar_jurisprudencia, obtener_sentencia
+│   ├── supersociedades.py # consultar_proceso_siis, verificar_estado
+│   └── documentos.py      # generar_word, generar_excel
+├── resources/
+│   ├── ley_1116.py        # Texto de la Ley 1116 como Resource MCP
+│   └── formularios.py     # Templates de escritos
+└── tests/
+    └── test_tools.py      # Tests sin Claude</span></pre>
+
+  <h3 style="color:var(--gold)">Orden de implementación</h3>
+
+  <ol>
+    <li><strong>Semana 1:</strong> Migrar <code>consultar_agente_concursal</code> al SDK oficial con TypedDict</li>
+    <li><strong>Semana 2:</strong> Separar en <code>calificar_credito</code>, <code>redactar_memorial</code>, <code>buscar_jurisprudencia</code></li>
+    <li><strong>Semana 3:</strong> Agregar Resource con Ley 1116 y Prompts para los casos frecuentes</li>
+    <li><strong>Semana 4:</strong> Agregar autenticación y tests; deployment en Railway como servicio separado</li>
+  </ol>
+
+</div>
+
+<!-- ══════════ QUIZ ══════════ -->
+<div class="quiz-section">
+  <div class="quiz-title">Quiz · MCP Server Avanzado</div>
+
+  <div class="quiz-q" id="q1">
+    <p>1. Tu tool <code>buscar_jurisprudencia</code> consulta la Relatoría CSJ pero el sitio está caído. ¿Cómo debes manejar ese error?</p>
+    <div class="quiz-opt">
+      <label><input type="radio" name="q1" value="a"> <span>Lanzar una excepción RuntimeError — MCP la convierte en error de protocolo</span></label>
+      <label><input type="radio" name="q1" value="b"> <span>Retornar un TextContent con el mensaje de error — Claude lo lee y lo explica al usuario</span></label>
+      <label><input type="radio" name="q1" value="c"> <span>Retornar None — MCP sabe que None significa error</span></label>
+    </div>
+    <div class="quiz-feedback" id="q1-fb"></div>
+  </div>
+
+  <div class="quiz-q" id="q2">
+    <p>2. ¿Para qué sirve el TypedDict en las tools MCP?</p>
+    <div class="quiz-opt">
+      <label><input type="radio" name="q2" value="a"> <span>Para validar en tiempo de ejecución que Claude envía los tipos correctos</span></label>
+      <label><input type="radio" name="q2" value="b"> <span>Para documentar el contrato de datos y ayudar al editor a detectar errores antes de ejecutar</span></label>
+      <label><input type="radio" name="q2" value="c"> <span>Es obligatorio — sin TypedDict el SDK de MCP no funciona</span></label>
+    </div>
+    <div class="quiz-feedback" id="q2-fb"></div>
+  </div>
+
+  <div class="quiz-q" id="q3">
+    <p>3. Quieres que tu MCP server de Quarta sea accesible desde Claude.ai web y también desde Claude Code CLI en tu laptop. ¿Qué necesitas?</p>
+    <div class="quiz-opt">
+      <label><input type="radio" name="q3" value="a"> <span>Dos servidores separados — uno stdio para CLI y otro HTTP/SSE para web</span></label>
+      <label><input type="radio" name="q3" value="b"> <span>Un solo servidor con HTTP/SSE en Railway — Claude Code CLI también puede conectarse por HTTP</span></label>
+      <label><input type="radio" name="q3" value="c"> <span>Solo stdio funciona — HTTP/SSE no está soportado todavía</span></label>
+    </div>
+    <div class="quiz-feedback" id="q3-fb"></div>
+  </div>
+
+  <button class="btn-quiz" onclick="checkQuiz()">Verificar respuestas</button>
+</div>
+
+<div class="nav-buttons">
+  <a href="012-mcp-arquitectura-fundamentos.html" class="nav-btn">← Anterior</a>
+  <div class="complete-check" id="completeCheck">
+    <input type="checkbox" id="cbComplete" onchange="marcarCompleta()">
+    <label for="cbComplete">Marcar clase como completada</label>
+  </div>
+  <a href="014-mcp-conectores-quarta-colombia.html" class="nav-btn next">Siguiente: Conectores Colombia →</a>
+</div>
+
+</main>
+
+<script>
+const TOTAL_CLASES = 26;
+const CLASE_NUM = 13;
+(function(){
+  let completadas = 0;
+  for(let i=1;i<=TOTAL_CLASES;i++){
+    if(localStorage.getItem('clase_completada_'+String(i).padStart(3,'0'))==='true') completadas++;
+  }
+  document.getElementById('progressFill').style.width = (completadas/TOTAL_CLASES*100)+'%';
+})();
+(function(){
+  const cb = document.getElementById('cbComplete');
+  const key = 'clase_completada_'+String(CLASE_NUM).padStart(3,'0');
+  if(localStorage.getItem(key)==='true'){
+    cb.checked = true;
+    document.getElementById('completeCheck').classList.add('done');
+  }
+})();
+function marcarCompleta(){
+  const cb = document.getElementById('cbComplete');
+  const key = 'clase_completada_'+String(CLASE_NUM).padStart(3,'0');
+  localStorage.setItem(key, cb.checked ? 'true' : 'false');
+  document.getElementById('completeCheck').classList.toggle('done', cb.checked);
+  let completadas = 0;
+  for(let i=1;i<=TOTAL_CLASES;i++){
+    if(localStorage.getItem('clase_completada_'+String(i).padStart(3,'0'))==='true') completadas++;
+  }
+  document.getElementById('progressFill').style.width = (completadas/TOTAL_CLASES*100)+'%';
+}
+const ANSWERS = { q1: 'b', q2: 'b', q3: 'b' };
+const EXPLANATIONS = {
+  q1: { b: 'Correcto. Los errores de negocio (sitio caído, sentencia no encontrada) se retornan como TextContent. Claude lo lee, lo entiende, y lo explica al usuario de forma útil. Una excepción en cambio rompe el protocolo.' },
+  q2: { b: 'Correcto. TypedDict es una herramienta de documentación y ayuda al editor (type checking estático). No valida en runtime — para eso usarías pydantic. Pero hace el código mucho más legible y previene errores al escribir.' },
+  q3: { b: 'Correcto. Un servidor HTTP/SSE en Railway sirve tanto para Claude.ai web como para Claude Code CLI (que también puede conectarse a servidores remotos vía HTTP). No necesitas duplicar la lógica.' }
+};
+function checkQuiz(){
+  let allAnswered = true;
+  ['q1','q2','q3'].forEach(q => {
+    const sel = document.querySelector(`input[name="${q}"]:checked`);
+    const fb = document.getElementById(q+'-fb');
+    if(!sel){ allAnswered = false; return; }
+    const correct = ANSWERS[q];
+    if(sel.value === correct){
+      fb.className = 'quiz-feedback correct';
+      fb.textContent = '✓ ' + EXPLANATIONS[q][correct];
+    } else {
+      fb.className = 'quiz-feedback wrong';
+      fb.textContent = '✗ Incorrecto. ' + EXPLANATIONS[q][correct];
+    }
+    fb.style.display = 'block';
+  });
+  if(!allAnswered) alert('Responde todas las preguntas antes de verificar.');
+}
+</script>
+</body>
+</html>

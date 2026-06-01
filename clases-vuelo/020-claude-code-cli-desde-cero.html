@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>020 - Claude Code CLI desde Cero</title>
+<style>
+:root {
+  --bg:#0d0f0e; --surface:#131615; --border:#1e2420;
+  --gold:#c9a84c; --gold-dim:#7a6230;
+  --text:#e8e4d9; --text-dim:#7a7568;
+  --green:#2d4a3e; --blue:#1e3a5f;
+  --font-body:'Georgia',serif;
+  --font-mono:'Courier New',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);line-height:1.7;min-height:100vh}
+.progress-bar-container{position:fixed;top:0;left:0;right:0;height:3px;background:var(--border);z-index:100}
+.progress-bar{height:100%;background:var(--gold);transition:width 0.3s}
+.nav{position:fixed;top:3px;left:0;right:0;background:rgba(13,15,14,0.95);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;justify-content:space-between;align-items:center;z-index:99;backdrop-filter:blur(8px)}
+.nav-brand{color:var(--gold);font-family:var(--font-mono);font-size:0.8rem;letter-spacing:2px}
+.nav-links{display:flex;gap:8px}
+.nav-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);padding:5px 14px;border-radius:4px;cursor:pointer;font-family:var(--font-mono);font-size:0.75rem;text-decoration:none;transition:all 0.2s}
+.nav-btn:hover,.nav-btn.active{border-color:var(--gold);color:var(--gold)}
+.container{max-width:860px;margin:0 auto;padding:80px 24px 60px}
+h1{font-size:1.9rem;color:var(--gold);margin-bottom:8px;line-height:1.3}
+.meta{color:var(--text-dim);font-family:var(--font-mono);font-size:0.8rem;margin-bottom:32px;display:flex;gap:20px;flex-wrap:wrap}
+.meta span{display:flex;align-items:center;gap:6px}
+h2{font-size:1.25rem;color:var(--gold);margin:40px 0 16px;border-left:3px solid var(--gold-dim);padding-left:12px}
+h3{font-size:1.05rem;color:var(--text);margin:24px 0 10px}
+p{margin-bottom:14px;color:var(--text)}
+ul,ol{margin:0 0 14px 20px;color:var(--text)}
+li{margin-bottom:6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;margin:20px 0}
+.card-gold{border-color:var(--gold-dim)}
+.card-blue{border-color:#1e3a5f;background:#0d1a2e}
+.card-green{border-color:#1e3a2e;background:#0a1a12}
+code{font-family:var(--font-mono);background:#1a1e1c;padding:2px 6px;border-radius:3px;font-size:0.88rem;color:#a8d4b0}
+pre{background:#0a0c0b;border:1px solid var(--border);border-radius:6px;padding:18px;overflow-x:auto;margin:16px 0}
+pre code{background:none;padding:0;color:#a8d4b0;font-size:0.84rem;line-height:1.6}
+.highlight{color:var(--gold)}
+.dim{color:var(--text-dim)}
+.analogy{background:#1a1a0d;border:1px solid #3a3a1e;border-radius:6px;padding:16px;margin:16px 0}
+.analogy::before{content:"⚖ Analogía";display:block;color:var(--gold-dim);font-family:var(--font-mono);font-size:0.75rem;margin-bottom:8px}
+.quiz{background:#0d1a12;border:1px solid #1e3a2e;border-radius:8px;padding:20px;margin:32px 0}
+.quiz h3{color:#4caf7d;margin-top:0}
+.quiz-item{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.quiz-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.quiz-q{color:var(--text);margin-bottom:10px;font-weight:bold}
+.quiz-options label{display:block;padding:7px 12px;margin:4px 0;border-radius:4px;cursor:pointer;border:1px solid var(--border);transition:all 0.2s;font-size:0.9rem}
+.quiz-options label:hover{border-color:var(--gold-dim);background:var(--surface)}
+.quiz-options input{margin-right:8px}
+.quiz-result{display:none;margin-top:10px;padding:8px 12px;border-radius:4px;font-size:0.88rem;font-family:var(--font-mono)}
+.correct-msg{background:#0d2a1a;border:1px solid #2d6a4a;color:#4caf7d}
+.wrong-msg{background:#2a0d0d;border:1px solid #6a2d2d;color:#f47070}
+.btn{background:var(--surface);border:1px solid var(--gold-dim);color:var(--gold);padding:8px 20px;border-radius:4px;cursor:pointer;font-family:var(--font-mono);font-size:0.85rem;transition:all 0.2s;margin-top:10px}
+.btn:hover{background:var(--gold);color:var(--bg)}
+.completed-section{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px;margin-top:40px;display:flex;align-items:center;gap:14px}
+.completed-section label{cursor:pointer;color:var(--text-dim);font-size:0.9rem}
+input[type="checkbox"]{width:18px;height:18px;cursor:pointer;accent-color:var(--gold)}
+.tag{display:inline-block;background:var(--green);color:#4caf7d;font-family:var(--font-mono);font-size:0.72rem;padding:2px 8px;border-radius:3px;margin-right:6px}
+.tag-blue{background:var(--blue);color:#5b9bd5}
+.cmd-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:0.88rem}
+.cmd-table th{background:#0a0c0b;color:var(--gold);padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);font-family:var(--font-mono)}
+.cmd-table td{padding:9px 12px;border-bottom:1px solid #16191a;vertical-align:top}
+.cmd-table tr:hover td{background:#0f1211}
+.cmd-table td:first-child{font-family:var(--font-mono);color:#a8d4b0;white-space:nowrap}
+.workflow-step{display:flex;gap:14px;margin:12px 0;align-items:flex-start}
+.step-num{background:var(--gold-dim);color:var(--bg);width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:0.8rem;flex-shrink:0;margin-top:2px}
+</style>
+</head>
+<body>
+
+<div class="progress-bar-container">
+  <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<nav class="nav">
+  <span class="nav-brand">QUARTA FLIGHT SCHOOL</span>
+  <div class="nav-links">
+    <a href="019-mcp-servers-avanzado.html" class="nav-btn">← Anterior</a>
+    <span class="nav-btn active">020</span>
+    <a href="021-hooks-automatizacion-claude-code.html" class="nav-btn">Siguiente →</a>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="meta">
+    <span><span class="tag">BLOQUE 4</span> Claude Code</span>
+    <span>🕐 30 min</span>
+    <span class="dim">Clase 020 / 026</span>
+  </div>
+
+  <h1>Claude Code CLI desde Cero</h1>
+  <p class="dim">Del chat a la terminal. Por qué el abogado-desarrollador que construyó el Agente Concursal necesita esto.</p>
+
+  <!-- ============================================================ -->
+  <h2>1. Qué hace Claude Code que el chat NO hace</h2>
+
+  <p>El chat de Claude.ai es como un asesor legal por teléfono: te da respuestas, te explica, pero no puede abrir tu escritorio, leer tus contratos, ni firmar documentos. Claude Code CLI es ese mismo asesor sentado en tu oficina, con acceso a todos tus archivos.</p>
+
+  <div class="analogy">
+    El chat de Claude es como consultar a un colega abogado por WhatsApp. Claude Code es ese mismo colega
+    que viene a tu oficina, lee todos tus expedientes, ejecuta acciones y te pide confirmación solo cuando
+    algo es irreversible. Misma inteligencia. Diferente nivel de acceso.
+  </div>
+
+  <div class="card card-gold">
+    <h3>Lo que SOLO hace Claude Code</h3>
+    <ul>
+      <li><strong>Lee y escribe archivos reales</strong> — no copia/pega, modifica directamente</li>
+      <li><strong>Ejecuta comandos en tu terminal</strong> — <code>pip install</code>, <code>python app.py</code>, <code>git commit</code></li>
+      <li><strong>Navega y entiende tu proyecto entero</strong> — lee múltiples archivos para entender el contexto</li>
+      <li><strong>Hace git</strong> — commits, branches, diffs, sin que toques la terminal</li>
+      <li><strong>Corre tests y ve si pasan</strong> — y los arregla si fallan</li>
+      <li><strong>Puede operar en loop sin que tú estés</strong> — modo autónomo con <code>--dangerously-skip-permissions</code></li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>El chat normal hace bien</h3>
+    <ul>
+      <li>Explicar conceptos, revisar código pegado a mano, ayudar a pensar arquitectura, redactar documentos</li>
+    </ul>
+    <p class="dim" style="margin:0">Para Quarta: usa el chat para redactar demandas y estrategia. Usa Claude Code para construir el software.</p>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>2. Instalación en 60 segundos</h2>
+
+<pre><code><span class="highlight"># Requisito: Node.js >= 18</span>
+node --version   <span class="dim"># debe ser v18+ </span>
+
+<span class="highlight"># Instalar Claude Code globalmente</span>
+npm install -g @anthropic-ai/claude-code
+
+<span class="highlight"># Primera vez: autenticarse</span>
+claude
+
+<span class="highlight"># Abre el browser, autoriza, ya está.</span>
+<span class="highlight"># Para verificar que funciona:</span>
+claude --version</code></pre>
+
+  <!-- ============================================================ -->
+  <h2>3. Los 10 comandos del 90% del tiempo</h2>
+
+  <table class="cmd-table">
+    <tr><th>Comando</th><th>Qué hace</th><th>Cuándo usarlo</th></tr>
+    <tr><td>claude</td><td>Abre Claude Code interactivo en el directorio actual</td><td>Inicio de sesión de trabajo</td></tr>
+    <tr><td>claude "tarea"</td><td>Ejecuta una tarea no interactiva y termina</td><td>Scripting, CI/CD</td></tr>
+    <tr><td>/help</td><td>Lista todos los comandos disponibles</td><td>Cuando no recuerdas un comando</td></tr>
+    <tr><td>/plan</td><td>Claude propone un plan ANTES de ejecutar</td><td>Tareas complejas o irreversibles</td></tr>
+    <tr><td>/compact</td><td>Comprime el contexto cuando está lleno</td><td>Sesiones largas, código grande</td></tr>
+    <tr><td>/clear</td><td>Borra todo el contexto, sesión limpia</td><td>Cambiar de tarea completamente</td></tr>
+    <tr><td>/memory</td><td>Ver y editar CLAUDE.md</td><td>Actualizar instrucciones del proyecto</td></tr>
+    <tr><td>/diff</td><td>Ver qué cambió en los archivos</td><td>Antes de hacer commit</td></tr>
+    <tr><td>/undo</td><td>Deshacer el último cambio de archivo</td><td>Si algo salió mal</td></tr>
+    <tr><td>Ctrl+C</td><td>Cancelar la tarea en curso</td><td>Claude tomó el camino equivocado</td></tr>
+  </table>
+
+  <div class="card card-blue">
+    <h3>Comandos extra que vale la pena conocer</h3>
+    <table class="cmd-table">
+      <tr><th>Comando</th><th>Descripción</th></tr>
+      <tr><td>/status</td><td>Ver qué archivos modificó en esta sesión</td></tr>
+      <tr><td>/cost</td><td>Ver cuántos tokens ha usado la sesión actual</td></tr>
+      <tr><td>claude --model claude-opus-4-5</td><td>Seleccionar modelo específico</td></tr>
+      <tr><td>claude --print "tarea"</td><td>Salida sin interacción (para pipes)</td></tr>
+    </table>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>4. CLAUDE.md — El archivo más importante</h2>
+
+  <p>Si hubiera que elegir UNA cosa de esta clase: es el <code>CLAUDE.md</code>. Es el contrato entre tú y Claude Code. Cada vez que abres el CLI en tu proyecto, Claude lee ese archivo ANTES de hacer cualquier cosa. Es como dejarle al paralegal las instrucciones de la firma antes de irse de vacaciones.</p>
+
+  <div class="analogy">
+    CLAUDE.md es como el reglamento interno de tu firma. Cuando entra un nuevo abogado (o Claude en
+    una nueva sesión), lo primero que lee son las políticas: cómo se hacen los escritos, qué no se toca,
+    cuáles son los clientes, qué formato tienen los documentos. Sin ese reglamento, cada sesión empieza
+    desde cero.
+  </div>
+
+  <h3>CLAUDE.md completo para el Agente Concursal de Quarta</h3>
+
+<pre><code><span class="highlight"># CLAUDE.md — Agente Concursal · Quarta Legal Hub</span>
+<span class="dim"># Lee esto PRIMERO. Cada sesión de Claude Code empieza aquí.</span>
+
+<span class="highlight">## PROYECTO</span>
+- Nombre: Agente Concursal
+- Dueño: Andrés Cardona (abogado, fundador Quarta)
+- Stack: Flask + ChromaDB + Anthropic API + Railway
+- Propósito: IA para análisis de procesos de insolvencia bajo Ley 1116 de Colombia
+
+<span class="highlight">## ARQUITECTURA</span>
+- app.py          → Servidor Flask principal, rutas y lógica
+- chroma_db/      → Base vectorial (NO modificar sin confirmación explícita)
+- documents/      → PDFs y textos de la Ley 1116, jurisprudencia
+- prompts/        → Templates de prompts para Claude API
+- requirements.txt → Dependencias Python
+- railway.toml    → Config de deployment
+
+<span class="highlight">## REGLAS CRÍTICAS</span>
+1. NUNCA modificar chroma_db/ sin preguntar primero
+2. NUNCA hacer push a main directamente — siempre rama + PR
+3. Los endpoints de Flask van en /api/v1/
+4. Toda función debe tener docstring en español
+5. Variables de entorno: ANTHROPIC_API_KEY, RAILWAY_TOKEN — NUNCA hardcodear
+
+<span class="highlight">## CONVENCIONES DE CÓDIGO</span>
+- Python: snake_case, PEP8
+- Comentarios en español
+- Logs con formato: [AGENTE][NIVEL] mensaje
+- Tests en /tests/ con pytest
+- Error handling: siempre retornar {"error": str, "code": int}
+
+<span class="highlight">## COMANDOS FRECUENTES</span>
+- Desarrollo local: `python app.py`
+- Tests: `pytest tests/ -v`
+- Deploy: `railway up` (solo desde main)
+- Ver logs Railway: `railway logs`
+
+<span class="highlight">## CONTEXTO LEGAL (para que Claude entienda el dominio)</span>
+- Ley 1116/2006: régimen colombiano de insolvencia empresarial
+- Procesos: Reorganización y Liquidación Judicial
+- Entidades: Superintendencia de Sociedades, Juzgados Civiles del Circuito
+- Términos clave: acreedor, deudor, masa de la quiebra, acuerdo de reorganización,
+  promotor, liquidador, verificación de créditos, calificación y graduación
+- El agente responde consultas de abogados y empresas en proceso concursal
+
+<span class="highlight">## PRIORIDADES ACTUALES</span>
+[ ] Mejorar precisión en búsqueda vectorial de jurisprudencia
+[ ] Agregar análisis de plazos procesales (términos Ley 1116)
+[ ] UI web básica para consultas
+
+<span class="highlight">## NO HACER</span>
+- No instalar dependencias nuevas sin preguntar (Railway tiene límites)
+- No cambiar el modelo de Claude sin verificar costos
+- No borrar documentos de chroma_db/ — son irreemplazables</code></pre>
+
+  <!-- ============================================================ -->
+  <h2>5. Memory Hierarchy: Global vs Proyecto</h2>
+
+  <div class="card">
+    <h3>Dos niveles de memoria</h3>
+    <div class="workflow-step">
+      <div class="step-num">1</div>
+      <div>
+        <strong>Global:</strong> <code>~/.claude/CLAUDE.md</code><br>
+        <span class="dim">Aplica a TODOS tus proyectos. Aquí van tus preferencias personales:</span>
+        <pre style="margin-top:8px"><code><span class="highlight"># ~/.claude/CLAUDE.md — Preferencias de Andrés Cardona</span>
+- Idioma: siempre responder en español
+- Commits: formato "tipo(scope): descripción"
+- Nunca usar `rm -rf` sin confirmación
+- Preferir explicaciones con analogías legales
+- Al terminar una tarea: mostrar resumen de cambios</code></pre>
+      </div>
+    </div>
+    <div class="workflow-step">
+      <div class="step-num">2</div>
+      <div>
+        <strong>Proyecto:</strong> <code>/tu-proyecto/CLAUDE.md</code><br>
+        <span class="dim">Aplica solo a ese proyecto. Lo que viste arriba. Sobrescribe reglas globales si hay conflicto.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>6. Context Management: /compact, /clear, /plan</h2>
+
+  <div class="card card-gold">
+    <h3>Cuándo usar cada uno</h3>
+    <table class="cmd-table">
+      <tr><th>Comando</th><th>Analogía</th><th>Úsalo cuando</th></tr>
+      <tr><td>/plan</td><td>Pedir al paralegal que te presente el plan de trabajo antes de empezar</td><td>Tarea compleja, riesgo de cambios grandes, primera vez en un módulo</td></tr>
+      <tr><td>/compact</td><td>Hacer un resumen del expediente — descartas los papeles pero mantienes lo importante</td><td>Llevas 1+ hora, el contexto está lleno, Claude empieza a olvidar</td></tr>
+      <tr><td>/clear</td><td>Cerrar el expediente y abrir uno nuevo</td><td>Cambias de tarea completamente, quieres sesión limpia</td></tr>
+    </table>
+  </div>
+
+  <p>El contexto de Claude Code es como la memoria de trabajo de un abogado: puede manejar un caso complejo, pero si acumula demasiados detalles de casos distintos, empieza a confundirse. <code>/compact</code> hace un resumen inteligente para liberar espacio sin perder el hilo.</p>
+
+  <!-- ============================================================ -->
+  <h2>7. Modos de Operación</h2>
+
+  <div class="card">
+    <h3>Normal Mode (defecto)</h3>
+    <p>Claude pregunta permiso antes de ejecutar acciones importantes (escribir archivos, correr comandos). El balance perfecto para desarrollo diario.</p>
+  </div>
+
+  <div class="card card-blue">
+    <h3>Plan Mode (<code>/plan</code> o <code>--plan</code>)</h3>
+    <p>Claude propone el plan completo ANTES de hacer nada. Lo apruebas o corriges. Luego ejecuta. Ideal para features grandes o cuando eres nuevo en el proyecto.</p>
+<pre><code><span class="highlight"># Flujo con plan mode:</span>
+$ claude --plan "Agregar endpoint para analizar plazos procesales"
+
+<span class="dim"># Claude responde:</span>
+Plan de ejecución:
+1. Crear /api/v1/plazos_procesales en app.py
+2. Agregar función analizar_plazo(tipo_proceso, fecha_inicio)
+3. Consultar prompts/plazo_template.txt
+4. Escribir tests en tests/test_plazos.py
+
+¿Proceder? [y/n]</code></pre>
+  </div>
+
+  <div class="card card-green">
+    <h3>Autonomous / "Yolo" Mode</h3>
+    <p>Claude ejecuta todo sin pedir permiso. Úsalo en entornos aislados (Docker, VM), CI/CD, o cuando ya confías completamente en las reglas del CLAUDE.md.</p>
+<pre><code><span class="highlight"># Con flag (NO en producción sin CLAUDE.md robusto):</span>
+claude --dangerously-skip-permissions "correr todos los tests y arreglar los que fallen"</code></pre>
+    <p><span class="highlight">Para Quarta:</span> úsalo solo en ambiente de desarrollo, nunca en el servidor de Railway directamente.</p>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>8. Permission Modes — Trabajar sin interrupciones</h2>
+
+<pre><code><span class="highlight"># En settings.json (~/.claude/settings.json):</span>
+{
+  "permissions": {
+    "allow": [
+      "Bash(git *)",
+      "Bash(pytest *)",
+      "Bash(python *)",
+      "Write(src/*)",
+      "Write(tests/*)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Write(chroma_db/*)",
+      "Write(.env)"
+    ]
+  }
+}
+
+<span class="dim"># Esto le dice a Claude:</span>
+<span class="dim"># - Puede hacer git y pytest sin preguntar</span>
+<span class="dim"># - NUNCA tocar chroma_db/ ni .env</span>
+<span class="dim"># - Todo lo demás: preguntar</span></code></pre>
+
+  <!-- ============================================================ -->
+  <h2>9. QUARTA: Workflow Diario con Claude Code</h2>
+
+  <div class="card card-gold">
+    <h3>Cómo Andrés puede usar Claude Code para el Quarta Legal Hub</h3>
+    <div class="workflow-step">
+      <div class="step-num">1</div>
+      <div><strong>Abrir Claude Code en el proyecto</strong><br>
+      <code>cd ~/proyectos/agente-concursal && claude</code><br>
+      <span class="dim">Claude lee CLAUDE.md automáticamente. Ya sabe todo sobre el proyecto.</span></div>
+    </div>
+    <div class="workflow-step">
+      <div class="step-num">2</div>
+      <div><strong>Dar contexto de la sesión</strong><br>
+      <code>"Hoy vamos a agregar análisis de plazos procesales. Comencemos con /plan"</code></div>
+    </div>
+    <div class="workflow-step">
+      <div class="step-num">3</div>
+      <div><strong>Revisar el plan y aprobar</strong><br>
+      Claude muestra qué archivos tocará. Tú dices sí o corriges antes de que ejecute.</div>
+    </div>
+    <div class="workflow-step">
+      <div class="step-num">4</div>
+      <div><strong>Claude trabaja, tú revisas con /diff</strong><br>
+      <code>/diff</code> muestra exactamente qué cambió. Como revisar un escrito antes de firmarlo.</div>
+    </div>
+    <div class="workflow-step">
+      <div class="step-num">5</div>
+      <div><strong>Tests y commit</strong><br>
+      <code>"Corre los tests y si pasan, haz commit con mensaje descriptivo"</code></div>
+    </div>
+    <div class="workflow-step">
+      <div class="step-num">6</div>
+      <div><strong>Deploy a Railway</strong><br>
+      <code>"Hace el deploy a Railway y verificar que el health check pase"</code></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Prompts de inicio de sesión que funcionan</h3>
+<pre><code><span class="highlight"># Para una feature nueva:</span>
+"Lee el CLAUDE.md, entiende el estado actual de app.py,
+y ayúdame a agregar [FEATURE]. Usa /plan primero."
+
+<span class="highlight"># Para debug:</span>
+"El endpoint /api/v1/consulta está retornando error 500.
+Lee app.py y los logs en logs/app.log y encuentra el problema."
+
+<span class="highlight"># Para refactoring:</span>
+"Revisa todo el código en app.py, identifica las 3 mejoras
+más importantes de calidad/performance, y propón un plan."</code></pre>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>Quiz — 3 preguntas prácticas</h2>
+
+  <div class="quiz">
+    <h3>Verifica lo que aprendiste</h3>
+
+    <div class="quiz-item" id="q1">
+      <p class="quiz-q">1. Andrés tiene una sesión de Claude Code que lleva 2 horas. Claude empieza a "olvidar" el contexto del proyecto. ¿Qué comando usa?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q1" value="a"> /clear — borra todo y empieza de cero</label>
+        <label><input type="radio" name="q1" value="b"> /compact — comprime el contexto preservando lo importante</label>
+        <label><input type="radio" name="q1" value="c"> Ctrl+C y volver a abrir claude</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q1','b','✓ Correcto. /compact comprime inteligentemente. /clear borra TODO — úsalo cuando cambias de tarea completamente.')">Verificar</button>
+      <div class="quiz-result" id="q1-result"></div>
+    </div>
+
+    <div class="quiz-item" id="q2">
+      <p class="quiz-q">2. ¿Dónde se escribe la regla "responder siempre en español" para que aplique a TODOS los proyectos de Andrés?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q2" value="a"> En /agente-concursal/CLAUDE.md</label>
+        <label><input type="radio" name="q2" value="b"> En ~/.claude/CLAUDE.md (global)</label>
+        <label><input type="radio" name="q2" value="c"> En settings.json dentro del proyecto</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q2','b','✓ Correcto. ~/.claude/CLAUDE.md es la memoria global. Aplica a todos los proyectos. El CLAUDE.md del proyecto es específico a ese proyecto.')">Verificar</button>
+      <div class="quiz-result" id="q2-result"></div>
+    </div>
+
+    <div class="quiz-item" id="q3">
+      <p class="quiz-q">3. Andrés va a pedirle a Claude Code que agregue una feature grande al Agente Concursal — algo que toca 5 archivos. ¿Cuál es el flujo correcto?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q3" value="a"> Escribir el pedido directamente y dejar que Claude ejecute todo</label>
+        <label><input type="radio" name="q3" value="b"> Usar /plan para ver el plan completo, aprobarlo, luego ejecutar</label>
+        <label><input type="radio" name="q3" value="c"> Usar --dangerously-skip-permissions para que sea más rápido</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q3','b','✓ Correcto. Para tareas complejas, /plan primero. Ves exactamente qué va a tocar, puedes corregir el rumbo antes de que empiece.')">Verificar</button>
+      <div class="quiz-result" id="q3-result"></div>
+    </div>
+  </div>
+
+  <!-- Completado -->
+  <div class="completed-section">
+    <input type="checkbox" id="completado" onchange="marcarCompletada()">
+    <label for="completado">Clase completada — Claude Code CLI desde Cero</label>
+  </div>
+
+</div>
+
+<script>
+// Progreso
+const TOTAL = 26;
+const CLASE = 20;
+function updateProgress() {
+  let completadas = 0;
+  for(let i = 1; i <= TOTAL; i++) {
+    if(localStorage.getItem('clase_completada_' + String(i).padStart(3,'0'))) completadas++;
+  }
+  document.getElementById('progressBar').style.width = (completadas/TOTAL*100) + '%';
+}
+function marcarCompletada() {
+  const cb = document.getElementById('completado');
+  const key = 'clase_completada_' + String(CLASE).padStart(3,'0');
+  if(cb.checked) localStorage.setItem(key, '1');
+  else localStorage.removeItem(key);
+  updateProgress();
+}
+// Cargar estado
+window.addEventListener('DOMContentLoaded', () => {
+  const key = 'clase_completada_' + String(CLASE).padStart(3,'0');
+  if(localStorage.getItem(key)) document.getElementById('completado').checked = true;
+  updateProgress();
+});
+
+// Quiz
+function checkAnswer(qId, correct, msg) {
+  const selected = document.querySelector(`input[name="${qId}"]:checked`);
+  const resultEl = document.getElementById(qId + '-result');
+  if(!selected) { resultEl.style.display='block'; resultEl.className='quiz-result wrong-msg'; resultEl.textContent='Selecciona una opción primero.'; return; }
+  resultEl.style.display = 'block';
+  if(selected.value === correct) {
+    resultEl.className = 'quiz-result correct-msg';
+    resultEl.textContent = msg;
+  } else {
+    resultEl.className = 'quiz-result wrong-msg';
+    resultEl.textContent = '✗ No exactamente. ' + msg;
+  }
+}
+</script>
+</body>
+</html>
