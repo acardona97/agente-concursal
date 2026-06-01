@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quarta · Curso IA — Índice del Vuelo</title>
+<style>
+:root {
+  --bg: #0d0f0e;
+  --surface: #131615;
+  --surface2: #1a1e1c;
+  --border: #1e2420;
+  --border2: #2a3330;
+  --text: #e8e4d9;
+  --muted: #7a7568;
+  --gold: #c9a84c;
+  --gold-dim: #7a6230;
+  --gold-bg: rgba(201,168,76,0.07);
+  --green: #4caf7a;
+  --green-bg: rgba(76,175,122,0.08);
+  --blue: #5c9de0;
+  --blue-bg: rgba(92,157,224,0.08);
+  --purple: #a07cd4;
+  --purple-bg: rgba(160,124,212,0.08);
+  --orange: #e0925c;
+  --orange-bg: rgba(224,146,92,0.08);
+  --red: #e05c5c;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Georgia', serif;
+  font-size: 16px;
+  line-height: 1.65;
+  min-height: 100vh;
+}
+
+/* TOP BAR */
+.topbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 24px;
+  display: flex; align-items: center; gap: 16px;
+}
+.topbar-logo {
+  font-family: monospace; font-size: 13px;
+  color: var(--gold); letter-spacing: 2px; text-transform: uppercase;
+  flex-shrink: 0;
+}
+.progress-wrap {
+  flex: 1; display: flex; align-items: center; gap: 10px;
+}
+.progress-track {
+  flex: 1; height: 5px; background: var(--border2); border-radius: 3px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+  border-radius: 3px; transition: width 0.4s ease;
+}
+.progress-text {
+  font-family: monospace; font-size: 12px; color: var(--gold); white-space: nowrap;
+}
+
+/* MAIN */
+.main { max-width: 1100px; margin: 0 auto; padding: 90px 24px 60px; }
+
+/* PROFILE CARD */
+.profile-card {
+  background: var(--surface);
+  border: 1px solid var(--gold-dim);
+  border-radius: 12px;
+  padding: 28px 32px;
+  margin-bottom: 40px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+@media (max-width: 700px) { .profile-card { grid-template-columns: 1fr; } }
+.profile-title {
+  grid-column: 1 / -1;
+  font-size: 22px; color: var(--gold); font-weight: normal;
+  font-style: italic; margin-bottom: 4px;
+}
+.profile-sub {
+  grid-column: 1 / -1;
+  font-family: monospace; font-size: 12px; color: var(--muted);
+  margin-bottom: 16px; margin-top: -4px;
+}
+.profile-section-title {
+  font-family: monospace; font-size: 11px; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--gold); margin-bottom: 10px;
+}
+.profile-item {
+  font-size: 14px; color: var(--muted); padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+}
+.profile-item span { color: var(--text); }
+
+/* STATS ROW */
+.stats-row {
+  display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 40px;
+}
+.stat-box {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 16px 20px;
+  flex: 1; min-width: 120px;
+  text-align: center;
+}
+.stat-num {
+  font-family: monospace; font-size: 28px; color: var(--gold); display: block;
+}
+.stat-label {
+  font-size: 12px; color: var(--muted); margin-top: 4px;
+}
+
+/* BLOQUE */
+.bloque { margin-bottom: 40px; }
+.bloque-header {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--border);
+}
+.bloque-num {
+  width: 32px; height: 32px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: monospace; font-size: 13px; font-weight: bold;
+  flex-shrink: 0;
+}
+.bloque-title { font-size: 17px; font-weight: normal; }
+.bloque-meta { font-family: monospace; font-size: 12px; color: var(--muted); margin-left: auto; }
+
+/* Color schemes per bloque */
+.b0 .bloque-num { background: rgba(122,96,40,0.3); color: var(--gold-dim); border: 1px solid var(--gold-dim); }
+.b0 .bloque-title { color: var(--gold); }
+.b1 .bloque-num { background: var(--gold-bg); color: var(--gold); border: 1px solid var(--gold-dim); }
+.b1 .bloque-title { color: var(--gold); }
+.b2 .bloque-num { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue); }
+.b2 .bloque-title { color: var(--blue); }
+.b3 .bloque-num { background: var(--green-bg); color: var(--green); border: 1px solid var(--green); }
+.b3 .bloque-title { color: var(--green); }
+.b4 .bloque-num { background: var(--purple-bg); color: var(--purple); border: 1px solid var(--purple); }
+.b4 .bloque-title { color: var(--purple); }
+.b5 .bloque-num { background: var(--orange-bg); color: var(--orange); border: 1px solid var(--orange); }
+.b5 .bloque-title { color: var(--orange); }
+
+/* CLASE CARD */
+.clases-grid { display: flex; flex-direction: column; gap: 8px; }
+.clase-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 18px;
+  display: flex; align-items: center; gap: 14px;
+  text-decoration: none; color: inherit;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+.clase-card:hover { border-color: var(--border2); background: var(--surface2); }
+.clase-card.done { border-color: #2d4a3e; background: #0a140e; }
+.clase-card.done .clase-titulo { color: var(--muted); text-decoration: line-through; text-decoration-color: #2d6b4a; }
+.clase-card.not-found { opacity: 0.4; cursor: not-allowed; }
+
+.clase-check {
+  width: 22px; height: 22px; border-radius: 4px;
+  border: 1.5px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all 0.2s; font-size: 13px;
+}
+.clase-card.done .clase-check {
+  background: #2d6b4a; border-color: #4caf7a; color: #b8f0d0;
+}
+
+.clase-num {
+  font-family: monospace; font-size: 11px; color: var(--muted);
+  width: 28px; flex-shrink: 0;
+}
+.clase-content { flex: 1; min-width: 0; }
+.clase-titulo { font-size: 15px; }
+.clase-meta { font-family: monospace; font-size: 11px; color: var(--muted); margin-top: 3px; }
+.clase-tiempo {
+  font-family: monospace; font-size: 12px; color: var(--muted);
+  flex-shrink: 0; white-space: nowrap;
+}
+.tag-micro {
+  display: inline-block;
+  font-family: monospace; font-size: 10px;
+  padding: 2px 7px; border-radius: 3px;
+  background: #1a2218; border: 1px solid var(--green); color: var(--green);
+  margin-left: 8px; vertical-align: middle;
+}
+.tag-recom {
+  display: inline-block;
+  font-family: monospace; font-size: 10px;
+  padding: 2px 7px; border-radius: 3px;
+  background: var(--gold-bg); border: 1px solid var(--gold-dim); color: var(--gold);
+  margin-left: 8px; vertical-align: middle;
+}
+
+/* RUTA RECOMENDADA */
+.ruta-box {
+  background: var(--gold-bg);
+  border: 1px solid var(--gold-dim);
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin-bottom: 40px;
+}
+.ruta-title {
+  font-family: monospace; font-size: 12px; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--gold); margin-bottom: 14px;
+}
+.ruta-segmentos { display: flex; flex-direction: column; gap: 8px; }
+.ruta-seg {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 14px;
+}
+.ruta-seg-time {
+  font-family: monospace; font-size: 11px; color: var(--gold-dim);
+  width: 90px; flex-shrink: 0;
+}
+.ruta-seg-clases { color: var(--muted); }
+.ruta-seg-label { color: var(--text); }
+
+/* RESET BUTTON */
+.btn-reset {
+  font-family: monospace; font-size: 12px;
+  padding: 8px 16px; border-radius: 6px;
+  border: 1px solid var(--border2); background: transparent;
+  color: var(--muted); cursor: pointer; transition: all 0.2s;
+  margin-top: 24px;
+}
+.btn-reset:hover { border-color: var(--red); color: var(--red); }
+
+/* TOTAL ROW */
+.total-row {
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: monospace; font-size: 12px; color: var(--muted);
+  margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--border);
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo">⚖ Quarta · Curso IA</div>
+  <div class="progress-wrap">
+    <div class="progress-track">
+      <div class="progress-fill" id="topProgressFill"></div>
+    </div>
+    <div class="progress-text" id="topProgressText">0 / 26 clases</div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- PROFILE CARD -->
+  <div class="profile-card">
+    <div class="profile-title">Andrés Cardona · Quarta</div>
+    <div class="profile-sub">Curso personalizado para el vuelo · 13 horas · Generado 2026-06-01</div>
+
+    <div>
+      <div class="profile-section-title">Perfil del estudiante</div>
+      <div class="profile-item">Rol: <span>Abogado concursal · Fundador Quarta</span></div>
+      <div class="profile-item">Stack actual: <span>Flask · ChromaDB · Claude API · Railway</span></div>
+      <div class="profile-item">Nivel código: <span>Autodidacta — construye sin formación formal</span></div>
+      <div class="profile-item">Conocidos: <span>API keys · Railway · tokens · context window · skills (más)</span></div>
+      <div class="profile-item">Principios: <span>async/await · embeddings · RAG · MCP · fine-tuning</span></div>
+    </div>
+
+    <div>
+      <div class="profile-section-title">Objetivos del curso</div>
+      <div class="profile-item">1er: <span>Prompting avanzado — estrategias</span></div>
+      <div class="profile-item">2do: <span>Agentes para el Quarta Legal Hub</span></div>
+      <div class="profile-item">3ero: <span>Claude Code para automatización</span></div>
+      <div class="profile-item">+: <span>Finanzas e inversión desde cero (BTC)</span></div>
+      <div class="profile-item">Estilo: <span>Código primero · práctica directa · analogías legales</span></div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-box">
+      <span class="stat-num">26</span>
+      <div class="stat-label">Clases totales</div>
+    </div>
+    <div class="stat-box">
+      <span class="stat-num">6</span>
+      <div class="stat-label">Micro-clases<br>(calibración)</div>
+    </div>
+    <div class="stat-box">
+      <span class="stat-num">20</span>
+      <div class="stat-label">Clases completas</div>
+    </div>
+    <div class="stat-box">
+      <span class="stat-num">12</span>
+      <div class="stat-label">Repos clonados</div>
+    </div>
+    <div class="stat-box">
+      <span class="stat-num">213</span>
+      <div class="stat-label">Notebooks<br>a HTML</div>
+    </div>
+    <div class="stat-box">
+      <span class="stat-num" id="completedCount">0</span>
+      <div class="stat-label">Completadas</div>
+    </div>
+  </div>
+
+  <!-- RUTA RECOMENDADA -->
+  <div class="ruta-box">
+    <div class="ruta-title">★ Ruta recomendada para 13 horas</div>
+    <div class="ruta-segmentos">
+      <div class="ruta-seg">
+        <div class="ruta-seg-time">0:00 — 1:10</div>
+        <div class="ruta-seg-clases">001 → 006 &nbsp;·&nbsp;</div>
+        <div class="ruta-seg-label">Calibración de fundamentos + primera clase de prompting</div>
+      </div>
+      <div class="ruta-seg">
+        <div class="ruta-seg-time">1:10 — 3:25</div>
+        <div class="ruta-seg-clases">007 → 011 &nbsp;·&nbsp;</div>
+        <div class="ruta-seg-label">Prompting avanzado completo</div>
+      </div>
+      <div class="ruta-seg">
+        <div class="ruta-seg-time">3:25 — 5:25</div>
+        <div class="ruta-seg-clases">012 → 014 &nbsp;·&nbsp;</div>
+        <div class="ruta-seg-label">MCP en profundidad</div>
+      </div>
+      <div class="ruta-seg">
+        <div class="ruta-seg-time">5:25 — 8:00</div>
+        <div class="ruta-seg-clases">015 → 019 &nbsp;·&nbsp;</div>
+        <div class="ruta-seg-label">Agentes + Quarta Legal Hub</div>
+      </div>
+      <div class="ruta-seg">
+        <div class="ruta-seg-time">8:00 — 9:30</div>
+        <div class="ruta-seg-clases">020 → 022 &nbsp;·&nbsp;</div>
+        <div class="ruta-seg-label">Claude Code CLI y workflows</div>
+      </div>
+      <div class="ruta-seg">
+        <div class="ruta-seg-time">9:30 — 11:58</div>
+        <div class="ruta-seg-clases">023 → 026 &nbsp;·&nbsp;</div>
+        <div class="ruta-seg-label">Finanzas · BTC · Polymarket</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOQUE 0 -->
+  <div class="bloque b0">
+    <div class="bloque-header">
+      <div class="bloque-num">0</div>
+      <div class="bloque-title">Micro-clases de Calibración</div>
+      <div class="bloque-meta">~40 min · 5 clases</div>
+    </div>
+    <div class="clases-grid">
+      <a class="clase-card" href="001-micro-async-await.html" data-id="001">
+        <div class="clase-check"></div>
+        <div class="clase-num">001</div>
+        <div class="clase-content">
+          <div class="clase-titulo">Async/Await <span class="tag-micro">micro</span></div>
+          <div class="clase-meta">Calibración — ya tienes principios · async en agentes Claude</div>
+        </div>
+        <div class="clase-tiempo">8 min</div>
+      </a>
+      <a class="clase-card" href="002-micro-embeddings.html" data-id="002">
+        <div class="clase-check"></div>
+        <div class="clase-num">002</div>
+        <div class="clase-content">
+          <div class="clase-titulo">Embeddings <span class="tag-micro">micro</span></div>
+          <div class="clase-meta">Calibración — cómo usa ChromaDB los vectores</div>
+        </div>
+        <div class="clase-tiempo">8 min</div>
+      </a>
+      <a class="clase-card" href="003-micro-rag-por-dentro.html" data-id="003">
+        <div class="clase-check"></div>
+        <div class="clase-num">003</div>
+        <div class="clase-content">
+          <div class="clase-titulo">RAG por dentro <span class="tag-micro">micro</span></div>
+          <div class="clase-meta">Calibración — los 3 pasos con tu agente concursal real</div>
+        </div>
+        <div class="clase-tiempo">8 min</div>
+      </a>
+      <a class="clase-card" href="004-micro-fine-tuning-vs-prompting.html" data-id="004">
+        <div class="clase-check"></div>
+        <div class="clase-num">004</div>
+        <div class="clase-content">
+          <div class="clase-titulo">Fine-tuning vs Prompting <span class="tag-micro">micro</span></div>
+          <div class="clase-meta">Calibración — por qué para Quarta siempre es prompting</div>
+        </div>
+        <div class="clase-tiempo">8 min</div>
+      </a>
+      <a class="clase-card" href="005-micro-mcp-agentes-conexion.html" data-id="005">
+        <div class="clase-check"></div>
+        <div class="clase-num">005</div>
+        <div class="clase-content">
+          <div class="clase-titulo">MCP y Agentes — Conexión <span class="tag-micro">micro</span></div>
+          <div class="clase-meta">Calibración — desde lo que ya sabes · tu mcp_server.py analizado</div>
+        </div>
+        <div class="clase-tiempo">8 min</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- BLOQUE 1 -->
+  <div class="bloque b1">
+    <div class="bloque-header">
+      <div class="bloque-num">1</div>
+      <div class="bloque-title">Prompt Engineering Avanzado</div>
+      <div class="bloque-meta">~3.5 h · 6 clases · PRIORIDAD MÁXIMA</div>
+    </div>
+    <div class="clases-grid">
+      <a class="clase-card" href="006-prompt-engineering-estrategias-avanzadas.html" data-id="006">
+        <div class="clase-check"></div>
+        <div class="clase-num">006</div>
+        <div class="clase-content">
+          <div class="clase-titulo">Estrategias Avanzadas de Prompting <span class="tag-recom">★ primera</span></div>
+          <div class="clase-meta">Las 6 que más impactan · XML tags · role prompting · Constitutional AI · repo: courses + prompt-eng-interactive-tutorial</div>
+        </div>
+        <div class="clase-tiempo">45 min</div>
+      </a>
+      <a class="clase-card" href="007-chain-of-thought-y-thinking-mode.html" data-id="007">
+        <div class="clase-check"></div>
+        <div class="clase-num">007</div>
+        <div class="clase-content">
+          <div class="clase-titulo">Chain of Thought + Extended Thinking</div>
+          <div class="clase-meta">CoT · thinking mode · cuándo activarlo · repo: anthropic-cookbook</div>
+        </div>
+        <div class="clase-tiempo">30 min</div>
+      </a>
+      <a class="clase-card" href="008-prompt-caching-y-optimizacion.html" data-id="008">
+        <div class="clase-check"></div>
+        <div class="clase-num">008</div>
+        <div class="clase-content">
+          <div class="clase-titulo">Prompt Caching — Hasta 90% de Ahorro</div>
+          <div class="clase-meta">cache_control · cuándo se activa · ahorro real en agente concursal · repo: courses/anthropic_api_fundamentals</div>
+        </div>
+        <div class="clase-tiempo">30 min</div>
+      </a>
+      <a class="clase-card" href="009-system-prompts-que-funcionan.html" data-id="009">
+        <div class="clase-check"></div>
+        <div class="clase-num">009</div>
+        <div class="clase-content">
+          <div class="clase-titulo">System Prompts que Realmente Funcionan</div>
+          <div class="clase-meta">Anatomía · guardrails legales · playbook configurable · repo: claude-for-legal</div>
+        </div>
+        <div class="clase-tiempo">30 min</div>
+      </a>
+      <a class="clase-card" href="010-evaluacion-de-prompts.html" data-id="010">
+        <div class="clase-check"></div>
+        <div class="clase-num">010</div>
+        <div class="clase-content">
+          <div class="clase-titulo">Evaluación y Mejora de Prompts</div>
+          <div class="clase-meta">Evals · LLM-as-judge · 10 casos de prueba concursales · repo: courses/prompt_evaluations</div>
+        </div>
+        <div class="clase-tiempo">45 min</div>
+      </a>
+      <a class="clase-card" href="011-prompting-para-documentos-legales.html" data-id="011">
+        <div class="clase-check"></div>
+        <div class="clase-num">011</div>
+        <div class="clase-content">
+          <div class="clase-titulo">Prompting para Documentos Legales</div>
+          <div class="clase-meta">Memoriales · recursos · citas verificadas · proceso MEMORY FOAM · repo: claude-for-legal/litigation-legal</div>
+        </div>
+        <div class="clase-tiempo">30 min</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- BLOQUE 2 -->
+  <div class="bloque b2">
+    <div class="bloque-header">
+      <div class="bloque-num">2</div>
+      <div class="bloque-title">MCP en Profundidad</div>
+      <div class="bloque-meta">~2 h · 3 clases</div>
+    </div>
+    <div class="clases-grid">
+      <a class="clase-card" href="012-mcp-arquitectura-fundamentos.html" data-id="012">
+        <div class="clase-check"></div>
+        <div class="clase-num">012</div>
+        <div class="clase-content">
+          <div class="clase-titulo">MCP — Arquitectura y Fundamentos Reales</div>
+          <div class="clase-meta">Protocolo completo · Resources/Tools/Prompts · tu mcp_server.py analizado · repo: claude-for-legal + cwc-workshops</div>
+        </div>
+        <div class="clase-tiempo">45 min</div>
+      </a>
+      <a class="clase-card" href="013-mcp-tu-primer-servidor-avanzado.html" data-id="013">
+        <div class="clase-check"></div>
+        <div class="clase-num">013</div>
+        <div class="clase-content">
+          <div class="clase-titulo">MCP Server Completo en Python</div>
+          <div class="clase-meta">SDK oficial · Tools tipadas · error handling · deploy Railway · conector CSJ simulado</div>
+        </div>
+        <div class="clase-tiempo">45 min</div>
+      </a>
+      <a class="clase-card" href="014-mcp-conectores-quarta-colombia.html" data-id="014">
+        <div class="clase-check"></div>
+        <div class="clase-num">014</div>
+        <div class="clase-content">
+          <div class="clase-titulo">Conectores Colombianos para Quarta</div>
+          <div class="clase-meta">CSJ · Supersociedades · SIC · DIAN · plan de implementación · repo: claude-for-legal/CONNECTORS.md</div>
+        </div>
+        <div class="clase-tiempo">30 min</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- BLOQUE 3 -->
+  <div class="bloque b3">
+    <div class="bloque-header">
+      <div class="bloque-num">3</div>
+      <div class="bloque-title">Agentes IA y Quarta Legal Hub</div>
+      <div class="bloque-meta">~2.5 h · 5 clases</div>
+    </div>
+    <div class="clases-grid">
+      <a class="clase-card" href="015-micro-que-es-un-agente-ia.html" data-id="015">
+        <div class="clase-check"></div>
+        <div class="clase-num">015</div>
+        <div class="clase-content">
+          <div class="clase-titulo">Qué es un Agente IA <span class="tag-micro">micro</span></div>
+          <div class="clase-meta">Calibración — tu agente actual vs un agente real · los 4 componentes</div>
+        </div>
+        <div class="clase-tiempo">8 min</div>
+      </a>
+      <a class="clase-card" href="016-arquitectura-de-agentes-con-claude.html" data-id="016">
+        <div class="clase-check"></div>
+        <div class="clase-num">016</div>
+        <div class="clase-content">
+          <div class="clase-titulo">Arquitectura de Agentes con Claude</div>
+          <div class="clase-meta">Managed Agents API · patrones orquestación · tool use avanzado · repo: cwc-workshops + anthropic-cookbook</div>
+        </div>
+        <div class="clase-tiempo">45 min</div>
+      </a>
+      <a class="clase-card" href="017-skills-en-claude-code-como-funcionan.html" data-id="017">
+        <div class="clase-check"></div>
+        <div class="clase-num">017</div>
+        <div class="clase-content">
+          <div class="clase-titulo">Skills en Claude Code — Cómo Funcionan <span class="tag-recom">★ pediste esto</span></div>
+          <div class="clase-meta">Cuándo Claude los usa · cómo crearlos · Cowork vs CLI · skill /quarta:calificacion-creditos · repo: claude-for-legal/skills</div>
+        </div>
+        <div class="clase-tiempo">30 min</div>
+      </a>
+      <a class="clase-card" href="018-agente-concursal-v2-decomposicion.html" data-id="018">
+        <div class="clase-check"></div>
+        <div class="clase-num">018</div>
+        <div class="clase-content">
+          <div class="clase-titulo">Agente Concursal v2 — Descomposición</div>
+          <div class="clase-meta">De monolito a skills · long-running agents · hooks · fresh evaluator context · repo: cwc-workshops/agent-decomposition</div>
+        </div>
+        <div class="clase-tiempo">45 min</div>
+      </a>
+      <a class="clase-card" href="019-quarta-legal-hub-diseno-completo.html" data-id="019">
+        <div class="clase-check"></div>
+        <div class="clase-num">019</div>
+        <div class="clase-content">
+          <div class="clase-titulo">Quarta Legal Hub — Diseño Completo</div>
+          <div class="clase-meta">Arquitectura completa · 3 agentes prioritarios · roadmap 6 meses · repo: claude-for-legal (TODO)</div>
+        </div>
+        <div class="clase-tiempo">45 min</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- BLOQUE 4 -->
+  <div class="bloque b4">
+    <div class="bloque-header">
+      <div class="bloque-num">4</div>
+      <div class="bloque-title">Claude Code</div>
+      <div class="bloque-meta">~1.5 h · 3 clases</div>
+    </div>
+    <div class="clases-grid">
+      <a class="clase-card" href="020-claude-code-cli-desde-cero.html" data-id="020">
+        <div class="clase-check"></div>
+        <div class="clase-num">020</div>
+        <div class="clase-content">
+          <div class="clase-titulo">Claude Code CLI — Lo Esencial</div>
+          <div class="clase-meta">10 comandos clave · CLAUDE.md para Quarta · context management · repo: claude-code-ultimate-guide</div>
+        </div>
+        <div class="clase-tiempo">30 min</div>
+      </a>
+      <a class="clase-card" href="021-hooks-automatizacion-claude-code.html" data-id="021">
+        <div class="clase-check"></div>
+        <div class="clase-num">021</div>
+        <div class="clase-content">
+          <div class="clase-titulo">Hooks y Automatización en Claude Code</div>
+          <div class="clase-meta">PreToolUse · PostToolUse · auto-commit · seguridad base vectorial · repo: claude-code-ultimate-guide</div>
+        </div>
+        <div class="clase-tiempo">30 min</div>
+      </a>
+      <a class="clase-card" href="022-claude-code-quarta-workflow-real.html" data-id="022">
+        <div class="clase-check"></div>
+        <div class="clase-num">022</div>
+        <div class="clase-content">
+          <div class="clase-titulo">Claude Code — Workflow Real para Quarta</div>
+          <div class="clase-meta">Cómo Anthropic lo usa · feature→diff→deploy Railway · eval-driven development · repo: cwc-workshops/how-we-claude-code</div>
+        </div>
+        <div class="clase-tiempo">30 min</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- BLOQUE 5 -->
+  <div class="bloque b5">
+    <div class="bloque-header">
+      <div class="bloque-num">5</div>
+      <div class="bloque-title">Finanzas e Inversión con IA</div>
+      <div class="bloque-meta">~2.5 h · 4 clases · Desde cero</div>
+    </div>
+    <div class="clases-grid">
+      <a class="clase-card" href="023-micro-agentes-financieros-intro.html" data-id="023">
+        <div class="clase-check"></div>
+        <div class="clase-num">023</div>
+        <div class="clase-content">
+          <div class="clase-titulo">Agentes Financieros — Intro <span class="tag-micro">micro</span></div>
+          <div class="clase-meta">Qué puede y NO puede hacer un agente · los 3 tipos · guardrails · desde cero</div>
+        </div>
+        <div class="clase-tiempo">8 min</div>
+      </a>
+      <a class="clase-card" href="024-agente-trading-btc-arquitectura.html" data-id="024">
+        <div class="clase-check"></div>
+        <div class="clase-num">024</div>
+        <div class="clase-content">
+          <div class="clase-titulo">Agente de Análisis BTC desde Cero</div>
+          <div class="clase-meta">APIs gratuitas · CoinGecko · análisis con Claude · paper trading · repo: financial-services</div>
+        </div>
+        <div class="clase-tiempo">45 min</div>
+      </a>
+      <a class="clase-card" href="025-analisis-mercado-con-claude.html" data-id="025">
+        <div class="clase-check"></div>
+        <div class="clase-num">025</div>
+        <div class="clase-content">
+          <div class="clase-titulo">Morning Brief Automático — BTC + SPY + Macro</div>
+          <div class="clase-meta">yfinance · análisis fundamental · correlaciones · repo: financial-services/managed-agent-cookbooks</div>
+        </div>
+        <div class="clase-tiempo">45 min</div>
+      </a>
+      <a class="clase-card" href="026-polymarket-prediccion-eventos.html" data-id="026">
+        <div class="clase-check"></div>
+        <div class="clase-num">026</div>
+        <div class="clase-content">
+          <div class="clase-titulo">Polymarket — Tu Ventaja Legal como Edge</div>
+          <div class="clase-meta">Mercados de predicción · API Polymarket · eventos legales Colombia como nicho · Supersociedades · SIC</div>
+        </div>
+        <div class="clase-tiempo">30 min</div>
+      </a>
+    </div>
+  </div>
+
+  <div class="total-row">
+    <div>Total estimado: 780 min · 13 horas · 26 clases · 6 micro-clases + 20 completas</div>
+    <button class="btn-reset" onclick="resetProgress()">↺ Reiniciar progreso</button>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+const TOTAL = 26;
+
+function loadProgress() {
+  let done = 0;
+  document.querySelectorAll('.clase-card').forEach(card => {
+    const id = card.dataset.id;
+    const key = 'clase_completada_' + id;
+    if (localStorage.getItem(key) === '1') {
+      card.classList.add('done');
+      card.querySelector('.clase-check').textContent = '✓';
+      done++;
+    }
+  });
+  updateBar(done);
+}
+
+function updateBar(done) {
+  const pct = Math.round((done / TOTAL) * 100);
+  document.getElementById('topProgressFill').style.width = pct + '%';
+  document.getElementById('topProgressText').textContent = done + ' / ' + TOTAL + ' clases';
+  document.getElementById('completedCount').textContent = done;
+}
+
+function resetProgress() {
+  if (!confirm('¿Reiniciar todo el progreso del curso?')) return;
+  for (let i = 1; i <= TOTAL; i++) {
+    const id = String(i).padStart(3, '0');
+    localStorage.removeItem('clase_completada_' + id);
+  }
+  document.querySelectorAll('.clase-card').forEach(card => {
+    card.classList.remove('done');
+    card.querySelector('.clase-check').textContent = '';
+  });
+  updateBar(0);
+}
+
+// Click to toggle complete from index
+document.querySelectorAll('.clase-card').forEach(card => {
+  card.addEventListener('click', function(e) {
+    // Only toggle if clicking the checkbox area, otherwise navigate
+    const checkEl = this.querySelector('.clase-check');
+    const rect = checkEl.getBoundingClientRect();
+    const clickedCheck = (
+      e.clientX >= rect.left - 10 && e.clientX <= rect.right + 10 &&
+      e.clientY >= rect.top - 10 && e.clientY <= rect.bottom + 10
+    );
+    if (clickedCheck) {
+      e.preventDefault();
+      const id = this.dataset.id;
+      const key = 'clase_completada_' + id;
+      if (localStorage.getItem(key) === '1') {
+        localStorage.removeItem(key);
+        this.classList.remove('done');
+        checkEl.textContent = '';
+      } else {
+        localStorage.setItem(key, '1');
+        this.classList.add('done');
+        checkEl.textContent = '✓';
+      }
+      loadProgress();
+    }
+  });
+});
+
+loadProgress();
+</script>
+</body>
+</html>

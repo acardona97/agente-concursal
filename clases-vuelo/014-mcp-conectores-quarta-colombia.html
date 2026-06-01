@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>014 · Conectores MCP para Colombia</title>
+<style>
+:root {
+  --bg:#0d0f0e; --surface:#131615; --border:#1e2420;
+  --gold:#c9a84c; --gold-dim:#7a6230;
+  --text:#e8e4d9; --text-dim:#7a7568;
+  --green:#2d4a3e; --blue:#1e3a5f;
+  --red:#8b3a3a;
+  --font-body:'Georgia',serif;
+  --font-mono:'Courier New',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:17px;line-height:1.7;min-height:100vh}
+a{color:var(--gold);text-decoration:none}
+a:hover{text-decoration:underline}
+header{background:var(--surface);border-bottom:2px solid var(--gold-dim);padding:20px 40px;display:flex;justify-content:space-between;align-items:center}
+.bloque-badge{font-family:var(--font-mono);font-size:11px;background:var(--blue);color:#7ab3e0;border:1px solid #2a5285;padding:3px 10px;border-radius:4px;letter-spacing:.08em}
+h1{font-size:26px;color:var(--gold);font-weight:normal;margin:0}
+.meta{font-family:var(--font-mono);font-size:11px;color:var(--text-dim);margin-top:4px}
+.progress-container{background:var(--surface);padding:10px 40px;border-bottom:1px solid var(--border)}
+.progress-label{font-family:var(--font-mono);font-size:10px;color:var(--text-dim);margin-bottom:5px}
+.progress-bar{height:4px;background:var(--border);border-radius:2px}
+.progress-fill{height:100%;background:var(--gold);border-radius:2px;transition:width .3s}
+main{max-width:900px;margin:0 auto;padding:40px 24px}
+h2{font-size:20px;color:var(--gold);margin:40px 0 16px;font-weight:normal;border-left:3px solid var(--gold);padding-left:14px}
+h3{font-size:17px;color:#a8c4b0;margin:28px 0 12px;font-weight:normal}
+p{margin-bottom:14px}
+ul,ol{margin:0 0 14px 24px}
+li{margin-bottom:6px}
+.concept-box{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--gold);border-radius:6px;padding:20px 24px;margin:20px 0}
+.concept-box.blue{border-left-color:#4a8abf}
+.concept-box.green{border-left-color:#4a8a6e}
+code{font-family:var(--font-mono);background:#0a0c0b;border:1px solid var(--border);padding:2px 7px;border-radius:3px;font-size:14px;color:#8ecfb0}
+pre{font-family:var(--font-mono);background:#080a09;border:1px solid var(--border);border-radius:8px;padding:24px;overflow-x:auto;font-size:13px;line-height:1.7;margin:16px 0;color:#c8d8c0}
+pre .comment{color:#4a6a50}
+pre .key{color:#c9a84c}
+pre .val{color:#7ab3e0}
+pre .str{color:#8ecfb0}
+.analogy{background:#0a1a12;border:1px solid var(--green);border-radius:8px;padding:18px 22px;margin:20px 0}
+.analogy-label{font-family:var(--font-mono);font-size:10px;color:#4a8a6e;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+.quarta-section{background:#080e0a;border:2px solid var(--gold-dim);border-radius:10px;padding:28px;margin:36px 0}
+.quarta-label{font-family:var(--font-mono);font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:.12em;margin-bottom:16px}
+.quiz-section{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:28px;margin:40px 0}
+.quiz-title{font-family:var(--font-mono);font-size:13px;color:var(--gold);margin-bottom:20px;text-transform:uppercase;letter-spacing:.08em}
+.quiz-q{margin-bottom:20px}
+.quiz-q p{font-weight:bold;margin-bottom:8px;color:#c8d8c0}
+.quiz-opt{display:flex;flex-direction:column;gap:6px}
+.quiz-opt label{display:flex;align-items:flex-start;gap:10px;cursor:pointer;padding:8px 12px;border-radius:5px;border:1px solid var(--border);transition:background .2s;font-size:15px}
+.quiz-opt label:hover{background:#131e15}
+.quiz-opt input[type=radio]{margin-top:3px;flex-shrink:0;accent-color:var(--gold)}
+.quiz-feedback{font-family:var(--font-mono);font-size:12px;margin-top:8px;padding:8px 12px;border-radius:4px;display:none}
+.quiz-feedback.correct{background:#0a1e0f;border:1px solid #2d6b4a;color:#5db88a}
+.quiz-feedback.wrong{background:#1a0d0d;border:1px solid var(--red);color:#c97070}
+.btn-quiz{font-family:var(--font-mono);font-size:12px;padding:8px 20px;background:var(--gold);border:none;border-radius:5px;color:#0d0f0e;cursor:pointer;margin-top:14px;font-weight:bold}
+.btn-quiz:hover{background:#d4b55e}
+.nav-buttons{display:flex;justify-content:space-between;align-items:center;margin:50px 0 30px;padding-top:24px;border-top:1px solid var(--border)}
+.nav-btn{font-family:var(--font-mono);font-size:12px;padding:10px 22px;border:1px solid var(--border);background:transparent;color:var(--text-dim);border-radius:6px;cursor:pointer;text-decoration:none;transition:all .2s}
+.nav-btn:hover{border-color:var(--gold);color:var(--gold);text-decoration:none}
+.nav-btn.next{background:rgba(201,168,76,.1);border-color:var(--gold-dim);color:var(--gold)}
+.nav-btn.next:hover{background:rgba(201,168,76,.2)}
+.complete-check{display:flex;align-items:center;gap:10px;font-family:var(--font-mono);font-size:12px;color:var(--text-dim)}
+.complete-check input{width:18px;height:18px;accent-color:var(--gold);cursor:pointer}
+.complete-check.done{color:#5db88a}
+
+/* Connector table */
+.connector-table{width:100%;border-collapse:collapse;margin:20px 0;font-size:13px}
+.connector-table th{font-family:var(--font-mono);font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-dim);padding:10px 12px;border-bottom:2px solid var(--border);text-align:left;white-space:nowrap}
+.connector-table td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+.connector-table tr:hover td{background:var(--surface)}
+.priority-1{background:#0a1e0f;border:1px solid #2d6b4a;color:#5db88a;font-family:var(--font-mono);font-size:10px;padding:2px 8px;border-radius:3px;white-space:nowrap}
+.priority-2{background:#0a1220;border:1px solid #2a5285;color:#7ab3e0;font-family:var(--font-mono);font-size:10px;padding:2px 8px;border-radius:3px;white-space:nowrap}
+.priority-3{background:#1a1208;border:1px solid var(--gold-dim);color:var(--gold);font-family:var(--font-mono);font-size:10px;padding:2px 8px;border-radius:3px;white-space:nowrap}
+.priority-4{background:#12100a;border:1px solid #3a3020;color:var(--text-dim);font-family:var(--font-mono);font-size:10px;padding:2px 8px;border-radius:3px;white-space:nowrap}
+
+.connector-type{font-family:var(--font-mono);font-size:11px;padding:2px 7px;border-radius:3px;border:1px solid var(--border)}
+.type-scraper{color:#c97070;border-color:#3a2020}
+.type-api{color:#5db88a;border-color:#2d6b4a}
+.type-custom{color:#c9a84c;border-color:var(--gold-dim)}
+
+.diagram{font-family:var(--font-mono);background:#080a09;border:1px solid #2a3a2a;border-radius:8px;padding:28px;font-size:12px;line-height:1.8;overflow-x:auto;color:#a0c8a8;margin:20px 0}
+.diagram .box{color:#c9a84c}
+.diagram .arrow{color:#4a8a6e}
+.diagram .note{color:#4a6a50}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="bloque-badge">BLOQUE 2 · MCP EN PROFUNDIDAD</div>
+    <h1>014 · Conectores MCP para Colombia</h1>
+    <div class="meta">Tiempo estimado: 30 min &nbsp;·&nbsp; De los conectores globales a los colombianos</div>
+  </div>
+  <div style="text-align:right;font-family:var(--font-mono);font-size:12px;color:var(--text-dim)">Clase 14 de 26</div>
+</header>
+
+<div class="progress-container">
+  <div class="progress-label">Progreso del curso</div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+</div>
+
+<main>
+
+<p>El repositorio <code>claude-for-legal</code> de Anthropic tiene conectores para el mundo anglosajón: Ironclad (contratos), CourtListener (sentencias de EEUU), iManage (DMS), Everlaw (litigios). Ninguno sirve directamente para Colombia. Esta clase mapea sus equivalentes colombianos y define qué construir primero para Quarta.</p>
+
+<!-- ══════════ 1. LOS CONECTORES EXISTENTES ══════════ -->
+<h2>Los conectores de claude-for-legal: qué hacen</h2>
+
+<table class="connector-table">
+  <thead>
+    <tr>
+      <th>Conector (EEUU)</th>
+      <th>Qué hace</th>
+      <th>Equivalente Colombia</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>CourtListener</strong></td>
+      <td>Busca sentencias federales EEUU, accede a dockets. API REST pública.</td>
+      <td>CSJ Relatoría + Rama Judicial (TYBA)</td>
+    </tr>
+    <tr>
+      <td><strong>Ironclad</strong></td>
+      <td>Gestiona contratos en ciclo de vida. API REST con OAuth2.</td>
+      <td>No hay equivalente directo — un DMS colombiano o SharePoint</td>
+    </tr>
+    <tr>
+      <td><strong>iManage</strong></td>
+      <td>Document Management System. Indexa expedientes del bufete.</td>
+      <td>Tu ChromaDB actual (o iManage si lo tienes)</td>
+    </tr>
+    <tr>
+      <td><strong>Everlaw</strong></td>
+      <td>E-discovery y análisis de documentos en litigios.</td>
+      <td>No existe equivalente colombiano público</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="analogy">
+  <div class="analogy-label">La lectura correcta</div>
+  <p>No se trata de copiar esos conectores — se trata de entender el <strong>patrón</strong>: cada conector es un MCP server que sabe cómo hablar con una fuente de datos específica y expone tools granulares. Tu trabajo es construir los mismos patrones para las fuentes colombianas.</p>
+</div>
+
+<!-- ══════════ 2. ARQUITECTURA DE UN CONECTOR ══════════ -->
+<h2>Cómo construir un conector personalizado</h2>
+
+<p>Un conector para fuentes colombianas tiene siempre la misma estructura:</p>
+
+<div class="diagram">
+<span class="box">┌─────────────────────────────────────────────────────────────────────┐</span>
+<span class="box">│           ESTRUCTURA DE UN CONECTOR MCP COLOMBIANO                 │</span>
+<span class="box">└─────────────────────────────────────────────────────────────────────┘</span>
+
+<span class="box">┌──────────────┐     <span class="arrow">tools/call</span>      ┌───────────────────────────┐</span>
+<span class="box">│    Claude    │ ──────────────────→ │   MCP Server (tu código)  │</span>
+<span class="box">│              │ ←────────────────── │   mcp_supersociedades.py  │</span>
+<span class="box">└──────────────┘     <span class="arrow">TextContent</span>     └───────────┬───────────────┘</span>
+                                                  │
+                              <span class="note">¿Hay API REST?</span>  <span class="arrow">│</span>  <span class="note">¿Solo HTML?</span>
+                                    <span class="arrow">↙</span>           │          <span class="arrow">↘</span>
+             <span class="box">┌──────────────────┐</span>            <span class="box">┌─────────────────────┐</span>
+             <span class="box">│  API REST directa │</span>            <span class="box">│  Web scraper        │</span>
+             <span class="box">│  (SIIS, DIAN, etc)│</span>            <span class="box">│  httpx + BeautifulS │</span>
+             <span class="box">└──────────────────┘</span>            <span class="box">└─────────────────────┘</span>
+                      <span class="arrow">↓</span>                               <span class="arrow">↓</span>
+             <span class="box">┌──────────────────────────────────────────────────────────┐</span>
+             <span class="box">│          Caché local (Redis o SQLite)                    │</span>
+             <span class="box">│   Para no martillar los sitios del Estado con queries    │</span>
+             <span class="box">└──────────────────────────────────────────────────────────┘</span>
+</div>
+
+<h3>El patrón del conector: cuatro capas</h3>
+
+<pre><span class="comment"># Capa 1: Tool definition (qué ve Claude)</span>
+types.Tool(
+    name=<span class="str">"consultar_proceso_supersociedades"</span>,
+    description=<span class="str">"Consulta el estado de un proceso concursal en SIIS..."</span>,
+    inputSchema={...}
+)
+
+<span class="comment"># Capa 2: Validación (qué acepta el conector)</span>
+<span class="key">def</span> <span class="val">_validar_nit</span>(nit: str) -> bool:
+    <span class="key">return</span> bool(re.match(<span class="str">r'^\d{9,10}(-\d)?$'</span>, nit.strip()))
+
+<span class="comment"># Capa 3: Acceso a datos (cómo llega a la fuente)</span>
+<span class="key">async def</span> <span class="val">_fetch_siis</span>(nit: str) -> dict:
+    <span class="comment"># intento 1: caché</span>
+    cached = cache.get(<span class="str">f"siis:{nit}"</span>)
+    <span class="key">if</span> cached: <span class="key">return</span> cached
+    <span class="comment"># intento 2: petición HTTP</span>
+    response = <span class="key">await</span> httpx_client.get(SIIS_URL, params={<span class="str">"nit"</span>: nit})
+    resultado = parse_siis(response.text)
+    cache.set(<span class="str">f"siis:{nit}"</span>, resultado, ttl=3600)
+    <span class="key">return</span> resultado
+
+<span class="comment"># Capa 4: Formateo (qué lee Claude)</span>
+<span class="key">def</span> <span class="val">_formatear_proceso</span>(data: dict) -> str:
+    <span class="key">return</span> <span class="str">f"""Proceso: {data['radicado']}
+Estado: {data['estado']}
+Juez del concurso: {data['juez']}
+Última actuación: {data['ultima_actuacion']}"""</span></pre>
+
+<!-- ══════════ 3. CONECTOR PRIORITARIO: CSJ ══════════ -->
+<h2>Conector prioritario: CSJ Relatoría</h2>
+
+<pre><span class="comment">"""
+mcp_csj_relatoria.py
+Conector MCP para la Relatoría de la Corte Suprema de Justicia.
+URL base: https://relatoria.ramajudicial.gov.co
+
+Estado actual (2025): el sitio tiene búsqueda por formulario HTML.
+No hay API REST pública documentada.
+Estrategia: scraper con httpx + BeautifulSoup + caché SQLite.
+"""</span>
+
+<span class="key">import</span> httpx
+<span class="key">import</span> asyncio
+<span class="key">from</span> bs4 <span class="key">import</span> BeautifulSoup
+<span class="key">import</span> sqlite3, json, time
+<span class="key">from</span> pathlib <span class="key">import</span> Path
+
+RELATORIA_URL = <span class="str">"https://relatoria.ramajudicial.gov.co/SIICSA/busqueda"</span>
+CACHE_DB = Path(<span class="str">"./cache/csj_cache.db"</span>)
+
+<span class="comment"># Caché SQLite simple — evita martillar el servidor de la Rama</span>
+<span class="key">def</span> <span class="val">_init_cache</span>():
+    CACHE_DB.parent.mkdir(exist_ok=True)
+    conn = sqlite3.connect(CACHE_DB)
+    conn.execute(<span class="str">"""CREATE TABLE IF NOT EXISTS cache
+                    (key TEXT PRIMARY KEY, value TEXT, ts INTEGER)"""</span>)
+    conn.commit()
+    <span class="key">return</span> conn
+
+<span class="key">async def</span> <span class="val">buscar_relatoria</span>(termino: str, sala: str = <span class="str">"Civil"</span>, año: int = 2024) -> str:
+    <span class="str">"""
+    Busca en la Relatoría CSJ.
+    Retorna texto formateado con los resultados.
+    """</span>
+    conn = _init_cache()
+    cache_key = <span class="str">f"csj:{termino}:{sala}:{año}"</span>
+
+    <span class="comment"># Revisar caché (TTL: 24 horas — la jurisprudencia no cambia)</span>
+    row = conn.execute(
+        <span class="str">"SELECT value FROM cache WHERE key=? AND ts>?"</span>,
+        (cache_key, int(time.time()) - 86400)
+    ).fetchone()
+
+    <span class="key">if</span> row:
+        <span class="key">return</span> json.loads(row[0])
+
+    <span class="comment"># Si no hay caché: hacer la petición</span>
+    <span class="key">async with</span> httpx.AsyncClient(timeout=15.0) <span class="key">as</span> client:
+        <span class="key">try</span>:
+            response = <span class="key">await</span> client.post(
+                RELATORIA_URL,
+                data={
+                    <span class="str">"texto"</span>: termino,
+                    <span class="str">"sala"</span>: sala,
+                    <span class="str">"anio"</span>: str(año)
+                },
+                headers={<span class="str">"User-Agent"</span>: <span class="str">"Quarta-Legal-Hub/1.0"</span>}
+            )
+            resultado = _parsear_resultados(response.text, termino)
+        <span class="key">except</span> httpx.TimeoutException:
+            <span class="key">return</span> <span class="str">"No fue posible conectar con la Relatoría CSJ. Verifique su conexión."</span>
+
+    <span class="comment"># Guardar en caché</span>
+    conn.execute(
+        <span class="str">"INSERT OR REPLACE INTO cache VALUES (?,?,?)"</span>,
+        (cache_key, json.dumps(resultado), int(time.time()))
+    )
+    conn.commit()
+    <span class="key">return</span> resultado
+
+<span class="key">def</span> <span class="val">_parsear_resultados</span>(html: str, termino: str) -> str:
+    <span class="str">"""Extrae resultados del HTML de la Relatoría."""</span>
+    soup = BeautifulSoup(html, <span class="str">"html.parser"</span>)
+    resultados = []
+    <span class="comment"># El parsing específico depende del DOM actual de la Relatoría</span>
+    <span class="comment"># Ajustar los selectores según la estructura del sitio</span>
+    <span class="key">for</span> item <span class="key">in</span> soup.select(<span class="str">".resultado-jurisprudencia"</span>):
+        radicado = item.select_one(<span class="str">".radicado"</span>)
+        fecha    = item.select_one(<span class="str">".fecha"</span>)
+        extracto = item.select_one(<span class="str">".extracto"</span>)
+        <span class="key">if</span> radicado:
+            resultados.append(<span class="str">f"• {radicado.text} ({fecha.text if fecha else 'fecha?'})\n  {extracto.text[:200] if extracto else ''}"</span>)
+
+    <span class="key">if not</span> resultados:
+        <span class="key">return</span> <span class="str">f"Sin resultados para '{termino}' en la Relatoría CSJ."</span>
+    <span class="key">return</span> <span class="str">"\n\n"</span>.join(resultados[:10])  <span class="comment"># máximo 10 resultados</span></pre>
+
+<!-- ══════════ QUARTA ARCHITECTURE ══════════ -->
+<div class="quarta-section">
+  <div class="quarta-label">Quarta Legal Hub · Arquitectura completa de conectores</div>
+
+  <div class="diagram" style="margin-top:0">
+<span class="box">╔══════════════════════════════════════════════════════════════════════╗</span>
+<span class="box">║              QUARTA LEGAL HUB — CONECTORES MCP                     ║</span>
+<span class="box">╚══════════════════════════════════════════════════════════════════════╝</span>
+
+<span class="box">                         ┌─────────┐</span>
+<span class="box">                         │  Claude  │</span>
+<span class="box">                         └────┬────┘</span>
+                               │ MCP tools/call
+                               │
+<span class="box">         ┌─────────────────────┼─────────────────────┐</span>
+         │                     │                     │
+<span class="box">  ┌──────┴──────┐       ┌──────┴──────┐       ┌──────┴──────┐</span>
+<span class="box">  │  MCP Core   │       │  MCP Legal  │       │  MCP Docs   │</span>
+<span class="box">  │  (tu actual)│       │  Colombia   │       │  (local)    │</span>
+<span class="box">  └──────┬──────┘       └──────┬──────┘       └──────┬──────┘</span>
+         │                     │                     │
+<span class="note">agente.py              CSJ Relatoría          ChromaDB</span>
+<span class="note">consultar_agente       Supersociedades         generar_word</span>
+<span class="note">calificar_credito      Rama Judicial (TYBA)    generar_excel</span>
+<span class="note">verificar_prelacion    DIAN RUT/NIT            listar_docs</span>
+                       BanRep (tasas)
+  </div>
+
+  <h3 style="color:var(--gold)">Tabla de priorización — qué construir y cuándo</h3>
+
+  <table class="connector-table">
+    <thead>
+      <tr>
+        <th>Sistema colombiano</th>
+        <th>URL / Acceso</th>
+        <th>Tipo de conector</th>
+        <th>Prioridad</th>
+        <th>Tiempo est.</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>CSJ Relatoría</strong><br><small style="color:var(--text-dim)">Sentencias Sala Civil / Comercio</small></td>
+        <td><code style="font-size:11px">relatoria.ramajudicial.gov.co</code><br><small>Formulario HTML — scraper</small></td>
+        <td><span class="connector-type type-scraper">scraper</span></td>
+        <td><span class="priority-1">P1 — YA</span></td>
+        <td>1–2 sem</td>
+      </tr>
+      <tr>
+        <td><strong>Supersociedades SIIS</strong><br><small style="color:var(--text-dim)">Estado procesos concursales</small></td>
+        <td><code style="font-size:11px">siis.supersociedades.gov.co</code><br><small>Consulta por NIT — scraper</small></td>
+        <td><span class="connector-type type-scraper">scraper</span></td>
+        <td><span class="priority-1">P1 — YA</span></td>
+        <td>1 sem</td>
+      </tr>
+      <tr>
+        <td><strong>Rama Judicial</strong><br><small style="color:var(--text-dim)">Consulta proceso por radicado</small></td>
+        <td><code style="font-size:11px">ramajudicial.gov.co/TYBA</code><br><small>Consulta pública — scraper</small></td>
+        <td><span class="connector-type type-scraper">scraper</span></td>
+        <td><span class="priority-2">P2 — pronto</span></td>
+        <td>1 sem</td>
+      </tr>
+      <tr>
+        <td><strong>SIC</strong><br><small style="color:var(--text-dim)">Registro Propiedad Industrial</small></td>
+        <td><code style="font-size:11px">sic.gov.co/signos-distintivos</code><br><small>API REST parcial + scraper</small></td>
+        <td><span class="connector-type type-api">API + scraper</span></td>
+        <td><span class="priority-2">P2 — pronto</span></td>
+        <td>2 sem</td>
+      </tr>
+      <tr>
+        <td><strong>DIAN</strong><br><small style="color:var(--text-dim)">Verificación RUT y NIT</small></td>
+        <td><code style="font-size:11px">muisca.dian.gov.co</code><br><small>Captcha — requiere solución especial</small></td>
+        <td><span class="connector-type type-custom">custom</span></td>
+        <td><span class="priority-3">P3 — después</span></td>
+        <td>3 sem</td>
+      </tr>
+      <tr>
+        <td><strong>BanRep</strong><br><small style="color:var(--text-dim)">Tasas de interés, inflación</small></td>
+        <td><code style="font-size:11px">banrep.gov.co/series-estadisticas</code><br><small>API REST pública (excelente)</small></td>
+        <td><span class="connector-type type-api">API REST</span></td>
+        <td><span class="priority-3">P3 — después</span></td>
+        <td>3 días</td>
+      </tr>
+      <tr>
+        <td><strong>Registro Mercantil CCB</strong><br><small style="color:var(--text-dim)">Existencia y rep. legal</small></td>
+        <td><code style="font-size:11px">ruesapi.rues.org.co</code><br><small>API REST pública con registro</small></td>
+        <td><span class="connector-type type-api">API REST</span></td>
+        <td><span class="priority-4">P4 — futuro</span></td>
+        <td>1 sem</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3 style="color:var(--gold)">¿Por qué empezar con CSJ + SIIS?</h3>
+
+  <p>La lógica de priorización viene del trabajo diario de Quarta:</p>
+  <ul>
+    <li><strong>CSJ Relatoría:</strong> Es el primer lugar que buscas antes de presentar cualquier escrito en concursal. Tener jurisprudencia disponible en segundos dentro de Claude cambia el flujo de trabajo completamente.</li>
+    <li><strong>SIIS Supersociedades:</strong> Para verificar el estado actual de los procesos de tus clientes. La información que ya tienes en ChromaDB puede estar desactualizada — SIIS tiene el estado en tiempo real.</li>
+    <li><strong>BanRep:</strong> La API es la más fácil de todas (REST pública, bien documentada) y tiene alto impacto para calcular indexaciones e intereses en los proyectos de calificación.</li>
+  </ul>
+
+  <div class="concept-box green" style="margin-top:20px">
+    <strong>Recomendación de arquitectura:</strong> No mezcles los conectores con tu Flask app actual. Crea un repositorio separado <code>quarta-mcp-connectors</code> que corra como un servicio independiente en Railway. Tu Flask app sigue siendo la interfaz de usuario. Los conectores son la capa de datos externa.
+  </div>
+</div>
+
+<!-- ══════════ QUIZ ══════════ -->
+<div class="quiz-section">
+  <div class="quiz-title">Quiz · Conectores Colombia</div>
+
+  <div class="quiz-q" id="q1">
+    <p>1. BanRep tiene una API REST pública y bien documentada. Pero la priorizas como P3 y no P1. ¿Por qué es la decisión correcta?</p>
+    <div class="quiz-opt">
+      <label><input type="radio" name="q1" value="a"> <span>No es correcto — si la API es fácil, siempre hay que hacerla primero</span></label>
+      <label><input type="radio" name="q1" value="b"> <span>La prioridad debe seguir el impacto en el flujo de trabajo real, no la facilidad técnica. CSJ y SIIS son más críticos para el día a día concursal</span></label>
+      <label><input type="radio" name="q1" value="c"> <span>BanRep no tiene datos relevantes para derecho concursal</span></label>
+    </div>
+    <div class="quiz-feedback" id="q1-fb"></div>
+  </div>
+
+  <div class="quiz-q" id="q2">
+    <p>2. El sitio de Supersociedades SIIS solo tiene una interfaz HTML, sin API REST documentada. ¿Qué estrategia técnica usas para construir el conector?</p>
+    <div class="quiz-opt">
+      <label><input type="radio" name="q2" value="a"> <span>No es posible — sin API REST no se puede hacer un conector MCP</span></label>
+      <label><input type="radio" name="q2" value="b"> <span>Web scraper con httpx + BeautifulSoup + caché local para no sobrecargar el servidor</span></label>
+      <label><input type="radio" name="q2" value="c"> <span>Descargar manualmente el HTML y cargarlo a ChromaDB cada semana</span></label>
+    </div>
+    <div class="quiz-feedback" id="q2-fb"></div>
+  </div>
+
+  <div class="quiz-q" id="q3">
+    <p>3. ¿Por qué se recomienda crear el repositorio de conectores separado de la Flask app actual?</p>
+    <div class="quiz-opt">
+      <label><input type="radio" name="q3" value="a"> <span>Los conectores deben estar en TypeScript, no en Python</span></label>
+      <label><input type="radio" name="q3" value="b"> <span>Separación de responsabilidades: la Flask app es la UI, los conectores son la capa de datos. Si SIIS cambia su estructura HTML, no rompe la app del cliente</span></label>
+      <label><input type="radio" name="q3" value="c"> <span>Railway no permite más de un servicio por proyecto</span></label>
+    </div>
+    <div class="quiz-feedback" id="q3-fb"></div>
+  </div>
+
+  <button class="btn-quiz" onclick="checkQuiz()">Verificar respuestas</button>
+</div>
+
+<div class="nav-buttons">
+  <a href="013-mcp-tu-primer-servidor-avanzado.html" class="nav-btn">← Anterior</a>
+  <div class="complete-check" id="completeCheck">
+    <input type="checkbox" id="cbComplete" onchange="marcarCompleta()">
+    <label for="cbComplete">Marcar clase como completada</label>
+  </div>
+  <a href="015-micro-que-es-un-agente-ia.html" class="nav-btn next">Siguiente: ¿Qué es un Agente IA? →</a>
+</div>
+
+</main>
+
+<script>
+const TOTAL_CLASES = 26;
+const CLASE_NUM = 14;
+(function(){
+  let completadas = 0;
+  for(let i=1;i<=TOTAL_CLASES;i++){
+    if(localStorage.getItem('clase_completada_'+String(i).padStart(3,'0'))==='true') completadas++;
+  }
+  document.getElementById('progressFill').style.width = (completadas/TOTAL_CLASES*100)+'%';
+})();
+(function(){
+  const cb = document.getElementById('cbComplete');
+  const key = 'clase_completada_'+String(CLASE_NUM).padStart(3,'0');
+  if(localStorage.getItem(key)==='true'){
+    cb.checked = true;
+    document.getElementById('completeCheck').classList.add('done');
+  }
+})();
+function marcarCompleta(){
+  const cb = document.getElementById('cbComplete');
+  const key = 'clase_completada_'+String(CLASE_NUM).padStart(3,'0');
+  localStorage.setItem(key, cb.checked ? 'true' : 'false');
+  document.getElementById('completeCheck').classList.toggle('done', cb.checked);
+  let completadas = 0;
+  for(let i=1;i<=TOTAL_CLASES;i++){
+    if(localStorage.getItem('clase_completada_'+String(i).padStart(3,'0'))==='true') completadas++;
+  }
+  document.getElementById('progressFill').style.width = (completadas/TOTAL_CLASES*100)+'%';
+}
+const ANSWERS = { q1: 'b', q2: 'b', q3: 'b' };
+const EXPLANATIONS = {
+  q1: { b: 'Correcto. La priorización correcta sigue el impacto real en el trabajo, no la facilidad técnica. Si construyes lo más fácil primero, podrías terminar con conectores que nadie usa. CSJ y SIIS son los que más valor inmediato generan para Quarta.' },
+  q2: { b: 'Correcto. Sin API REST, la estrategia estándar es web scraping: httpx para hacer las peticiones HTTP, BeautifulSoup para parsear el HTML, y caché local para no sobrecargar el servidor del Estado con requests repetitivos.' },
+  q3: { b: 'Correcto. Separar en servicios independientes es separación de responsabilidades. Si SIIS cambia su DOM mañana (cosa frecuente con los sitios del Estado colombiano), solo se rompe el conector — no la aplicación que usan tus clientes.' }
+};
+function checkQuiz(){
+  let allAnswered = true;
+  ['q1','q2','q3'].forEach(q => {
+    const sel = document.querySelector(`input[name="${q}"]:checked`);
+    const fb = document.getElementById(q+'-fb');
+    if(!sel){ allAnswered = false; return; }
+    const correct = ANSWERS[q];
+    if(sel.value === correct){
+      fb.className = 'quiz-feedback correct';
+      fb.textContent = '✓ ' + EXPLANATIONS[q][correct];
+    } else {
+      fb.className = 'quiz-feedback wrong';
+      fb.textContent = '✗ Incorrecto. ' + EXPLANATIONS[q][correct];
+    }
+    fb.style.display = 'block';
+  });
+  if(!allAnswered) alert('Responde todas las preguntas antes de verificar.');
+}
+</script>
+</body>
+</html>

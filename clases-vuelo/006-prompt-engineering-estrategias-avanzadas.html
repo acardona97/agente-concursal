@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>006 · Prompt Engineering Avanzado — Estrategias</title>
+<style>
+  :root {
+    --bg: #0d0f0e; --surface: #131615; --border: #1e2420;
+    --gold: #c9a84c; --gold-dim: #7a6230;
+    --text: #e8e4d9; --text-dim: #7a7568;
+    --green: #2d4a3e; --green-lit: #5db88a;
+    --code-bg: #0a0c0b; --accent: #3d6b58;
+    --red-dim: #5c2020; --blue-dim: #1a2a40; --blue-lit: #7ab3e0;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: Georgia, serif; font-size: 17px; line-height: 1.7; }
+  #progress-bar-container { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: var(--surface); border-bottom: 1px solid var(--border); padding: 8px 24px; display: flex; align-items: center; gap: 14px; }
+  #progress-track { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  #progress-fill { height: 100%; background: linear-gradient(90deg, var(--gold-dim), var(--gold)); border-radius: 3px; transition: width 0.4s ease; }
+  #progress-label { font-family: 'Courier New', monospace; font-size: 11px; color: var(--text-dim); white-space: nowrap; }
+  .page-wrap { max-width: 860px; margin: 0 auto; padding: 80px 28px 60px; }
+  .clase-header { border-left: 3px solid var(--gold); padding-left: 20px; margin-bottom: 40px; }
+  .clase-meta { font-family: 'Courier New', monospace; font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+  .clase-meta span { color: var(--gold); }
+  .clase-titulo { font-size: 28px; font-weight: normal; margin-bottom: 6px; }
+  .clase-sub { font-size: 14px; color: var(--text-dim); font-style: italic; }
+  .seccion { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 24px 28px; margin-bottom: 24px; }
+  .seccion-titulo { font-family: 'Courier New', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+  .seccion p { margin-bottom: 14px; }
+  .seccion p:last-child { margin-bottom: 0; }
+  .seccion ul, .seccion ol { padding-left: 22px; }
+  .seccion li { margin-bottom: 8px; }
+  .code-wrap { position: relative; margin: 20px 0; }
+  pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 20px 22px; overflow-x: auto; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.65; color: #c8d3c0; }
+  .copy-btn { position: absolute; top: 10px; right: 10px; background: rgba(201,168,76,0.1); border: 1px solid var(--gold-dim); color: var(--gold); font-family: 'Courier New', monospace; font-size: 10px; padding: 4px 10px; border-radius: 4px; cursor: pointer; transition: all 0.2s; }
+  .copy-btn:hover { background: rgba(201,168,76,0.2); }
+  .copy-btn.copied { color: var(--green-lit); border-color: var(--green-lit); }
+  .highlight-box { background: rgba(201,168,76,0.05); border: 1px solid var(--gold-dim); border-radius: 6px; padding: 16px 20px; margin: 16px 0; }
+  .highlight-box strong { color: var(--gold); }
+  .strategy-grid { display: grid; gap: 12px; margin: 16px 0; }
+  .strategy-item { display: grid; grid-template-columns: 180px 1fr; gap: 16px; padding: 16px; background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; }
+  .strategy-label { font-family: 'Courier New', monospace; font-size: 12px; color: var(--gold); font-weight: bold; align-self: start; padding-top: 2px; }
+  .strategy-desc { font-size: 14px; color: var(--text-dim); line-height: 1.5; }
+  .strategy-desc strong { color: var(--text); }
+  .diff-box { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+  .diff-antes { background: rgba(92,32,32,0.2); border: 1px solid var(--red-dim); border-radius: 6px; padding: 16px; }
+  .diff-despues { background: rgba(45,74,62,0.2); border: 1px solid var(--green); border-radius: 6px; padding: 16px; }
+  .diff-label { font-family: 'Courier New', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+  .diff-antes .diff-label { color: #c97070; }
+  .diff-despues .diff-label { color: var(--green-lit); }
+  .diff-content { font-family: 'Courier New', monospace; font-size: 12px; color: var(--text-dim); line-height: 1.6; white-space: pre-wrap; }
+  /* Quiz */
+  .quiz-seccion { background: var(--surface); border: 1px solid var(--gold-dim); border-radius: 8px; padding: 24px 28px; margin-bottom: 24px; }
+  .quiz-titulo { font-family: 'Courier New', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold); margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+  .quiz-pregunta { margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+  .quiz-pregunta:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .quiz-num { font-family: 'Courier New', monospace; font-size: 11px; color: var(--gold-dim); margin-bottom: 8px; }
+  .quiz-texto { font-size: 15px; margin-bottom: 12px; }
+  .ver-respuesta-btn { font-family: 'Courier New', monospace; font-size: 11px; padding: 7px 16px; background: transparent; border: 1px solid var(--gold-dim); color: var(--gold); border-radius: 4px; cursor: pointer; transition: all 0.2s; }
+  .ver-respuesta-btn:hover { background: rgba(201,168,76,0.1); }
+  .respuesta-oculta { display: none; margin-top: 12px; padding: 14px 16px; background: rgba(45,74,62,0.2); border: 1px solid var(--accent); border-radius: 6px; font-size: 14px; color: var(--text-dim); line-height: 1.6; }
+  .respuesta-oculta strong { color: var(--green-lit); }
+  .completado-wrap { display: flex; align-items: center; gap: 12px; margin: 28px 0; padding: 16px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; user-select: none; transition: border-color 0.2s; }
+  .completado-wrap:hover { border-color: var(--gold-dim); }
+  .completado-wrap input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--gold); cursor: pointer; }
+  .completado-wrap label { cursor: pointer; font-size: 14px; color: var(--text-dim); }
+  .completado-wrap.done label { color: var(--green-lit); }
+  .nav-clases { display: flex; justify-content: space-between; gap: 12px; margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--border); }
+  .nav-btn { font-family: 'Courier New', monospace; font-size: 12px; padding: 10px 20px; border-radius: 6px; cursor: pointer; text-decoration: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+  .nav-btn.siguiente { background: linear-gradient(135deg, var(--gold-dim), var(--gold)); color: #0d0f0e; border: none; font-weight: bold; }
+  .nav-btn.siguiente:hover { opacity: 0.9; }
+  .nav-btn.anterior { background: transparent; border: 1px solid var(--border); color: var(--text-dim); }
+  .nav-btn.anterior:hover { border-color: var(--gold-dim); color: var(--gold); }
+  .cm { color: #5a7a60; } .kw { color: #c9a84c; } .st { color: #8ecfb0; } .fn { color: #7ab3e0; } .tg { color: #e0a070; }
+  @media (max-width: 600px) { .diff-box { grid-template-columns: 1fr; } .strategy-item { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div id="progress-bar-container">
+  <div id="progress-track"><div id="progress-fill" style="width:0%"></div></div>
+  <div id="progress-label">0 / 26 clases completadas</div>
+</div>
+
+<div class="page-wrap">
+
+  <div class="clase-header">
+    <div class="clase-meta">
+      Clase <span>006</span> · Bloque 1: Prompt Engineering Avanzado ·
+      Repo: courses/prompt_engineering_interactive_tutorial · <span>~45 min</span>
+    </div>
+    <h1 class="clase-titulo">Las 6 estrategias de prompting que más impactan</h1>
+    <div class="clase-sub">Role prompting, CoT, few-shot, XML, output formatting, prefilling — y cuándo usar cada una</div>
+  </div>
+
+  <!-- CONCEPTO -->
+  <div class="seccion">
+    <div class="seccion-titulo">Concepto</div>
+    <p>
+      El prompting avanzado no es un truco — es una forma de comunicarte con precisión con
+      un modelo de lenguaje. Claude responde mejor a estructuras claras porque fue entrenado
+      con millones de documentos estructurados. Las 6 técnicas aquí son las de mayor impacto
+      para casos de uso legal.
+    </p>
+    <p>
+      La diferencia entre un prompt básico y uno avanzado puede ser la diferencia entre
+      un memorial que hay que reescribir y uno que se envía directamente al juzgado.
+    </p>
+  </div>
+
+  <!-- LAS 6 ESTRATEGIAS -->
+  <div class="seccion">
+    <div class="seccion-titulo">Las 6 estrategias — cuándo y por qué</div>
+
+    <div class="strategy-grid">
+      <div class="strategy-item">
+        <div class="strategy-label">1. Role Prompting</div>
+        <div class="strategy-desc"><strong>"Eres un abogado concursalista colombiano..."</strong> — define la perspectiva y vocabulario. Claude adapta tono, nivel técnico y referencias normativas. Para escritos legales: siempre activo.</div>
+      </div>
+      <div class="strategy-item">
+        <div class="strategy-label">2. Chain-of-Thought</div>
+        <div class="strategy-desc"><strong>"Analiza paso a paso..."</strong> — fuerza razonamiento explícito antes de concluir. Para análisis de créditos y graduación: reduce errores lógicos en ~40%. Ver clase 007 para detalles.</div>
+      </div>
+      <div class="strategy-item">
+        <div class="strategy-label">3. Few-Shot Examples</div>
+        <div class="strategy-desc"><strong>Darle 1–3 ejemplos de input/output deseado.</strong> El modelo "calibra" el formato y tono. Para escritos forenses: mostrar un memorial bien redactado antes de pedir el nuevo.</div>
+      </div>
+      <div class="strategy-item">
+        <div class="strategy-label">4. XML Tags</div>
+        <div class="strategy-desc"><strong>&lt;contexto&gt;, &lt;pregunta&gt;, &lt;instrucciones&gt;</strong> — Claude fue entrenado con XML y lo parsea mejor que texto plano. Separa claramente qué es instrucción, qué es dato, qué es output esperado.</div>
+      </div>
+      <div class="strategy-item">
+        <div class="strategy-label">5. Output Formatting</div>
+        <div class="strategy-desc"><strong>Especifica el formato exacto del output.</strong> "Devuelve JSON con campos: {acreedor, clase, valor, fundamento}" — Claude lo respeta. Para documentos: especifica estructura de memorial (Hechos, Fundamentos, Peticiones).</div>
+      </div>
+      <div class="strategy-item">
+        <div class="strategy-label">6. Prefilling</div>
+        <div class="strategy-desc"><strong>Empezar la respuesta de Claude antes de que la genere.</strong> Si pones "DESPACHO:" como primer token del assistant, Claude continúa desde ahí. Fuerza el formato sin instrucciones extra.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- XML vs TEXTO PLANO -->
+  <div class="seccion">
+    <div class="seccion-titulo">Por qué XML supera al texto plano para Claude</div>
+
+    <div class="diff-box">
+      <div class="diff-antes">
+        <div class="diff-label">Sin XML — ambiguo</div>
+        <div class="diff-content">Aquí está el contexto
+legal relevante: [artículos
+de la Ley 1116]. Ahora
+necesito que redactes
+un memorial. La pregunta
+del abogado es: ¿cómo
+objetar un crédito?</div>
+      </div>
+      <div class="diff-despues">
+        <div class="diff-label">Con XML — preciso</div>
+        <div class="diff-content">&lt;contexto&gt;
+[artículos Ley 1116]
+&lt;/contexto&gt;
+
+&lt;solicitud&gt;
+Redacta un memorial
+de objeción a crédito
+&lt;/solicitud&gt;
+
+&lt;formato&gt;
+Estructura forense
+colombiana estándar
+&lt;/formato&gt;</div>
+      </div>
+    </div>
+
+    <p style="margin-top:16px">
+      Con XML, Claude sabe exactamente dónde termina el contexto y dónde empieza la instrucción.
+      En prompts largos (como los del agente concursal con fragmentos de la Ley 1116),
+      esto reduce alucinaciones porque el modelo no confunde contexto con instrucción.
+    </p>
+  </div>
+
+  <!-- CONSTITUTIONAL AI PROMPTING -->
+  <div class="seccion">
+    <div class="seccion-titulo">Constitutional AI Prompting — valores y restricciones</div>
+    <p>
+      Claude responde a "constituciones" — listas de principios que guían su comportamiento.
+      Para aplicaciones legales, esto es equivalente a las reglas deontológicas del abogado.
+    </p>
+
+    <div class="code-wrap">
+      <button class="copy-btn" onclick="copiar(this, 'code-constitutional')">Copiar</button>
+      <pre id="code-constitutional"><span class="cm"># Patrón Constitutional AI para sistema legal</span>
+<span class="cm"># Incluir en el system prompt como sección separada</span>
+
+PRINCIPIOS_OPERATIVOS = <span class="st">"""
+&lt;principios&gt;
+1. PRECISIÓN NORMATIVA: Cita solo artículos que existen en la Ley 1116.
+   Si no estás seguro de un artículo, escribe [VERIFICAR ARTÍCULO].
+
+2. CONFIDENCIALIDAD: Nunca uses nombres de personas o empresas de los
+   documentos indexados. Usa siempre: [DEUDOR], [ACREEDOR], [PROCESO].
+
+3. LÍMITES DE COMPETENCIA: Si la pregunta requiere opinión sobre
+   estrategia procesal que va más allá del texto normativo, indica:
+   "Esta decisión requiere criterio profesional del abogado a cargo."
+
+4. INTEGRIDAD DOCUMENTAL: Los escritos generados son proyectos.
+   Siempre cierra con: "Revisar antes de presentar al juzgado."
+&lt;/principios&gt;
+"""</span></pre>
+    </div>
+  </div>
+
+  <!-- QUARTA: SYSTEM PROMPT MEJORADO -->
+  <div class="seccion">
+    <div class="seccion-titulo">Quarta — versión mejorada del system prompt del agente</div>
+
+    <p>
+      El system prompt actual en <code>agente.py</code> es sólido pero puede mejorarse
+      con XML tags, formato explícito y separación de roles.
+    </p>
+
+    <div class="diff-box">
+      <div class="diff-antes">
+        <div class="diff-label">System prompt actual (fragmento)</div>
+        <div class="diff-content">Eres un agente jurídico
+especializado en derecho
+concursal colombiano...
+
+REGLAS DE REDACCIÓN:
+1. Usa lenguaje forense...
+2. Cita artículos...
+[texto plano largo]</div>
+      </div>
+      <div class="diff-despues">
+        <div class="diff-label">Versión mejorada (con XML)</div>
+        <div class="diff-content">&lt;rol&gt;
+Agente jurídico concursal
+colombiano (Ley 1116/2006)
+&lt;/rol&gt;
+
+&lt;capacidades&gt;
+- Memoriales procesales
+- Calificación de créditos
+- Proyectos de votos
+&lt;/capacidades&gt;
+
+&lt;restricciones&gt;
+[principios operativos]
+&lt;/restricciones&gt;</div>
+      </div>
+    </div>
+
+    <div class="code-wrap">
+      <button class="copy-btn" onclick="copiar(this, 'code-sysprompt')">Copiar</button>
+      <pre id="code-sysprompt"><span class="cm"># system_prompt mejorado para agente.py</span>
+<span class="cm"># Reemplaza el SYSTEM_PROMPT actual con este</span>
+
+SYSTEM_PROMPT_V2 = <span class="st">"""
+&lt;rol&gt;
+Eres un agente jurídico especializado en derecho concursal colombiano.
+Dominas: Ley 1116 de 2006, Decreto 772/2020, Circulares Supersociedades,
+jurisprudencia Corte Suprema (Sala Civil) en materia concursal.
+El abogado que te consulta es experto — responde con rigor técnico.
+&lt;/rol&gt;
+
+&lt;capacidades&gt;
+Redactas: memoriales procesales, proyectos de calificación y graduación
+de créditos (Art. 49-52 Ley 1116), proyectos de votos, objeciones,
+recursos de reposición y apelación, acuerdos de reorganización.
+&lt;/capacidades&gt;
+
+&lt;formato_escritos&gt;
+Estructura estándar para escritos forenses colombianos:
+1. Encabezado (Despacho, Radicado, Proceso, Promovente)
+2. Hechos (numerados)
+3. Fundamentos jurídicos (con citas de artículos exactos)
+4. Peticiones (numeradas, concretas)
+5. Anexos (si aplica)
+Usa [DATO A COMPLETAR] para campos que el abogado debe llenar.
+&lt;/formato_escritos&gt;
+
+&lt;restricciones&gt;
+- CONFIDENCIALIDAD: Nunca uses nombres reales de los documentos indexados.
+  Usa siempre: [DEUDOR], [ACREEDOR], [SOCIEDAD], [PROCESO].
+- PRECISIÓN: Si un artículo no está en tu contexto, escribe [VERIFICAR].
+- LÍMITES: Para estrategia procesal subjetiva, indica que requiere
+  criterio profesional del abogado a cargo.
+&lt;/restricciones&gt;
+"""</span></pre>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="quiz-seccion">
+    <div class="quiz-titulo">Quiz — 3 preguntas</div>
+
+    <div class="quiz-pregunta">
+      <div class="quiz-num">Pregunta 1 / 3</div>
+      <div class="quiz-texto">
+        Tienes que pedirle a Claude que genere un proyecto de calificación de créditos
+        con 15 acreedores. El prompt es largo y mezcla instrucciones con datos de cada
+        acreedor. ¿Qué técnica de las 6 te ayuda más a evitar que Claude confunda
+        los datos con las instrucciones?
+      </div>
+      <button class="ver-respuesta-btn" onclick="toggleRespuesta(this)">Ver respuesta</button>
+      <div class="respuesta-oculta">
+        <strong>XML Tags (Estrategia 4).</strong> Envuelve los datos de acreedores en
+        <code>&lt;acreedores&gt;...&lt;/acreedores&gt;</code> y las instrucciones en
+        <code>&lt;instrucciones&gt;...&lt;/instrucciones&gt;</code>.
+        Claude parsea XML nativo y separa con precisión qué es dato y qué es orden.
+        En prompts largos con datos estructurados, XML reduce errores de interpretación
+        más que cualquier otra técnica.
+      </div>
+    </div>
+
+    <div class="quiz-pregunta">
+      <div class="quiz-num">Pregunta 2 / 3</div>
+      <div class="quiz-texto">
+        Quieres que Claude redacte siempre los memoriales con la estructura exacta
+        del juzgado de Supersociedades (Hechos → Fundamentos → Peticiones), sin
+        desviarse a formatos alternativos. ¿Cuáles dos estrategias combinadas dan el mejor resultado?
+      </div>
+      <button class="ver-respuesta-btn" onclick="toggleRespuesta(this)">Ver respuesta</button>
+      <div class="respuesta-oculta">
+        <strong>Output Formatting (5) + Prefilling (6).</strong>
+        En el system prompt especifica el formato exacto con XML:
+        <code>&lt;formato_escritos&gt;[estructura]&lt;/formato_escritos&gt;</code>.
+        Luego, en el mensaje assistant, empieza con el primer campo:
+        <code>"DESPACHO DE INSOLVENCIA"</code> — Claude continúa desde ese punto
+        sin desviarse a formatos alternativos.
+      </div>
+    </div>
+
+    <div class="quiz-pregunta">
+      <div class="quiz-num">Pregunta 3 / 3</div>
+      <div class="quiz-texto">
+        El agente concursal tiene un system prompt con reglas de confidencialidad
+        (no usar nombres reales). Un usuario le pasa documentos del proceso con nombres
+        reales de acreedores y pide "usa los nombres del documento". ¿Cómo el
+        Constitutional AI prompting maneja este conflicto?
+      </div>
+      <button class="ver-respuesta-btn" onclick="toggleRespuesta(this)">Ver respuesta</button>
+      <div class="respuesta-oculta">
+        <strong>El system prompt (constitutional layer) tiene prioridad sobre el mensaje del usuario.</strong>
+        Claude fue entrenado con RLHF para respetar el system prompt como "constitución" del sistema.
+        Si el system prompt dice "nunca uses nombres reales", esa instrucción permanece incluso si el
+        usuario pide lo contrario en el mensaje de usuario. Por eso los principios de confidencialidad
+        van siempre en el <code>system</code>, nunca en el <code>user</code>.
+      </div>
+    </div>
+  </div>
+
+  <!-- Checkbox -->
+  <div class="completado-wrap" id="completado-wrap" onclick="toggleCompletado()">
+    <input type="checkbox" id="check-completado" />
+    <label for="check-completado">Marcar clase 006 como completada</label>
+  </div>
+
+  <div class="nav-clases">
+    <a href="005-micro-mcp-agentes-conexion.html" class="nav-btn anterior">← 005</a>
+    <a href="007-chain-of-thought-y-thinking-mode.html" class="nav-btn siguiente">Siguiente → 007</a>
+  </div>
+
+</div>
+
+<script>
+  const CLASE_ID = '006';
+  const TOTAL_CLASES = 26;
+
+  function toggleRespuesta(btn) {
+    const respuesta = btn.nextElementSibling;
+    const visible = respuesta.style.display === 'block';
+    respuesta.style.display = visible ? 'none' : 'block';
+    btn.textContent = visible ? 'Ver respuesta' : 'Ocultar respuesta';
+  }
+
+  function copiar(btn, id) {
+    const texto = document.getElementById(id).innerText;
+    navigator.clipboard.writeText(texto).then(() => {
+      btn.textContent = '✓ Copiado';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  function actualizarProgreso() {
+    let completadas = 0;
+    for (let i = 1; i <= TOTAL_CLASES; i++) {
+      const key = 'clase_completada_' + String(i).padStart(3, '0');
+      if (localStorage.getItem(key) === 'true') completadas++;
+    }
+    const pct = Math.round((completadas / TOTAL_CLASES) * 100);
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-label').textContent = completadas + ' / ' + TOTAL_CLASES + ' clases completadas';
+  }
+
+  function toggleCompletado() {
+    const key = 'clase_completada_' + CLASE_ID;
+    const actual = localStorage.getItem(key) === 'true';
+    localStorage.setItem(key, !actual);
+    document.getElementById('check-completado').checked = !actual;
+    document.getElementById('completado-wrap').classList.toggle('done', !actual);
+    actualizarProgreso();
+  }
+
+  (function init() {
+    const key = 'clase_completada_' + CLASE_ID;
+    const completada = localStorage.getItem(key) === 'true';
+    document.getElementById('check-completado').checked = completada;
+    document.getElementById('completado-wrap').classList.toggle('done', completada);
+    actualizarProgreso();
+  })();
+</script>
+</body>
+</html>

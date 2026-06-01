@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>025 - Morning Brief Automático con Claude</title>
+<style>
+:root {
+  --bg:#0d0f0e; --surface:#131615; --border:#1e2420;
+  --gold:#c9a84c; --gold-dim:#7a6230;
+  --text:#e8e4d9; --text-dim:#7a7568;
+  --green:#2d4a3e; --blue:#1e3a5f;
+  --font-body:'Georgia',serif;
+  --font-mono:'Courier New',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);line-height:1.7;min-height:100vh}
+.progress-bar-container{position:fixed;top:0;left:0;right:0;height:3px;background:var(--border);z-index:100}
+.progress-bar{height:100%;background:var(--gold);transition:width 0.3s}
+.nav{position:fixed;top:3px;left:0;right:0;background:rgba(13,15,14,0.95);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;justify-content:space-between;align-items:center;z-index:99;backdrop-filter:blur(8px)}
+.nav-brand{color:var(--gold);font-family:var(--font-mono);font-size:0.8rem;letter-spacing:2px}
+.nav-links{display:flex;gap:8px}
+.nav-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);padding:5px 14px;border-radius:4px;cursor:pointer;font-family:var(--font-mono);font-size:0.75rem;text-decoration:none;transition:all 0.2s}
+.nav-btn:hover,.nav-btn.active{border-color:var(--gold);color:var(--gold)}
+.container{max-width:860px;margin:0 auto;padding:80px 24px 60px}
+h1{font-size:1.9rem;color:var(--gold);margin-bottom:8px;line-height:1.3}
+.meta{color:var(--text-dim);font-family:var(--font-mono);font-size:0.8rem;margin-bottom:32px;display:flex;gap:20px;flex-wrap:wrap}
+h2{font-size:1.25rem;color:var(--gold);margin:40px 0 16px;border-left:3px solid var(--gold-dim);padding-left:12px}
+h3{font-size:1.05rem;color:var(--text);margin:24px 0 10px}
+p{margin-bottom:14px;color:var(--text)}
+ul,ol{margin:0 0 14px 20px;color:var(--text)}
+li{margin-bottom:6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;margin:20px 0}
+.card-gold{border-color:var(--gold-dim)}
+.card-blue{border-color:#1e3a5f;background:#0d1a2e}
+.card-green{border-color:#1e3a2e;background:#0a1a12}
+code{font-family:var(--font-mono);background:#1a1e1c;padding:2px 6px;border-radius:3px;font-size:0.88rem;color:#a8d4b0}
+pre{background:#0a0c0b;border:1px solid var(--border);border-radius:6px;padding:18px;overflow-x:auto;margin:16px 0}
+pre code{background:none;padding:0;color:#a8d4b0;font-size:0.83rem;line-height:1.65}
+.highlight{color:var(--gold)}
+.dim{color:var(--text-dim)}
+.analogy{background:#1a1a0d;border:1px solid #3a3a1e;border-radius:6px;padding:16px;margin:16px 0}
+.analogy::before{content:"⚖ Analogía";display:block;color:var(--gold-dim);font-family:var(--font-mono);font-size:0.75rem;margin-bottom:8px}
+.quiz{background:#0d1a12;border:1px solid #1e3a2e;border-radius:8px;padding:20px;margin:32px 0}
+.quiz h3{color:#4caf7d;margin-top:0}
+.quiz-item{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.quiz-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.quiz-q{color:var(--text);margin-bottom:10px;font-weight:bold}
+.quiz-options label{display:block;padding:7px 12px;margin:4px 0;border-radius:4px;cursor:pointer;border:1px solid var(--border);transition:all 0.2s;font-size:0.9rem}
+.quiz-options label:hover{border-color:var(--gold-dim);background:var(--surface)}
+.quiz-options input{margin-right:8px}
+.quiz-result{display:none;margin-top:10px;padding:8px 12px;border-radius:4px;font-size:0.88rem;font-family:var(--font-mono)}
+.correct-msg{background:#0d2a1a;border:1px solid #2d6a4a;color:#4caf7d}
+.wrong-msg{background:#2a0d0d;border:1px solid #6a2d2d;color:#f47070}
+.btn{background:var(--surface);border:1px solid var(--gold-dim);color:var(--gold);padding:8px 20px;border-radius:4px;cursor:pointer;font-family:var(--font-mono);font-size:0.85rem;transition:all 0.2s;margin-top:10px}
+.btn:hover{background:var(--gold);color:var(--bg)}
+.completed-section{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px;margin-top:40px;display:flex;align-items:center;gap:14px}
+.completed-section label{cursor:pointer;color:var(--text-dim);font-size:0.9rem}
+input[type="checkbox"]{width:18px;height:18px;cursor:pointer;accent-color:var(--gold)}
+.tag{display:inline-block;background:var(--green);color:#4caf7d;font-family:var(--font-mono);font-size:0.72rem;padding:2px 8px;border-radius:3px;margin-right:6px}
+.api-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
+@media(max-width:600px){.api-grid{grid-template-columns:1fr}}
+.api-card{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:14px}
+.api-card h4{font-family:var(--font-mono);font-size:0.88rem;color:var(--gold);margin-bottom:6px}
+.api-card .tag-free{color:#4caf7d;font-size:0.78rem;font-family:var(--font-mono)}
+.brief-preview{background:#0a0c0b;border:1px solid var(--gold-dim);border-radius:6px;padding:20px;margin:16px 0;font-family:var(--font-mono);font-size:0.83rem;line-height:1.8}
+.brief-preview .b-title{color:var(--gold);font-size:1rem;margin-bottom:12px}
+.brief-preview .b-section{color:#5b9bd5;margin-top:10px;margin-bottom:4px}
+.brief-preview .b-up{color:#4caf7d}
+.brief-preview .b-down{color:#f47070}
+.brief-preview .b-neutral{color:var(--text-dim)}
+</style>
+</head>
+<body>
+
+<div class="progress-bar-container">
+  <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<nav class="nav">
+  <span class="nav-brand">QUARTA FLIGHT SCHOOL</span>
+  <div class="nav-links">
+    <a href="024-agente-trading-btc-arquitectura.html" class="nav-btn">← Anterior</a>
+    <span class="nav-btn active">025</span>
+    <a href="026-polymarket-prediccion-eventos.html" class="nav-btn">Siguiente →</a>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="meta">
+    <span><span class="tag">BLOQUE 5</span> Finanzas e Inversión con IA</span>
+    <span>🕐 45 min</span>
+    <span class="dim">Clase 025 / 026</span>
+  </div>
+
+  <h1>Morning Brief Automático con Claude</h1>
+  <p class="dim">Construir un resumen diario de mercados que Claude genera cada mañana. BTC, ETH, SPY, DXY + análisis macro en 200 palabras.</p>
+
+  <!-- ============================================================ -->
+  <h2>1. El concepto: qué es un Morning Brief</h2>
+
+  <p>Los traders profesionales empiezan el día con un brief: precio de activos clave, noticias relevantes, contexto macro. El nuestro se genera automáticamente cada mañana y te da el contexto que necesitas para tomar decisiones de inversión en 2 minutos.</p>
+
+  <div class="analogy">
+    Es como el resumen ejecutivo que le piden a los analistas de un fondo de inversión cada mañana antes
+    de la apertura del mercado. Solo que en vez de un analista humano (que cobra $8,000/mes), lo genera
+    Claude en 30 segundos y $0.03 de API.
+  </div>
+
+  <div class="brief-preview">
+    <div class="b-title">QUARTA MORNING BRIEF · 2024-01-15 07:00</div>
+    <div class="b-section">── PRECIOS ──────────────────────────────</div>
+    <span class="b-up">BTC:  $67,420  (+2.3% 24h)  (+8.1% 7d)</span><br>
+    <span class="b-neutral">ETH:  $3,580   (+1.1% 24h)  (+5.2% 7d)</span><br>
+    <span class="b-down">SPY:  $478.20  (-0.4% 24h)  (+1.8% 7d)</span><br>
+    <span class="b-down">DXY:  104.2    (+0.2% 24h)   (dólar fuerte)</span><br>
+    <div class="b-section">── ANÁLISIS CLAUDE ──────────────────────</div>
+    <span class="b-neutral">
+    Bitcoin mantiene momentum alcista con volumen sostenido,
+    cotizando por encima de su MA30. La correlación inversa
+    con DXY (dólar fuerte = presión sobre cripto) puede
+    frenar el avance. SPY en corrección leve no indica
+    risk-off generalizado todavía. El Fear & Greed en 71
+    (codicia) sugiere precaución en nuevas posiciones.
+    Contexto clave: decisión de tasas Fed el miércoles.
+    </span>
+    <div class="b-section">── SEÑAL DEL DÍA ────────────────────────</div>
+    <span class="b-up">WATCH — Momentum positivo pero precaución con DXY</span>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>2. APIs Gratuitas de Datos Financieros</h2>
+
+  <div class="api-grid">
+    <div class="api-card">
+      <h4>yfinance (Yahoo Finance)</h4>
+      <div class="tag-free">GRATIS · sin API key</div>
+      <p style="font-size:0.83rem;margin-top:6px;color:var(--text-dim)">Acciones, ETFs (SPY), forex, futuros, cripto. Histórico completo. Librería Python.</p>
+      <code style="font-size:0.8rem">pip install yfinance</code>
+    </div>
+    <div class="api-card">
+      <h4>CoinGecko</h4>
+      <div class="tag-free">GRATIS · básico sin key</div>
+      <p style="font-size:0.83rem;margin-top:6px;color:var(--text-dim)">BTC, ETH y 10,000+ cripto. Precios, market cap, volumen, histórico.</p>
+      <code style="font-size:0.8rem">api.coingecko.com/api/v3</code>
+    </div>
+    <div class="api-card">
+      <h4>Alpha Vantage</h4>
+      <div class="tag-free">GRATIS · key gratuita</div>
+      <p style="font-size:0.83rem;margin-top:6px;color:var(--text-dim)">Acciones, forex, indicadores técnicos. 25 req/día gratis.</p>
+      <code style="font-size:0.8rem">alphavantage.co</code>
+    </div>
+    <div class="api-card">
+      <h4>FRED (Federal Reserve)</h4>
+      <div class="tag-free">GRATIS · datos macro</div>
+      <p style="font-size:0.83rem;margin-top:6px;color:var(--text-dim)">Tasas de interés, inflación, desempleo USA. El dato más importante para contexto macro.</p>
+      <code style="font-size:0.8rem">fred.stlouisfed.org/api</code>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>3. Análisis de Correlaciones: BTC, SPY, DXY</h2>
+
+  <div class="card card-blue">
+    <h3>Por qué mirar más allá de BTC solo</h3>
+    <ul>
+      <li><strong>BTC vs SPY:</strong> en 2020-2023, alta correlación. Cuando el mercado de acciones cae, BTC a menudo también cae (risk-off). Esta correlación no es constante.</li>
+      <li><strong>BTC vs DXY (dólar):</strong> correlación inversa clásica. Dólar fuerte → presión sobre activos riesgosos. Dólar débil → capital fluye hacia cripto y acciones.</li>
+      <li><strong>ETH vs BTC:</strong> ETH tiende a seguir a BTC pero con más volatilidad (beta más alto).</li>
+    </ul>
+    <p><strong>Para el brief:</strong> Claude analiza estas correlaciones en tiempo real y las incluye en el contexto macro.</p>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>4. Código Completo — Morning Brief Automático</h2>
+
+<pre><code><span class="highlight">#!/usr/bin/env python3</span>
+<span class="dim">"""
+Morning Brief Automático — Quarta
+=====================================
+Genera un resumen diario de mercados con análisis de Claude.
+Lee BTC, ETH, SPY, DXY y genera análisis macro de 200 palabras.
+
+Instalación:
+  pip install anthropic yfinance requests python-dotenv
+
+Uso:
+  python morning_brief.py                # ejecutar ahora
+  python morning_brief.py --save         # guardar en archivo
+  # Automatizar: agregar a crontab → 0 7 * * 1-5 python morning_brief.py
+"""</span>
+
+import os
+import sys
+import json
+import requests
+from datetime import datetime, timedelta
+from dotenv import load_dotenv
+import anthropic
+
+<span class="dim"># yfinance puede tener problemas de instalación en algunos entornos</span>
+<span class="dim"># Si falla: pip install yfinance --upgrade</span>
+try:
+    import yfinance as yf
+    YFINANCE_DISPONIBLE = True
+except ImportError:
+    YFINANCE_DISPONIBLE = False
+    print("[BRIEF][WARN] yfinance no instalado. Usando solo CoinGecko para cripto.")
+
+load_dotenv()
+cliente = anthropic.Anthropic()
+MODELO = "claude-sonnet-4-5"  <span class="dim"># Sonnet es suficiente para análisis de texto</span>
+
+
+<span class="highlight"># ─── 1. OBTENER DATOS DE MERCADO ────────────────────────────────</span>
+
+def obtener_datos_cripto() -> dict:
+    """
+    Obtiene BTC y ETH desde CoinGecko.
+    Retorna precios actuales y cambios.
+    """
+    url = "https://api.coingecko.com/api/v3/simple/price"
+    params = {
+        "ids": "bitcoin,ethereum",
+        "vs_currencies": "usd",
+        "include_24hr_change": "true",
+        "include_7d_change": "true"
+    }
+    try:
+        r = requests.get(url, params=params, timeout=10)
+        r.raise_for_status()
+        datos = r.json()
+        return {
+            "BTC": {
+                "precio": datos["bitcoin"]["usd"],
+                "cambio_24h": round(datos["bitcoin"]["usd_24h_change"], 2),
+                "cambio_7d": round(datos["bitcoin"].get("usd_7d_change", 0), 2)
+            },
+            "ETH": {
+                "precio": datos["ethereum"]["usd"],
+                "cambio_24h": round(datos["ethereum"]["usd_24h_change"], 2),
+                "cambio_7d": round(datos["ethereum"].get("usd_7d_change", 0), 2)
+            }
+        }
+    except Exception as e:
+        print(f"[BRIEF][ERROR] CoinGecko: {e}")
+        return {}
+
+
+def obtener_datos_tradicionales() -> dict:
+    """
+    Obtiene SPY (S&P500) y DXY (índice dólar) con yfinance.
+    Estos activos son la referencia macro para interpretar cripto.
+    """
+    if not YFINANCE_DISPONIBLE:
+        return {"SPY": None, "DXY": None}
+
+    resultado = {}
+
+    for ticker_id, nombre in [("SPY", "SPY"), ("DX-Y.NYB", "DXY")]:
+        try:
+            ticker = yf.Ticker(ticker_id)
+            <span class="dim"># Obtener datos de los últimos 7 días</span>
+            hist = ticker.history(period="7d")
+
+            if hist.empty:
+                resultado[nombre] = None
+                continue
+
+            precio_actual = hist["Close"].iloc[-1]
+            precio_ayer = hist["Close"].iloc[-2] if len(hist) > 1 else precio_actual
+            precio_7d = hist["Close"].iloc[0]
+
+            cambio_24h = ((precio_actual - precio_ayer) / precio_ayer) * 100
+            cambio_7d = ((precio_actual - precio_7d) / precio_7d) * 100
+
+            resultado[nombre] = {
+                "precio": round(precio_actual, 2),
+                "cambio_24h": round(cambio_24h, 2),
+                "cambio_7d": round(cambio_7d, 2)
+            }
+        except Exception as e:
+            print(f"[BRIEF][WARN] {nombre}: {e}")
+            resultado[nombre] = None
+
+    return resultado
+
+
+def obtener_fear_greed() -> dict:
+    """Índice Fear & Greed del mercado cripto."""
+    try:
+        r = requests.get("https://api.alternative.me/fng/", timeout=8)
+        d = r.json()["data"][0]
+        return {"valor": int(d["value"]), "texto": d["value_classification"]}
+    except:
+        return {"valor": 50, "texto": "Neutral"}
+
+
+def simular_noticias() -> list:
+    """
+    Retorna noticias simuladas para el brief.
+    En producción: conectar a NewsAPI, CryptoPanic, o RSS feeds.
+    newsapi.org tiene plan gratuito (100 req/día).
+    """
+    <span class="dim"># Simulación para fines educativos</span>
+    <span class="dim"># En producción usa: pip install newsapi-python</span>
+    return [
+        "Fed mantiene tasas estables, mercados reaccionan positivamente",
+        "Volumen de Bitcoin en exchanges en mínimo de 6 meses",
+        "ETF de Bitcoin spot supera $50B en activos bajo gestión",
+        "Inflación USA cae a 3.1%, cerca del objetivo del 2% de la Fed"
+    ]
+
+
+<span class="highlight"># ─── 2. ANÁLISIS CON CLAUDE ──────────────────────────────────────</span>
+
+def generar_analisis_macro(datos_mercado: dict, fear_greed: dict, noticias: list) -> str:
+    """
+    Claude genera un análisis macro de ~200 palabras que contextualiza
+    todos los datos del mercado. No es un bot de trading — es un analista
+    que sintetiza información para el inversor.
+    """
+
+    <span class="dim"># Formatear los datos para el prompt</span>
+    datos_formateados = json.dumps(datos_mercado, indent=2, ensure_ascii=False)
+    noticias_texto = "\n".join(f"- {n}" for n in noticias)
+
+    prompt = f"""Eres el analista de mercados de Quarta, firma legal colombiana con inversiones
+propias en cripto y mercados tradicionales. Genera el morning brief del día.
+
+DATOS DE MERCADO HOY:
+{datos_formateados}
+
+FEAR & GREED INDEX: {fear_greed['valor']}/100 ({fear_greed['texto']})
+
+NOTICIAS RELEVANTES:
+{noticias_texto}
+
+Escribe un análisis de exactamente 200 palabras que incluya:
+1. Estado actual de los mercados (2-3 oraciones)
+2. Correlaciones relevantes: cómo se relacionan BTC, SPY y DXY hoy
+3. El dato o noticia más importante para tener en cuenta
+4. Una perspectiva de corto plazo (1-3 días)
+5. Nivel de riesgo general: BAJO / MEDIO / ALTO
+
+Termina con: "SEÑAL DEL DÍA: [HOLD/WATCH/ALERT] — [justificación en 10 palabras]"
+
+Tono: analítico, directo, sin hipérbole. Incluye siempre el disclaimer:
+"Este análisis es solo informativo, no es consejo de inversión."
+
+Escribe en español."""
+
+    try:
+        respuesta = cliente.messages.create(
+            model=MODELO,
+            max_tokens=600,
+            messages=[{"role": "user", "content": prompt}]
+        )
+        return respuesta.content[0].text.strip()
+    except Exception as e:
+        return f"[ERROR en análisis Claude: {e}]"
+
+
+<span class="highlight"># ─── 3. FORMATEAR EL BRIEF ──────────────────────────────────────</span>
+
+def formatear_brief(datos_mercado: dict, fear_greed: dict, analisis: str) -> str:
+    """
+    Genera el morning brief completo en formato Markdown legible en terminal.
+    """
+    ts = datetime.now().strftime("%Y-%m-%d %H:%M")
+
+    def cambio_str(v):
+        if v is None: return "N/A"
+        signo = "+" if v > 0 else ""
+        return f"{signo}{v:.2f}%"
+
+    def precio_str(activo, datos):
+        if datos is None:
+            return f"{activo}: N/A"
+        p = datos['precio']
+        c24 = cambio_str(datos.get('cambio_24h'))
+        c7d = cambio_str(datos.get('cambio_7d'))
+        simbolo = "$" if activo != "DXY" else ""
+        return f"{activo}: {simbolo}{p:,.2f}  ({c24} 24h)  ({c7d} 7d)"
+
+    lineas = [
+        f"",
+        f"{'═'*58}",
+        f"  QUARTA MORNING BRIEF · {ts}",
+        f"{'═'*58}",
+        f"",
+        f"── PRECIOS ──────────────────────────────────────────",
+    ]
+
+    for activo in ["BTC", "ETH", "SPY", "DXY"]:
+        datos = datos_mercado.get(activo)
+        lineas.append(f"  {precio_str(activo, datos)}")
+
+    lineas += [
+        f"",
+        f"  Fear & Greed: {fear_greed['valor']}/100 ({fear_greed['texto']})",
+        f"",
+        f"── ANÁLISIS CLAUDE ──────────────────────────────────",
+        f"",
+    ]
+
+    <span class="dim"># Indentar el análisis</span>
+    for linea in analisis.split('\n'):
+        lineas.append(f"  {linea}")
+
+    lineas += [
+        f"",
+        f"{'═'*58}",
+        f""
+    ]
+
+    return "\n".join(lineas)
+
+
+<span class="highlight"># ─── 4. FUNCIÓN PRINCIPAL ───────────────────────────────────────</span>
+
+def ejecutar_brief(guardar: bool = False):
+    """
+    Orquesta todo el flujo del morning brief.
+    Si guardar=True, guarda el resultado en briefs/YYYY-MM-DD.txt
+    """
+    print("[BRIEF][INFO] Obteniendo datos de mercado...")
+
+    <span class="dim"># Obtener todos los datos en paralelo (aquí secuencial por simplicidad)</span>
+    datos_cripto = obtener_datos_cripto()
+    datos_trad = obtener_datos_tradicionales()
+    fear_greed = obtener_fear_greed()
+    noticias = simular_noticias()
+
+    <span class="dim"># Consolidar datos</span>
+    datos_mercado = {**datos_cripto, **datos_trad}
+
+    print("[BRIEF][INFO] Generando análisis con Claude...")
+    analisis = generar_analisis_macro(datos_mercado, fear_greed, noticias)
+
+    <span class="dim"># Formatear y mostrar</span>
+    brief = formatear_brief(datos_mercado, fear_greed, analisis)
+    print(brief)
+
+    <span class="dim"># Guardar opcionalmente</span>
+    if guardar:
+        fecha = datetime.now().strftime("%Y-%m-%d")
+        os.makedirs("briefs", exist_ok=True)
+        archivo = f"briefs/{fecha}.txt"
+        with open(archivo, "w", encoding="utf-8") as f:
+            f.write(brief)
+        print(f"[BRIEF][INFO] Guardado en {archivo}")
+
+    return brief
+
+
+if __name__ == "__main__":
+    guardar = "--save" in sys.argv
+    ejecutar_brief(guardar=guardar)
+</code></pre>
+
+  <!-- ============================================================ -->
+  <h2>5. Automatizar con Cron</h2>
+
+<pre><code><span class="highlight"># Agregar al crontab para ejecutar de lunes a viernes a las 7am:</span>
+crontab -e
+
+<span class="dim"># Agregar esta línea:</span>
+0 7 * * 1-5 cd /home/user/agente-concursal && python morning_brief.py --save >> logs/brief.log 2>&1
+
+<span class="highlight"># En Railway (si quieres el brief en el servidor):</span>
+<span class="dim"># Agregar un endpoint GET /api/morning-brief que llama a ejecutar_brief()</span>
+<span class="dim"># O usar Railway Cron Jobs (disponible en el plan Team)</span></code></pre>
+
+  <!-- ============================================================ -->
+  <h2>6. QUARTA — Alimentar decisiones de inversión de la firma</h2>
+
+  <div class="card card-gold">
+    <h3>Cómo este sistema es útil para Quarta</h3>
+    <p>Una firma legal que también invierte su propio capital (o asesora clientes en inversiones) necesita contexto de mercado sin dedicar horas a leer Bloomberg. Este brief da:</p>
+    <ul>
+      <li><strong>Contexto macro en 2 minutos:</strong> antes de tomar cualquier decisión de inversión del día</li>
+      <li><strong>Correlaciones BTC/DXY:</strong> relevante si Quarta mantiene BTC en su tesorería</li>
+      <li><strong>Señal diaria:</strong> no una recomendación, sino un calibrador de atención</li>
+      <li><strong>Historial en briefs/:</strong> puedes revisar qué decía el análisis la semana antes de un movimiento importante</li>
+    </ul>
+    <p class="dim"><strong>Extensión futura:</strong> conectar a NewsAPI con keywords "Colombia fintech", "SIC regulación", "Supersociedades" para incluir noticias legales colombianas relevantes para Quarta.</p>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>Quiz — 3 preguntas sobre análisis financiero con IA</h2>
+
+  <div class="quiz">
+    <h3>Verifica lo que aprendiste</h3>
+
+    <div class="quiz-item" id="q1">
+      <p class="quiz-q">1. ¿Por qué el morning brief incluye el DXY (índice del dólar) junto con BTC?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q1" value="a"> Porque el DXY y BTC tienen correlación directa (suben juntos)</label>
+        <label><input type="radio" name="q1" value="b"> Porque tienen correlación inversa histórica — dólar fuerte tiende a presionar activos riesgosos como BTC</label>
+        <label><input type="radio" name="q1" value="c"> Porque DXY determina el precio de BTC en pesos colombianos</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q1','b','✓ Correcto. DXY fuerte = dólar fuerte = capital fluye a activos seguros = presión bajista en cripto y acciones. No es determinístico pero es un indicador macro clave.')">Verificar</button>
+      <div class="quiz-result" id="q1-result"></div>
+    </div>
+
+    <div class="quiz-item" id="q2">
+      <p class="quiz-q">2. ¿Cuál es la ventaja de usar Claude para el análisis vs un algoritmo de reglas fijas?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q2" value="a"> Claude es más rápido calculando promedios y porcentajes</label>
+        <label><input type="radio" name="q2" value="b"> Claude puede combinar noticias, indicadores técnicos y contexto macro en un análisis coherente — razonamiento que las reglas fijas no capturan</label>
+        <label><input type="radio" name="q2" value="c"> Claude accede a datos de mercado en tiempo real que las APIs no tienen</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q2','b','✓ Correcto. Una regla fija puede decir \"RSI < 30 = WATCH\". Claude puede decir \"RSI < 30 + dólar fuerte + Fed subiendo tasas + noticias negativas = ALERT\" — síntesis que las reglas fijas no hacen.')">Verificar</button>
+      <div class="quiz-result" id="q2-result"></div>
+    </div>
+
+    <div class="quiz-item" id="q3">
+      <p class="quiz-q">3. El brief se guarda en briefs/2024-01-15.txt. ¿Cuál es el valor de ese historial?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q3" value="a"> Ninguno — el análisis de ayer no sirve para hoy</label>
+        <label><input type="radio" name="q3" value="b"> Permite evaluar la calidad del análisis retrospectivamente y mejorar los prompts</label>
+        <label><input type="radio" name="q3" value="c"> Es solo para cumplir regulaciones de documentación financiera</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q3','b','✓ Correcto. El historial permite \"backtesting cualitativo\": ver si el brief del día antes de una caída grande decía WATCH o ALERT. Así mejoras los prompts iterativamente.')">Verificar</button>
+      <div class="quiz-result" id="q3-result"></div>
+    </div>
+  </div>
+
+  <div class="completed-section">
+    <input type="checkbox" id="completado" onchange="marcarCompletada()">
+    <label for="completado">Clase completada — Morning Brief Automático con Claude</label>
+  </div>
+
+</div>
+
+<script>
+const TOTAL=26,CLASE=25;
+function updateProgress(){let c=0;for(let i=1;i<=TOTAL;i++)if(localStorage.getItem('clase_completada_'+String(i).padStart(3,'0')))c++;document.getElementById('progressBar').style.width=(c/TOTAL*100)+'%';}
+function marcarCompletada(){const key='clase_completada_'+String(CLASE).padStart(3,'0');document.getElementById('completado').checked?localStorage.setItem(key,'1'):localStorage.removeItem(key);updateProgress();}
+window.addEventListener('DOMContentLoaded',()=>{const key='clase_completada_'+String(CLASE).padStart(3,'0');if(localStorage.getItem(key))document.getElementById('completado').checked=true;updateProgress();});
+function checkAnswer(qId,correct,msg){const sel=document.querySelector(`input[name="${qId}"]:checked`);const el=document.getElementById(qId+'-result');if(!sel){el.style.display='block';el.className='quiz-result wrong-msg';el.textContent='Selecciona una opción.';return;}el.style.display='block';if(sel.value===correct){el.className='quiz-result correct-msg';el.textContent=msg;}else{el.className='quiz-result wrong-msg';el.textContent='✗ No exactamente. '+msg;}}
+</script>
+</body>
+</html>
