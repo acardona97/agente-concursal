@@ -149,6 +149,8 @@ body {
 .b5 .bloque-title { color: var(--orange); }
 .b6 .bloque-num { background: rgba(122,178,140,0.1); color: #7ab48c; border: 1px solid #4a7a5c; }
 .b6 .bloque-title { color: #7ab48c; }
+.b7 .bloque-num { background: rgba(160,124,212,0.1); color: #a07cd4; border: 1px solid #6a4a9a; }
+.b7 .bloque-title { color: #a07cd4; }
 
 /* CLASE CARD */
 .clases-grid { display: flex; flex-direction: column; gap: 8px; }
@@ -253,7 +255,7 @@ body {
     <div class="progress-track">
       <div class="progress-fill" id="topProgressFill"></div>
     </div>
-    <div class="progress-text" id="topProgressText">0 / 31 clases</div>
+    <div class="progress-text" id="topProgressText">0 / 32 clases</div>
   </div>
 </div>
 
@@ -286,7 +288,7 @@ body {
   <!-- STATS -->
   <div class="stats-row">
     <div class="stat-box">
-      <span class="stat-num">31</span>
+      <span class="stat-num">32</span>
       <div class="stat-label">Clases totales</div>
     </div>
     <div class="stat-box">
@@ -349,6 +351,11 @@ body {
         <div class="ruta-seg-time">11:58 — 14:50</div>
         <div class="ruta-seg-clases">027 → 031 &nbsp;·&nbsp;</div>
         <div class="ruta-seg-label">Ecosistema IA 2026</div>
+      </div>
+      <div class="ruta-seg">
+        <div class="ruta-seg-time">14:50 — 15:20</div>
+        <div class="ruta-seg-clases">032 &nbsp;·&nbsp;</div>
+        <div class="ruta-seg-label">Agent Decomposition Workshop</div>
       </div>
     </div>
   </div>
@@ -709,15 +716,35 @@ body {
     </div>
   </div>
 
+  <!-- BLOQUE 7 -->
+  <div class="bloque b7">
+    <div class="bloque-header">
+      <div class="bloque-num">7</div>
+      <div class="bloque-title">Workshops Avanzados</div>
+      <div class="bloque-meta">~30 min · 1 clase · Code with Claude London</div>
+    </div>
+    <div class="clases-grid">
+      <a class="clase-card" href="032-agent-decomposition-optimizar-agentes.html" data-id="032">
+        <div class="clase-check"></div>
+        <div class="clase-num">032</div>
+        <div class="clase-content">
+          <div class="clase-titulo">Agent Decomposition — Optimizar Agentes que Crecieron Demasiado <span class="tag-recom">workshop</span></div>
+          <div class="clase-meta">RCA con Claude Code · Skills vs System Prompt · Compute-over-Context · Human-like Primitives · CMA · Typed Contracts · Hill Climbing con Evals</div>
+        </div>
+        <div class="clase-tiempo">30 min</div>
+      </a>
+    </div>
+  </div>
+
   <div class="total-row">
-    <div>Total estimado: 960 min · 16 horas · 31 clases · 6 micro-clases + 25 completas</div>
+    <div>Total estimado: 990 min · 16.5 horas · 32 clases · 6 micro-clases + 26 completas</div>
     <button class="btn-reset" onclick="resetProgress()">↺ Reiniciar progreso</button>
   </div>
 
 </div><!-- /main -->
 
 <script>
-const TOTAL = 31;
+const TOTAL = 32;
 
 function loadProgress() {
   let done = 0;

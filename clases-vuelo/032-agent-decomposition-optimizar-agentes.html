@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>032 · Agent Decomposition: Cómo Optimizar Agentes que Crecieron Demasiado | Clases de Vuelo</title>
+<style>
+:root {
+  --bg:#0d0f0e; --surface:#131615; --border:#1e2420;
+  --gold:#c9a84c; --gold-dim:#7a6230;
+  --text:#e8e4d9; --text-dim:#7a7568;
+  --green:#2d4a3e; --blue:#1e3a5f;
+  --font-body:'Georgia',serif;
+  --font-mono:'Courier New',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);line-height:1.75;font-size:1rem}
+.progress-bar-container{position:fixed;top:0;left:0;width:100%;height:3px;background:var(--border);z-index:100}
+.progress-bar{height:100%;width:0%;background:var(--gold);transition:width .1s linear}
+nav{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;gap:16px;font-size:0.85rem;position:sticky;top:3px;z-index:90}
+nav a{color:var(--text-dim);text-decoration:none}
+nav a:hover{color:var(--gold)}
+nav .sep{color:var(--border)}
+nav .titulo{color:var(--text);font-weight:bold;margin-left:auto}
+.container{max-width:860px;margin:0 auto;padding:48px 24px 80px}
+h1{color:var(--gold);font-size:1.85rem;line-height:1.3;margin-bottom:8px}
+.meta{color:var(--text-dim);font-size:0.85rem;font-family:var(--font-mono);margin-bottom:32px}
+h2{color:var(--gold);font-size:1.25rem;margin:36px 0 14px;border-left:3px solid var(--gold-dim);padding-left:12px}
+h3{color:#c8c4b9;font-size:1.05rem;margin:22px 0 10px}
+p{margin-bottom:14px}
+ul,ol{margin:0 0 14px 22px}
+li{margin-bottom:6px}
+strong{color:#e8e4d9}
+code{font-family:var(--font-mono);background:#0a0c0b;border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:0.88em;color:#a0c8a0}
+pre{background:#0a0c0b;border:1px solid var(--border);border-radius:6px;padding:18px;overflow-x:auto;margin:16px 0}
+pre code{background:none;border:none;padding:0;font-size:0.88rem;color:#c8d8c0}
+
+/* Cards */
+.card{border-radius:8px;padding:20px;margin:18px 0}
+.card-gold{background:#1a1608;border:1px solid var(--gold-dim)}
+.card-gold h3{color:var(--gold);margin-top:0}
+.card-green{background:#0a130f;border:1px solid #2a4a38}
+.card-green h3{color:#4caf7d;margin-top:0}
+.card-blue{background:#0a0f1a;border:1px solid #1e3060}
+.card-blue h3{color:#7ab4f0;margin-top:0}
+.card-red{background:#1a0a0a;border:1px solid #4a1a1a}
+.card-red h3{color:#f47070;margin-top:0}
+
+/* Before/After comparison */
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:18px 0}
+@media(max-width:600px){.compare-grid{grid-template-columns:1fr}}
+.compare-before{background:#1a0a0a;border:1px solid #4a1a1a;border-radius:8px;padding:18px}
+.compare-after{background:#0a130f;border:1px solid #2a4a38;border-radius:8px;padding:18px}
+.compare-label{font-family:var(--font-mono);font-size:0.75rem;font-weight:bold;letter-spacing:0.1em;margin-bottom:10px}
+.compare-before .compare-label{color:#f47070}
+.compare-after .compare-label{color:#4caf7d}
+
+/* Eval table */
+.eval-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:0.88rem}
+.eval-table th{background:#0a0c0b;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);font-family:var(--font-mono);color:var(--gold)}
+.eval-table td{padding:9px 12px;border-bottom:1px solid #16191a;vertical-align:top}
+.eval-table tr:last-child td{border-bottom:none}
+.pass{color:#4caf7d;font-family:var(--font-mono);font-weight:bold}
+.fail{color:#f47070;font-family:var(--font-mono);font-weight:bold}
+
+/* RCA cards */
+.rca-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin:16px 0;position:relative;padding-left:24px}
+.rca-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:10px 0 0 10px;background:#f47070}
+.rca-fix{background:#0a130f;border:1px solid #2a4a38;border-radius:6px;padding:12px;margin-top:12px;font-size:0.88rem}
+.rca-fix-label{color:#4caf7d;font-family:var(--font-mono);font-size:0.75rem;font-weight:bold;margin-bottom:6px}
+
+/* Skill anatomy */
+.skill-anatomy{background:#080a09;border:1px solid var(--border);border-radius:8px;padding:20px;margin:16px 0;font-family:var(--font-mono);font-size:0.82rem;line-height:1.7;color:#c8d8c0}
+.skill-anatomy .comment{color:#4a6a4a}
+
+/* Primitives grid */
+.primitives-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin:18px 0}
+.prim-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center}
+.prim-icon{font-size:1.4rem;margin-bottom:8px;font-family:var(--font-mono);color:var(--gold)}
+.prim-card h4{color:#c8c4b9;font-size:0.9rem;margin-bottom:6px}
+.prim-card p{color:var(--text-dim);font-size:0.82rem;margin-bottom:0}
+
+/* Hill climb steps */
+.hill-step{display:flex;gap:14px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border)}
+.hill-step:last-child{border-bottom:none}
+.hill-num{background:var(--gold-dim);color:var(--bg);font-family:var(--font-mono);font-size:0.78rem;font-weight:bold;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+
+/* Quarta section */
+.quarta-box{background:#0f1a14;border:1px solid #2a5a3a;border-radius:10px;padding:24px;margin:28px 0}
+.quarta-box h3{color:#4caf7d;margin-top:0;margin-bottom:14px}
+
+/* Quote */
+blockquote{border-left:3px solid var(--gold-dim);padding-left:16px;margin:16px 0;color:var(--text-dim);font-style:italic}
+blockquote strong{color:var(--text);font-style:normal}
+
+/* Quiz */
+.quiz{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:28px;margin:40px 0 24px}
+.quiz h3{color:var(--gold);margin-bottom:20px;font-size:1.1rem}
+.quiz-item{margin-bottom:26px}
+.quiz-q{font-weight:bold;margin-bottom:10px;font-size:0.95rem}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.quiz-options label{cursor:pointer;font-size:0.9rem;display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-radius:6px;border:1px solid var(--border);transition:background .15s}
+.quiz-options label:hover{background:#191c19}
+.quiz-options input{margin-top:2px;flex-shrink:0;accent-color:var(--gold)}
+.btn{background:var(--gold-dim);color:var(--bg);border:none;border-radius:5px;padding:8px 18px;cursor:pointer;font-family:var(--font-mono);font-size:0.82rem;font-weight:bold;letter-spacing:0.04em}
+.btn:hover{background:var(--gold)}
+.quiz-result{display:none;margin-top:10px;padding:10px 14px;border-radius:6px;font-size:0.88rem}
+.correct-msg{background:#0a1a0f;border:1px solid #2a4a38;color:#a0d8a0}
+.wrong-msg{background:#1a0a0a;border:1px solid #4a1a1a;color:#d89090}
+
+/* Completion */
+.completed-section{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px;margin-top:40px;display:flex;align-items:center;gap:14px}
+.completed-section label{cursor:pointer;color:var(--text-dim);font-size:0.9rem}
+input[type="checkbox"]{width:18px;height:18px;cursor:pointer;accent-color:var(--gold)}
+</style>
+</head>
+<body>
+
+<div class="progress-bar-container">
+  <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<nav>
+  <a href="INDEX.html">Indice</a>
+  <span class="sep">/</span>
+  <a href="031-segundo-cerebro-ia-roadmap-6-meses.html">&#8592; 031</a>
+  <span class="sep">/</span>
+  <span>032</span>
+  <span class="titulo">Agent Decomposition</span>
+</nav>
+
+<div class="container">
+
+  <p class="meta">CLASE 032 &nbsp;·&nbsp; 30 min &nbsp;·&nbsp; Workshop: Code with Claude London &nbsp;·&nbsp; Speaker: Will — Applied AI, Anthropic</p>
+  <h1>Agent Decomposition: Cómo Diagnosticar y Rediseñar un Agente que Crecio Demasiado</h1>
+
+  <p>Construyes un agente. Funciona bien. Te piden mas funcionalidad. Agregas herramientas, expandes el system prompt, añades sub-agentes. Despues de varios ciclos, el system prompt tiene 400 lineas, el agente tiene 12 herramientas y los evals empiezan a caer. Este es el problema mas comun que el equipo de Applied AI de Anthropic ve en clientes — y en sus propios proyectos internos.</p>
+
+  <blockquote>
+    <strong>"If this is you, you're not alone — we see this type of scenario happen pretty commonly with customers, actually with ourselves included."</strong><br>
+    — Will, Applied AI Engineering, Anthropic
+  </blockquote>
+
+  <p>Esta clase cubre el workshop completo de Agent Decomposition presentado en Code with Claude London. El caso de estudio es <strong>StockPilot</strong>, un agente de gestion de inventario. Pero el diagnostico y las soluciones aplican directamente al agente concursal de Quarta.</p>
+
+  <!-- ============================================================ -->
+  <h2>El Agente que Crecio Demasiado: StockPilot</h2>
+
+  <p>StockPilot empezo como un agente de inventario para un retailer mediano. Funciono bien. Con el tiempo le agregaron capacidades hasta llegar a esta arquitectura:</p>
+
+  <div class="compare-grid">
+    <div class="compare-before">
+      <div class="compare-label">ARQUITECTURA "BEFORE" — PROBLEMATICA</div>
+      <ul style="font-size:0.9rem;margin-bottom:0">
+        <li>1 orquestador principal</li>
+        <li>System prompt de ~400 lineas</li>
+        <li>12 herramientas distintas</li>
+        <li>3 de esas herramientas son wrappers de sub-agentes con context windows aislados</li>
+        <li>Pass rate en evals: <span class="fail">83%</span></li>
+      </ul>
+    </div>
+    <div class="compare-after">
+      <div class="compare-label">ARQUITECTURA "AFTER" — OBJETIVO</div>
+      <ul style="font-size:0.9rem;margin-bottom:0">
+        <li>Orquestador con system prompt de ~50 lineas</li>
+        <li>Skills cargados bajo demanda</li>
+        <li>Tools reemplazadas por primitivas human-like</li>
+        <li>Sub-agentes con typed contracts</li>
+        <li>Pass rate en evals: <span class="pass">objetivo: 95%+</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card card-red">
+    <h3>Por que 83% no es suficiente</h3>
+    <p style="margin-bottom:0">En un sistema de recomendacion de contenido, un 17% de error es molesto. En un agente de gestion de inventario o en un agente juridico concursal, un 17% de error significa ordenes de compra incorrectas, plazos vencidos, calificaciones de creditos equivocadas. El objetivo del workshop es hacer hill climbing sobre evals hasta llegar a una tasa de fallo operacionalmente aceptable.</p>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>Los Evals: Como Medir lo que esta Fallando</h2>
+
+  <p>Antes de redisenar nada, necesitas medir. La suite de evals de StockPilot tiene 12 tareas en dos categorias:</p>
+
+  <table class="eval-table">
+    <thead>
+      <tr>
+        <th>Prefijo</th>
+        <th>Tipo</th>
+        <th>Descripcion</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>R</code></td>
+        <td>Regression tasks</td>
+        <td>Single-turn realistas. Evaluan si el agente da la respuesta correcta en casos normales.</td>
+      </tr>
+      <tr>
+        <td><code>F</code></td>
+        <td>Failure mode tasks</td>
+        <td>Multi-turn complejos. Evaluan si el agente maneja correctamente los casos criticos y extremos.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Los 5 tipos de graders</h3>
+  <table class="eval-table">
+    <thead>
+      <tr><th>Grader</th><th>Cuando usarlo</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>exact_match</code></td><td>El output debe ser identico a la respuesta correcta</td></tr>
+      <tr><td><code>set_match</code></td><td>El output debe contener los mismos elementos (sin importar orden)</td></tr>
+      <tr><td><code>numeric_tolerance ±20%</code></td><td>El output numerico debe estar dentro del margen aceptable</td></tr>
+      <tr><td><code>llm_judge</code></td><td>Cuando la respuesta correcta requiere juicio semantico</td></tr>
+      <tr><td><code>efficiency (15k out-tokens)</code></td><td>El agente llega al resultado correcto pero usando demasiados tokens</td></tr>
+    </tbody>
+  </table>
+
+  <p><strong>Formula de score:</strong> <code>(PASS + 0.5 · PASS-SLOW) / 12</code> — un resultado correcto pero ineficiente cuenta solo la mitad.</p>
+
+  <h3>Los 3 evals que fallan en la arquitectura "before"</h3>
+  <table class="eval-table">
+    <thead>
+      <tr><th>Eval</th><th>Que mide</th><th>Por que falla</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>F1</code></td>
+        <td>Daily low-stock sweep</td>
+        <td>Llega al resultado correcto pero carga 395 filas de CSV al contexto → falla por eficiencia de tokens (324k tokens)</td>
+      </tr>
+      <tr>
+        <td><code>F2</code></td>
+        <td>Ordering bajo promotion package</td>
+        <td>El sub-agente retorna "fairly confident" (prosa) en vez de un numero → breakdown de comunicacion con el orquestador</td>
+      </tr>
+      <tr>
+        <td><code>R8</code></td>
+        <td>Forecasting durante mes de promocion</td>
+        <td>Dos politicas contradictorias en distintas partes del system prompt → usa multiplicador 1.35 en vez de 3.1x</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ============================================================ -->
+  <h2>RCA — Root Cause Analysis con Claude Code</h2>
+
+  <p>Will corre los evals con Claude Code (Opus 4.7, esfuerzo <code>extra_high</code>) y le pide que diagnostique los fallos. Claude identifica 3 causas raiz:</p>
+
+  <div class="rca-card">
+    <h3>Causa 1 — Compute-over-Context</h3>
+    <p>El modelo esta haciendo trabajo que deberia hacer una herramienta. La tool <code>list_low_stock</code> manda 395 filas de CSV directamente al context window del modelo. En R2 eso son 32k tokens. En F1 son 324k tokens.</p>
+    <p>El modelo no deberia leer una tabla de 395 filas — deberia tener acceso a codigo que filtre esa tabla y le devuelva solo lo relevante.</p>
+    <div class="rca-fix">
+      <div class="rca-fix-label">SOLUCION</div>
+      Dar a Claude una herramienta de bash para que escriba un Python script, lo ejecute y razone sobre los resultados. En vez de cargar el CSV, el modelo escribe <code>sorted(items, key=lambda x: x.on_hand - x.safety)[0:5]</code> y procesa solo los 5 mas criticos.
+    </div>
+  </div>
+
+  <div class="rca-card">
+    <h3>Causa 2 — Typed Contract Missing</h3>
+    <p>El sub-agente de forecasting retorna "fairly confident" (una frase en prosa) en vez de un numero. El orquestador no puede procesar eso de forma deterministica. Sin un contrato de output explicito, cada sub-agente inventa su propio formato de respuesta.</p>
+    <div class="rca-fix">
+      <div class="rca-fix-label">SOLUCION</div>
+      Definir un JSON schema en el <code>SKILL.md</code> del sub-agente que ancle el formato desde el principio. El sub-agente siempre retorna <code>&#123;"forecast_units": 340, "confidence": 0.87, "method": "promo_adjusted"&#125;</code> — nunca prosa.
+    </div>
+  </div>
+
+  <div class="rca-card">
+    <h3>Causa 3 — Policy-as-Skill Missing</h3>
+    <p>Las politicas de negocio (multiplicadores de promocion, estructura de reportes semanales, templates de notificacion) estan mezcladas dentro del system prompt de 400 lineas o se re-derivan desde cero en cada llamada. Resultado: el modelo encuentra dos politicas contradictorias sobre el mismo multiplicador y usa la incorrecta.</p>
+    <div class="rca-fix">
+      <div class="rca-fix-label">SOLUCION</div>
+      Mover cada politica a un <code>SKILL.md</code> separado. El orquestador carga el skill solo cuando lo necesita. Hay una sola fuente de verdad para cada politica.
+    </div>
+  </div>
+
+  <div class="card card-gold">
+    <h3>El Meta-Patron</h3>
+    <p style="margin-bottom:0">El agente "before" es un generalista con herramientas brutas. Cada fallo es un caso donde algo que deberia ser estructura fija — logica de filtro, schema de output, politica, template — esta siendo improvisado por el LLM en cada run. La descomposicion mueve cada uno de esos elementos al lugar correcto: tool (para computo), typed return (para contrato), skill (para politica y formato).</p>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>Solucion 1: Skills — Progressive Disclosure</h2>
+
+  <p>Un <strong>Skill</strong> es informacion comprimida y composable que Claude carga bajo demanda cuando reconoce que la necesita para completar una tarea especifica.</p>
+
+  <div class="compare-grid">
+    <div class="compare-before">
+      <div class="compare-label">SYSTEM PROMPT — SIEMPRE EN CONTEXTO</div>
+      <p style="font-size:0.88rem;margin-bottom:0;color:var(--text-dim)">Informacion que Claude necesita independientemente de la tarea. Identidad del agente, herramientas disponibles, reglas de seguridad criticas, politicas que aplican a TODO.</p>
+    </div>
+    <div class="compare-after">
+      <div class="compare-label">SKILLS — CARGADOS BAJO DEMANDA</div>
+      <p style="font-size:0.88rem;margin-bottom:0;color:var(--text-dim)">Informacion que Claude necesita SOLO para tareas especificas. Politicas de forecasting, templates de reportes, procedimientos de proveedores, formatos de notificacion.</p>
+    </div>
+  </div>
+
+  <p><strong>Resultado en StockPilot:</strong> system prompt de 400 lineas → 50 lineas. La informacion de forecasting, politicas de promocion y templates de reportes pasaron a skills separados.</p>
+
+  <h3>Formato de un SKILL.md</h3>
+
+  <div class="skill-anatomy">
+<span class="comment"># forecasting-promo.md</span>
+<span class="comment"># Claude carga este skill cuando detecta que la tarea involucra</span>
+<span class="comment"># calculos de demanda durante periodos de promocion</span>
+
+## Politica de Forecasting en Promociones
+
+Durante meses de promocion, usar los siguientes multiplicadores:
+- Promocion estandar: 3.1x sobre demanda base
+- Flash sale (&lt;48h): 2.4x
+- Temporada alta: 1.8x sobre base de temporada
+
+## Output Contract
+
+Siempre retornar JSON con este schema exacto:
+&#123;
+  "forecast_units": &lt;integer&gt;,
+  "multiplier_used": &lt;float&gt;,
+  "period_type": "standard_promo | flash_sale | peak_season",
+  "confidence": &lt;float 0-1&gt;
+&#125;
+  </div>
+
+  <div class="card card-blue">
+    <h3>La regla de oro para decidir: system prompt vs skill</h3>
+    <p style="margin-bottom:0">Pregunta: "Claude necesita esta informacion aunque la tarea NO involucre este dominio?" Si la respuesta es si → system prompt. Si la respuesta es no → skill. Contaminar el context window con informacion irrelevante para la tarea actual degrada la calidad del razonamiento.</p>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>Solucion 2: Human-like Primitives</h2>
+
+  <blockquote>
+    <strong>"Whenever we build agents, we lean into human-like primitives first. Imagine yourself when you show up to work — you have a computer, the ability to navigate files on a file system, search the web, or write code."</strong><br>
+    — Will, Anthropic
+  </blockquote>
+
+  <p>En vez de construir herramientas personalizadas para cada tarea de computo, empieza siempre con estas 4 primitivas:</p>
+
+  <div class="primitives-grid">
+    <div class="prim-card">
+      <div class="prim-icon">bash</div>
+      <h4>Code Execution</h4>
+      <p>Escribe y ejecuta Python, bash, scripts. Procesa datos sin cargarlos al contexto.</p>
+    </div>
+    <div class="prim-card">
+      <div class="prim-icon">fs</div>
+      <h4>File System</h4>
+      <p>Lee, escribe y navega archivos. El agente tiene acceso a su entorno.</p>
+    </div>
+    <div class="prim-card">
+      <div class="prim-icon">todo</div>
+      <h4>To-Do List</h4>
+      <p>Tracking de tareas multi-paso. El agente mantiene estado de su propio progreso.</p>
+    </div>
+    <div class="prim-card">
+      <div class="prim-icon">web</div>
+      <h4>Web Search</h4>
+      <p>Busqueda en tiempo real. Para datos que cambian o que no estan en el contexto.</p>
+    </div>
+  </div>
+
+  <div class="card card-green">
+    <h3>Por que esto importa para analisis de datos</h3>
+    <p>Caso concreto: tienes un CSV de 400 filas de acreedores con saldos. En vez de cargar el CSV al contexto del agente (costoso, lento, propenso a error), le das al agente acceso a bash. El agente escribe un Python de 3 lineas, lo ejecuta y te da directamente los 5 acreedores mas criticos. Misma respuesta, 95% menos tokens.</p>
+    <p style="margin-bottom:0"><strong>Claude Code funciona exactamente asi:</strong> es un gran agente de codigo porque esencialmente lo que Anthropic hizo fue darle a Claude acceso a una computadora.</p>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>Claude Managed Agents (CMA)</h2>
+
+  <p>El workshop migra StockPilot de la Messages API a Claude Managed Agents. Esta es la infraestructura gestionada de Anthropic para agentes en produccion.</p>
+
+  <table class="eval-table">
+    <thead>
+      <tr><th>Messages API (self-hosted)</th><th>Claude Managed Agents</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Tu mantienes el agent loop</td>
+        <td>Harness incluido</td>
+      </tr>
+      <tr>
+        <td>Tu manejas el scaling</td>
+        <td>Scaling a miles de usuarios automatico</td>
+      </tr>
+      <tr>
+        <td>Tu implementas la memoria</td>
+        <td>Memoria y session management incluidos</td>
+      </tr>
+      <tr>
+        <td>Tu sandboxeas las tool calls</td>
+        <td>Entorno sandbox incluido</td>
+      </tr>
+      <tr>
+        <td>Primitivas: las que construyas</td>
+        <td>Primitivas human-like incluidas por defecto</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Cuando migrar:</strong> cuando el overhead de mantener tu propio harness te quita tiempo que deberia ir a la arquitectura del agente (tools, skills, sub-agentes). CMA te libera de infraestructura para que te enfoques en lo que diferencia a tu agente.</p>
+
+  <!-- ============================================================ -->
+  <h2>Metodologia: Hill Climbing con Evals</h2>
+
+  <p>Este es el proceso iterativo que Will usa durante el workshop con Claude Code como herramienta de diagnostico:</p>
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin:16px 0">
+    <div class="hill-step">
+      <div class="hill-num">1</div>
+      <div><strong>Corre evals — baseline.</strong> <code>uv run evals --agent before</code>. Tienes tu punto de partida: 83%.</div>
+    </div>
+    <div class="hill-step">
+      <div class="hill-num">2</div>
+      <div><strong>Diagnostica fallos con Claude Code.</strong> Pide a Claude que analice los resultados, identifique patrones en los fallos y proponga root causes. Claude Code con Opus, esfuerzo <code>extra_high</code>.</div>
+    </div>
+    <div class="hill-step">
+      <div class="hill-num">3</div>
+      <div><strong>Haz un cambio arquitectonico especifico.</strong> Un skill, una tool reemplazada por bash, un typed contract en un sub-agente. Un cambio a la vez para saber que mejoro que.</div>
+    </div>
+    <div class="hill-step">
+      <div class="hill-num">4</div>
+      <div><strong>Corre evals de nuevo.</strong> <code>uv run evals --task F1</code> para el eval especifico que atacaste. Verifica que mejoro sin regresar otros.</div>
+    </div>
+    <div class="hill-step">
+      <div class="hill-num">5</div>
+      <div><strong>Repite.</strong> Siguiente fallo, siguiente cambio, siguiente verificacion. El progreso es incremental y medible.</div>
+    </div>
+  </div>
+
+  <pre><code># Comandos del workshop
+uv run evals --agent before        # baseline completo
+uv run evals --task F3             # eval especifico (skills)
+uv run evals --task F1             # eval especifico (bash primitives)
+uv run evals --task F2,R7          # multiples evals (sub-agente typing)</code></pre>
+
+  <!-- ============================================================ -->
+  <h2>Sub-agentes con Typed Contracts</h2>
+
+  <p>El fallo F2 en StockPilot es el patron de comunicacion rota entre sub-agente y orquestador mas comun. El sub-agente hace bien su trabajo pero retorna prosa en vez de estructura, y el orquestador no puede procesarla de forma deterministica.</p>
+
+  <div class="compare-grid">
+    <div class="compare-before">
+      <div class="compare-label">SIN TYPED CONTRACT — FALLA</div>
+      <pre style="background:transparent;border:none;padding:0;margin:0;font-size:0.82rem;color:#f4a070">Sub-agente retorna:
+"Based on historical trends
+and the upcoming promotion,
+I'm fairly confident we'll
+need around 340 units."</pre>
+    </div>
+    <div class="compare-after">
+      <div class="compare-label">CON TYPED CONTRACT — CORRECTO</div>
+      <pre style="background:transparent;border:none;padding:0;margin:0;font-size:0.82rem;color:#a0d870">Sub-agente retorna:
+&#123;
+  "forecast_units": 340,
+  "confidence": 0.87,
+  "multiplier_used": 3.1,
+  "period_type": "standard_promo"
+&#125;</pre>
+    </div>
+  </div>
+
+  <p>La regla: <strong>cada sub-agente necesita un SKILL.md con el JSON schema de su output antes de escribir una sola linea del prompt del sub-agente.</strong> El contrato define la interfaz entre agentes. Sin el, el orquestador tiene que interpretar texto libre, lo que produce comportamiento impredecible.</p>
+
+  <!-- ============================================================ -->
+  <h2>Aplicacion a Quarta: El Agente Concursal</h2>
+
+  <div class="quarta-box">
+    <h3>Diagnostico de Quarta con el mismo framework</h3>
+
+    <p>El agente concursal de Quarta tiene el mismo patron de crecimiento organico que StockPilot. Aplica el mismo RCA:</p>
+
+    <h3 style="color:#a0d8a0;margin-top:18px">Compute-over-Context en Quarta</h3>
+    <p>Si el agente carga el texto completo de expedientes, resoluciones o tablas de acreedores al contexto para analizarlos, esta usando el patron incorrecto. La solucion: bash tool que ejecute un script Python para filtrar, calcular y retornar solo los datos relevantes.</p>
+    <p>Ejemplo: en vez de cargar 200 paginas de un expediente, el agente escribe un script que extrae solo las secciones con los plazos de impugnacion y los montos de credito.</p>
+
+    <h3 style="color:#a0d8a0;margin-top:18px">Policy-as-Skill en Quarta</h3>
+    <p>Las reglas del proceso concursal colombiano — plazos de la Ley 1116, criterios de calificacion de creditos, jerarquia de acreedores — no deben estar hardcodeadas en el system prompt mezcladas con otras instrucciones. Cada dominio legal va a un skill separado:</p>
+    <ul>
+      <li><code>ley-1116-plazos.md</code> — plazos de impugnacion, terminos de publicacion, vencimientos de inventario</li>
+      <li><code>calificacion-creditos.md</code> — criterios de prelacion, clases de creditos, politica de gradacion</li>
+      <li><code>reporte-semanal-promotor.md</code> — template de reporte para el promotor del proceso</li>
+    </ul>
+
+    <h3 style="color:#a0d8a0;margin-top:18px">Typed Contracts en Quarta</h3>
+    <p>Si el agente de analisis de creditos retorna un parrafo explicativo en vez de un JSON con los campos exactos (monto, clase, acreedor, estado), el agente de generacion de documentos no puede procesarlo de forma deterministica. Define el schema antes de construir el sub-agente.</p>
+
+    <h3 style="color:#a0d8a0;margin-top:18px">Evals para Quarta</h3>
+    <p>El agente concursal necesita su propia suite de evals con los mismos tipos de graders:</p>
+    <ul>
+      <li><strong>exact_match:</strong> el plazo calculado coincide con la fecha correcta segun Ley 1116</li>
+      <li><strong>set_match:</strong> el listado de acreedores de primera clase incluye exactamente los creditos correctos</li>
+      <li><strong>llm_judge:</strong> el memorial de objeciones tiene los argumentos juridicos correctos</li>
+      <li><strong>efficiency:</strong> el agente completa el analisis sin exceder 15k tokens de salida</li>
+    </ul>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>Recursos del Workshop</h2>
+
+  <ul>
+    <li>Repo: <code>cwc26.short.gy/workshops</code> → carpeta <code>agent-decomposition</code></li>
+    <li>Modelo recomendado para diagnostico: <strong>Opus 4.7, esfuerzo extra_high</strong></li>
+    <li>Carpeta <code>before/</code> — agente con Messages API (arquitectura problematica)</li>
+    <li>Carpeta <code>starter/</code> — agente migrado a Claude Managed Agents (punto de partida para el workshop)</li>
+  </ul>
+
+  <pre><code># Setup del proyecto
+git clone &lt;repo&gt;
+uv sync
+cp .env.example .env  # agregar ANTHROPIC_API_KEY
+
+# Correr baseline
+uv run evals --agent before</code></pre>
+
+  <!-- ============================================================ -->
+  <div class="quiz">
+    <h3>Comprobacion de Conocimiento</h3>
+
+    <div class="quiz-item" id="qi1">
+      <p class="quiz-q">1. El eval F1 de StockPilot falla por "eficiencia de tokens" — el agente llega al resultado correcto pero usa 324k tokens. Cual es la causa raiz segun el RCA?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q1" value="a"> El model es demasiado pequeno para la tarea</label>
+        <label><input type="radio" name="q1" value="b"> La tool list_low_stock carga 395 filas de CSV directamente al contexto en vez de filtrar computacionalmente</label>
+        <label><input type="radio" name="q1" value="c"> El system prompt es demasiado largo y confunde al modelo</label>
+        <label><input type="radio" name="q1" value="d"> El sub-agente de inventario no tiene acceso a los datos correctos</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q1','b','qi1')">Verificar</button>
+      <div class="quiz-result correct-msg" id="q1-correct">Correcto. Causa raiz 1 — Compute-over-Context: la tool manda datos brutos al contexto cuando deberia calcular y retornar solo el resultado. La solucion es dar al agente una bash tool para que escriba un Python script que filtre los datos.</div>
+      <div class="quiz-result wrong-msg" id="q1-wrong">Incorrecto. La causa raiz es Compute-over-Context: list_low_stock manda 395 filas de CSV al contexto del modelo (324k tokens). El modelo no deberia leer tablas — deberia tener acceso a herramientas de computo que filtren los datos y retornen solo lo relevante.</div>
+    </div>
+
+    <div class="quiz-item" id="qi2">
+      <p class="quiz-q">2. Cual es la diferencia critica entre informacion que va al system prompt vs informacion que va a un skill?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q2" value="a"> Los skills son para informacion tecnica y el system prompt para informacion de negocio</label>
+        <label><input type="radio" name="q2" value="b"> El system prompt es para informacion que Claude necesita en toda tarea; los skills para informacion que Claude necesita solo en tareas especificas</label>
+        <label><input type="radio" name="q2" value="c"> Los skills son mas seguros porque estan encriptados</label>
+        <label><input type="radio" name="q2" value="d"> No hay diferencia funcional, es solo una cuestion de organizacion</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q2','b','qi2')">Verificar</button>
+      <div class="quiz-result correct-msg" id="q2-correct">Correcto. El principio de progressive disclosure: system prompt = informacion siempre necesaria. Skill = informacion cargada bajo demanda cuando la tarea especifica la requiere. Contaminar el contexto con informacion irrelevante degrada el razonamiento.</div>
+      <div class="quiz-result wrong-msg" id="q2-wrong">Incorrecto. La distincion es: system prompt para informacion siempre necesaria independientemente de la tarea. Skills para informacion relevante SOLO en tareas especificas. Los skills implementan progressive disclosure — el contexto solo contiene lo que la tarea actual necesita.</div>
+    </div>
+
+    <div class="quiz-item" id="qi3">
+      <p class="quiz-q">3. El eval R8 falla porque el agente usa multiplicador 1.35 en vez de 3.1x durante un mes de promocion. Cual es la causa raiz?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q3" value="a"> El modelo no tiene acceso a los datos de ventas historicas</label>
+        <label><input type="radio" name="q3" value="b"> El sub-agente de forecasting tiene un bug en el calculo</label>
+        <label><input type="radio" name="q3" value="c"> Dos politicas contradictorias en distintas partes del system prompt de 400 lineas confunden al modelo</label>
+        <label><input type="radio" name="q3" value="d"> El grader de numeric_tolerance esta mal configurado</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q3','c','qi3')">Verificar</button>
+      <div class="quiz-result correct-msg" id="q3-correct">Correcto. Causa raiz 3 — Policy-as-Skill Missing: cuando la politica de multiplicadores de promocion vive dispersa en un system prompt de 400 lineas, pueden existir dos versiones contradictorias. El modelo encuentra ambas y usa la incorrecta. La solucion es mover cada politica a un skill separado.</div>
+      <div class="quiz-result wrong-msg" id="q3-wrong">Incorrecto. La causa raiz es Policy-as-Skill Missing. El system prompt de 400 lineas tiene dos definiciones contradictorias del multiplicador de promocion. El modelo las encuentra ambas y usa la incorrecta. La solucion: un skill dedicado para politicas de forecasting, con una sola fuente de verdad.</div>
+    </div>
+
+    <div class="quiz-item" id="qi4">
+      <p class="quiz-q">4. Segun el principio de "human-like primitives", cual es la forma correcta de analizar un CSV de 400 filas con un agente?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q4" value="a"> Construir una tool personalizada que lea el CSV y lo convierta a un formato mas compacto antes de pasarlo al contexto</label>
+        <label><input type="radio" name="q4" value="b"> Cargar el CSV completo al system prompt para que el modelo siempre tenga acceso a los datos</label>
+        <label><input type="radio" name="q4" value="c"> Dar al agente acceso a bash para que escriba un Python script, lo ejecute y razone sobre los resultados filtrados</label>
+        <label><input type="radio" name="q4" value="d"> Dividir el CSV en chunks de 50 filas y procesarlos en paralelo con sub-agentes</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q4','c','qi4')">Verificar</button>
+      <div class="quiz-result correct-msg" id="q4-correct">Correcto. La primitiva de code execution (bash/Python) es la solucion correcta. El agente escribe el codigo de filtrado, lo ejecuta y procesa solo los resultados relevantes. Mismo resultado, 95% menos tokens que cargar el CSV completo.</div>
+      <div class="quiz-result wrong-msg" id="q4-wrong">Incorrecto. La solucion de human-like primitives es darle al agente acceso a bash para ejecutar codigo. El agente escribe un script Python que filtre el CSV y retorna solo los datos relevantes. No se carga el CSV al contexto — se computa sobre los datos.</div>
+    </div>
+
+    <div class="quiz-item" id="qi5">
+      <p class="quiz-q">5. En la metodologia de hill climbing con evals, cual es el orden correcto de pasos?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q5" value="a"> Redisenar la arquitectura completa → correr evals → ajustar</label>
+        <label><input type="radio" name="q5" value="b"> Correr baseline → diagnosticar fallos → hacer UN cambio especifico → correr evals de verificacion → repetir</label>
+        <label><input type="radio" name="q5" value="c"> Correr evals → migrar a CMA → correr evals de nuevo</label>
+        <label><input type="radio" name="q5" value="d"> Diagnosticar fallos → hacer todos los cambios → correr evals al final</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q5','b','qi5')">Verificar</button>
+      <div class="quiz-result correct-msg" id="q5-correct">Correcto. Hill climbing es iterativo e incremental: baseline → diagnostico → UN cambio → verificacion → siguiente iteracion. Hacer todos los cambios a la vez hace imposible saber que mejoro que y que introdujo regresiones.</div>
+      <div class="quiz-result wrong-msg" id="q5-wrong">Incorrecto. El hill climbing correcto es: baseline → diagnosticar → UN cambio especifico → verificar → repetir. La clave es un cambio a la vez. Si haces varios cambios simultaneamente, no puedes saber cual mejoro el score y cual introdujo una regresion.</div>
+    </div>
+
+  </div>
+
+  <!-- Completar -->
+  <div class="completed-section">
+    <input type="checkbox" id="completedCheck" onchange="markCompleted()">
+    <label for="completedCheck">Marcar como completada</label>
+    <span style="color:var(--text-dim);margin-left:auto;font-family:var(--font-mono);font-size:0.78rem" id="completedDate"></span>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+window.addEventListener('scroll', function() {
+  var scrollTop = window.scrollY || document.documentElement.scrollTop;
+  var docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  var pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  document.getElementById('progressBar').style.width = pct + '%';
+});
+
+function checkAnswer(qName, correct, itemId) {
+  var selected = document.querySelector('input[name="' + qName + '"]:checked');
+  if (!selected) return;
+  var correctEl = document.getElementById(qName + '-correct');
+  var wrongEl = document.getElementById(qName + '-wrong');
+  correctEl.style.display = 'none';
+  wrongEl.style.display = 'none';
+  if (selected.value === correct) {
+    correctEl.style.display = 'block';
+  } else {
+    wrongEl.style.display = 'block';
+  }
+}
+
+var pageKey = 'completed_032';
+window.addEventListener('DOMContentLoaded', function() {
+  var saved = localStorage.getItem(pageKey);
+  if (saved) {
+    document.getElementById('completedCheck').checked = true;
+    document.getElementById('completedDate').textContent = 'Completada el ' + saved;
+  }
+});
+
+function markCompleted() {
+  var cb = document.getElementById('completedCheck');
+  if (cb.checked) {
+    var now = new Date().toLocaleDateString('es-CO', {year:'numeric',month:'short',day:'numeric'});
+    localStorage.setItem(pageKey, now);
+    document.getElementById('completedDate').textContent = 'Completada el ' + now;
+  } else {
+    localStorage.removeItem(pageKey);
+    document.getElementById('completedDate').textContent = '';
+  }
+}
+</script>
+</body>
+</html>
