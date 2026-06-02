@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>031 - Segundo Cerebro con IA: Roadmap de 6 Meses</title>
+<style>
+:root {
+  --bg:#0d0f0e; --surface:#131615; --border:#1e2420;
+  --gold:#c9a84c; --gold-dim:#7a6230;
+  --text:#e8e4d9; --text-dim:#7a7568;
+  --green:#2d4a3e; --blue:#1e3a5f;
+  --font-body:'Georgia',serif;
+  --font-mono:'Courier New',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);line-height:1.7;min-height:100vh}
+.progress-bar-container{position:fixed;top:0;left:0;right:0;height:3px;background:var(--border);z-index:100}
+.progress-bar{height:100%;background:var(--gold);transition:width 0.3s}
+.nav{position:fixed;top:3px;left:0;right:0;background:rgba(13,15,14,0.95);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;justify-content:space-between;align-items:center;z-index:99;backdrop-filter:blur(8px)}
+.nav-brand{color:var(--gold);font-family:var(--font-mono);font-size:0.8rem;letter-spacing:2px}
+.nav-links{display:flex;gap:8px}
+.nav-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);padding:5px 14px;border-radius:4px;cursor:pointer;font-family:var(--font-mono);font-size:0.75rem;text-decoration:none;transition:all 0.2s}
+.nav-btn:hover,.nav-btn.active{border-color:var(--gold);color:var(--gold)}
+.container{max-width:860px;margin:0 auto;padding:80px 24px 60px}
+h1{font-size:1.9rem;color:var(--gold);margin-bottom:8px;line-height:1.3}
+.meta{color:var(--text-dim);font-family:var(--font-mono);font-size:0.8rem;margin-bottom:32px;display:flex;gap:20px;flex-wrap:wrap}
+h2{font-size:1.25rem;color:var(--gold);margin:40px 0 16px;border-left:3px solid var(--gold-dim);padding-left:12px}
+h3{font-size:1.05rem;color:var(--text);margin:24px 0 10px}
+p{margin-bottom:14px;color:var(--text)}
+ul,ol{margin:0 0 14px 20px;color:var(--text)}
+li{margin-bottom:6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;margin:20px 0}
+.card-gold{border-color:var(--gold-dim)}
+.card-blue{border-color:#1e3a5f;background:#0d1a2e}
+.card-green{border-color:#1e3a2e;background:#0a1a12}
+.card-red{border-color:#3a1e1e;background:#1a0d0d}
+code{font-family:var(--font-mono);background:#1a1e1c;padding:2px 6px;border-radius:3px;font-size:0.88rem;color:#a8d4b0}
+pre{background:#0a0c0b;border:1px solid var(--border);border-radius:6px;padding:18px;overflow-x:auto;margin:16px 0}
+pre code{background:none;padding:0;color:#a8d4b0;font-size:0.83rem;line-height:1.65}
+.highlight{color:var(--gold)}
+.dim{color:var(--text-dim)}
+.quiz{background:#0d1a12;border:1px solid #1e3a2e;border-radius:8px;padding:20px;margin:32px 0}
+.quiz h3{color:#4caf7d;margin-top:0}
+.quiz-item{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.quiz-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.quiz-q{color:var(--text);margin-bottom:10px;font-weight:bold}
+.quiz-options label{display:block;padding:7px 12px;margin:4px 0;border-radius:4px;cursor:pointer;border:1px solid var(--border);transition:all 0.2s;font-size:0.9rem}
+.quiz-options label:hover{border-color:var(--gold-dim);background:var(--surface)}
+.quiz-options input{margin-right:8px}
+.quiz-result{display:none;margin-top:10px;padding:8px 12px;border-radius:4px;font-size:0.88rem;font-family:var(--font-mono)}
+.correct-msg{background:#0d2a1a;border:1px solid #2d6a4a;color:#4caf7d}
+.wrong-msg{background:#2a0d0d;border:1px solid #6a2d2d;color:#f47070}
+.btn{background:var(--surface);border:1px solid var(--gold-dim);color:var(--gold);padding:8px 20px;border-radius:4px;cursor:pointer;font-family:var(--font-mono);font-size:0.85rem;transition:all 0.2s;margin-top:10px}
+.btn:hover{background:var(--gold);color:var(--bg)}
+.completed-section{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px;margin-top:40px;display:flex;align-items:center;gap:14px}
+.completed-section label{cursor:pointer;color:var(--text-dim);font-size:0.9rem}
+input[type="checkbox"]{width:18px;height:18px;cursor:pointer;accent-color:var(--gold)}
+.month-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:24px;margin:20px 0}
+.month-header{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.month-badge{background:var(--gold-dim);color:var(--bg);font-family:var(--font-mono);font-size:0.82rem;padding:5px 14px;border-radius:4px;font-weight:bold;white-space:nowrap}
+.month-title{color:var(--gold);font-size:1.1rem;font-weight:bold}
+.month-goal{background:#0d1a0d;border:1px solid #1e3a1e;border-radius:6px;padding:11px 14px;margin-bottom:16px;font-size:0.9rem}
+.month-goal strong{color:#4caf7d;font-family:var(--font-mono);font-size:0.8rem;display:block;margin-bottom:4px}
+.checklist{list-style:none;margin:0;padding:0}
+.checklist li{padding:7px 0;border-bottom:1px solid #16191a;font-size:0.9rem}
+.checklist li:last-child{border-bottom:none}
+.checklist li::before{content:"[ ] ";font-family:var(--font-mono);color:var(--gold-dim);font-size:0.82rem}
+.meta-target{background:#0d1a2e;border:1px solid #1e3a5f;border-radius:6px;padding:10px 14px;margin-top:14px;font-family:var(--font-mono);font-size:0.83rem;color:#7ab4f0}
+.meta-target strong{color:#5ba8d0;display:block;margin-bottom:2px;font-size:0.78rem}
+.differentiator-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px;margin:14px 0;border-left:3px solid var(--gold-dim)}
+.diff-num{display:inline-block;background:var(--gold-dim);color:var(--bg);font-family:var(--font-mono);font-size:0.75rem;padding:3px 9px;border-radius:3px;margin-right:10px;font-weight:bold}
+.workflow-card{background:#0a1a12;border:1px solid #1e3a2e;border-radius:8px;padding:16px;margin:12px 0;border-left:3px solid #2d6a4a}
+.workflow-label{font-family:var(--font-mono);font-size:0.78rem;color:#4caf7d;margin-bottom:6px;font-weight:bold}
+.stat-row{display:flex;gap:14px;margin:16px 0;flex-wrap:wrap}
+.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:14px 18px;flex:1;min-width:160px;text-align:center}
+.stat-num{color:var(--gold);font-family:var(--font-mono);font-size:1.3rem;font-weight:bold;display:block}
+.stat-label{color:var(--text-dim);font-size:0.8rem;margin-top:4px}
+.price-row{display:flex;gap:14px;margin:16px 0;flex-wrap:wrap}
+.price-box{background:#0d1a0d;border:1px solid #1e3a2e;border-radius:6px;padding:14px 18px;flex:1;min-width:140px}
+.price-box .price{color:#4caf7d;font-family:var(--font-mono);font-size:1.1rem;font-weight:bold}
+.price-box .price-label{color:var(--text-dim);font-size:0.82rem;margin-top:4px}
+</style>
+</head>
+<body>
+
+<div class="progress-bar-container">
+  <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<nav class="nav">
+  <span class="nav-brand">QUARTA FLIGHT SCHOOL</span>
+  <div class="nav-links">
+    <a href="INDEX.html" class="nav-btn">Indice</a>
+    <a href="030-multi-agent-workflows-guia-completa.html" class="nav-btn">&#8592; Anterior</a>
+    <span class="nav-btn active">031</span>
+    <a href="INDEX.html" class="nav-btn">Indice &#8594;</a>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="meta">
+    <span>Bloque: Ecosistema IA 2026</span>
+    <span>35 min</span>
+    <span>Clase 031</span>
+    <span class="dim">Fuente: @eng_khairallah1 en X</span>
+  </div>
+
+  <h1>Segundo Cerebro con IA: Roadmap de 6 Meses</h1>
+
+  <h2>La Diferencia entre Notas y Sistemas</h2>
+
+  <p>La mayoria de personas toma notas. No construyen sistemas. La diferencia no es superficial: define si el conocimiento que acumulas trabaja para ti o se convierte en un archivo de cosas que alguna vez escribiste y nunca volviste a ver.</p>
+
+  <p>Una nota es algo que escribes y olvidas. Un sistema es algo que construyes una vez y trabaja para ti cada dia, <span class="highlight">volviendo mas valioso cuanto mas lo usas</span>. Las personas que construyen sistemas de segundo cerebro potenciados por Claude y Obsidian estan operando en un nivel completamente diferente. Sus preguntas a Claude obtienen respuestas especificas a su contexto, no respuestas genericas de internet. Su conocimiento se compone en lugar de decaer.</p>
+
+  <p>Son Arquitectos del Segundo Cerebro. Y la demanda para esta habilidad esta explotando ahora mismo.</p>
+
+  <h2>Por Que Esta Carrera Esta Explotando</h2>
+
+  <div class="stat-row">
+    <div class="stat-box">
+      <span class="stat-num">1.5M</span>
+      <div class="stat-label">usuarios de Obsidian con 22% de crecimiento anual</div>
+    </div>
+    <div class="stat-box">
+      <span class="stat-num">$2.5B</span>
+      <div class="stat-label">ingresos anualizados de Claude Code en febrero 2026</div>
+    </div>
+    <div class="stat-box">
+      <span class="stat-num">2026</span>
+      <div class="stat-label">el CEO de Obsidian lanzo Skills oficiales de IA para la plataforma</div>
+    </div>
+  </div>
+
+  <p>Las empresas estan contratando personas que puedan disenar sistemas de gestion de conocimiento potenciados por IA bajo titulos que no existian hace dos anos:</p>
+
+  <ul>
+    <li><strong>Knowledge Engineer</strong></li>
+    <li><strong>AI Workflow Designer</strong></li>
+    <li><strong>PKM Consultant</strong> (Personal Knowledge Management)</li>
+    <li><strong>AI Operations Specialist</strong></li>
+  </ul>
+
+  <div class="price-row">
+    <div class="price-box">
+      <div class="price">$500</div>
+      <div class="price-label">configuracion basica de segundo cerebro</div>
+    </div>
+    <div class="price-box">
+      <div class="price">$2,000 - $5,000</div>
+      <div class="price-label">build comprehensivo del sistema completo</div>
+    </div>
+    <div class="price-box">
+      <div class="price">Retension mensual</div>
+      <div class="price-label">optimizacion y soporte continuos</div>
+    </div>
+  </div>
+
+  <h2>Los 3 Diferenciadores de los Grandes Arquitectos</h2>
+
+  <div class="differentiator-card">
+    <h3><span class="diff-num">1</span>Se enfocan en sistemas, no en herramientas</h3>
+    <p>Los usuarios promedio se obsesionan con que plugin instalar o que modelo de IA usar esta semana. Los grandes arquitectos se enfocan en el diseno del workflow: como fluye la informacion hacia adentro, se procesa, se conecta y se usa activamente.</p>
+    <p style="margin-bottom:0">Las herramientas cambian cada tres meses. Los sistemas bien disenados perduran anos. Obsesionarse con herramientas es construir sobre arena.</p>
+  </div>
+
+  <div class="differentiator-card">
+    <h3><span class="diff-num">2</span>Disenan para IA desde el inicio</h3>
+    <p>Los usuarios promedio construyen una vault durante meses y luego intentan agregarle IA despues. Descubren que sus notas son ilegibles para un LLM: sin estructura consistente, sin frontmatter, sin preambulos de una oracion, sin metadatos de fuente.</p>
+    <p>Los grandes arquitectos estructuran cada nota pensando que la IA la va a leer. Frontmatter legible por maquina. Formato consistente entre todos los tipos de notas. Preambulos de una oracion que dan contexto inmediato. Metadatos de fuente que permiten rastreo.</p>
+    <p style="margin-bottom:0">Estas pequenas decisiones de diseno se componen en diferencias masivas de calidad de recuperacion cuando Claude tiene que encontrar informacion relevante entre 500 notas.</p>
+  </div>
+
+  <div class="differentiator-card">
+    <h3><span class="diff-num">3</span>Iteran sin descanso</h3>
+    <p>Los usuarios promedio configuran un sistema el primer mes y lo dejan correr igual para siempre. Los grandes arquitectos revisan sus workflows semanalmente, actualizan su CLAUDE.md mensualmente y refinan continuamente sus prompts basados en lo que el output les enseña.</p>
+    <p style="margin-bottom:0">Un sistema que no se refina se vuelve obsoleto. El refinamiento continuo es lo que transforma una configuracion inicial en un sistema profundamente personalizado que ninguna herramienta generica puede replicar.</p>
+  </div>
+
+  <h2>El Roadmap: 6 Meses Paso a Paso</h2>
+
+  <!-- MES 1 -->
+  <div class="month-card">
+    <div class="month-header">
+      <span class="month-badge">MES 1</span>
+      <span class="month-title">Dominar las Fundaciones</span>
+    </div>
+    <div class="month-goal">
+      <strong>OBJETIVO DEL MES</strong>
+      Que tomar notas en Obsidian se sienta tan natural como escribir un mensaje de texto. Sin friction en la captura, el sistema nunca despega.
+    </div>
+
+    <h3>Que hacer este mes</h3>
+    <p>Descarga Obsidian. Crea tu vault con la estructura de carpetas PARA: Projects (proyectos activos), Areas (responsabilidades continuas), Resources (temas de interes), Archive (todo lo que ya no es activo). Esta estructura de cuatro carpetas organiza el 95% del conocimiento de cualquier trabajador del conocimiento.</p>
+
+    <p>Aprende como funciona Obsidian desde adentro:</p>
+    <ul>
+      <li>Crear notas y enlazarlas con wikilinks usando la sintaxis <code>[[nombre de nota]]</code></li>
+      <li>Usar tags para categorizar sin sobre-estructurar</li>
+      <li>Agregar frontmatter YAML al inicio de cada nota para metadatos legibles por maquina</li>
+      <li>El Graph View: que muestra sobre tus conexiones y que ausencias revelan sobre tu pensamiento</li>
+      <li>Atajos de teclado y el quick switcher para encontrar cualquier nota en segundos sin tocar el raton</li>
+    </ul>
+
+    <h3>Checklist del Mes 1</h3>
+    <ul class="checklist">
+      <li>Crea 50 notas sobre temas que realmente te importen: proyectos de trabajo, cosas que estas aprendiendo, ideas, resumenes de libros</li>
+      <li>Enlaza al menos 3 otras notas desde cada nueva nota que crees</li>
+      <li>Agrega frontmatter (tags, fecha, proyecto) a cada nota desde el primer dia</li>
+      <li>Instala Templater y crea plantillas para: notas diarias, notas de reunion, notas de proyectos y notas de libros</li>
+      <li>Lee la documentacion de Obsidian de principio a fin: una hora bien invertida</li>
+      <li>Unete a las comunidades Discord y Reddit de Obsidian para ver como otros resuelven los mismos problemas</li>
+    </ul>
+
+    <div class="meta-target">
+      <strong>META AL FINAL DEL MES</strong>
+      100+ notas en tu vault con formato consistente y enlazado activo entre ellas.
+    </div>
+  </div>
+
+  <!-- MES 2 -->
+  <div class="month-card">
+    <div class="month-header">
+      <span class="month-badge">MES 2</span>
+      <span class="month-title">Agregar IA a tu Vault</span>
+    </div>
+    <div class="month-goal">
+      <strong>OBJETIVO DEL MES</strong>
+      Conectar IA a tu vault y aprender lo que puede hacer con tu conocimiento acumulado. El momento en que Claude puede leer tus propias notas es cuando el segundo cerebro empieza a sentirse diferente.
+    </div>
+
+    <h3>Instalaciones clave del mes</h3>
+
+    <div class="workflow-card">
+      <div class="workflow-label">Smart Connections</div>
+      <p style="margin:0;font-size:0.9rem">El plugin que te permite chatear con toda tu vault usando IA. Preguntale cosas sobre tus notas y ve como encuentra y sintetiza informacion de multiples notas que nunca habrias conectado manualmente. Esto es RAG aplicado a tu conocimiento personal.</p>
+    </div>
+
+    <div class="workflow-card">
+      <div class="workflow-label">Servidor MCP: mcpvault</div>
+      <p style="margin:0;font-size:0.9rem">El punto de inicio mas simple para dar a Claude Code acceso directo a tus archivos del vault sin necesitar que Obsidian este ejecutandose. mcpvault es de cero dependencias: instala, configura la ruta a tu vault, conecta a Claude Desktop o Claude Code. Desde ese momento Claude puede leer, crear y editar notas directamente.</p>
+    </div>
+
+    <h3>Checklist del Mes 2</h3>
+    <ul class="checklist">
+      <li>Instala Smart Connections y ten 20 conversaciones con tu vault: pregunta sobre proyectos, conexiones entre ideas, resumenes de areas</li>
+      <li>Configura el servidor MCP mcpvault y conectalo a Claude Desktop o Claude Code</li>
+      <li>Crea 3 Proyectos en Claude.ai, cada uno con notas relevantes del vault como archivos de conocimiento de base</li>
+      <li>Construye tu primer AI workflow: el Weekly Digest que sintetiza las notas creadas durante la semana en un resumen estructurado</li>
+      <li>Escribe tu primer CLAUDE.md o documento de contexto que describe la estructura de tu vault y convenciones de notas para que Claude las entienda sin que tengas que explicarlas cada vez</li>
+    </ul>
+
+    <div class="meta-target">
+      <strong>META AL FINAL DEL MES</strong>
+      200+ notas con formato consistente, enlazado activo y Claude capaz de responder preguntas sobre tu propio conocimiento acumulado.
+    </div>
+  </div>
+
+  <!-- MES 3 -->
+  <div class="month-card">
+    <div class="month-header">
+      <span class="month-badge">MES 3</span>
+      <span class="month-title">Construir Workflows Automatizados</span>
+    </div>
+    <div class="month-goal">
+      <strong>OBJETIVO DEL MES</strong>
+      Que tu vault deje de ser algo que mantienes activamente y empiece a ser algo que se mantiene solo. La automatizacion es lo que transforma un sistema de notas en infraestructura de conocimiento.
+    </div>
+
+    <h3>Los Cuatro Workflows Automatizados del Mes</h3>
+
+    <div class="workflow-card">
+      <div class="workflow-label">Procesamiento Nocturno de Inbox</div>
+      <p style="margin:0;font-size:0.9rem">Claude ordena las notas nuevas que caen en tu carpeta Inbox durante el dia: las mueve a la carpeta PARA correcta, agrega tags coherentes con tu taxonomia existente y agrega enlaces a notas relacionadas. Manana encuentras el inbox vacio y las notas donde deben estar.</p>
+    </div>
+
+    <div class="workflow-card">
+      <div class="workflow-label">Generacion de Revision Semanal</div>
+      <p style="margin:0;font-size:0.9rem">Cada semana, Claude compila todo lo que ocurrio: notas creadas, proyectos avanzados, ideas capturadas, lecturas completadas. El resultado es una nota de revision estructurada que te da perspectiva sobre lo que realmente hiciste versus lo que pensabas que estabas haciendo.</p>
+    </div>
+
+    <div class="workflow-card">
+      <div class="workflow-label">Auditoria Mensual de Conocimiento</div>
+      <p style="margin:0;font-size:0.9rem">Una vez al mes, Claude identifica notas huerfanas sin enlaces, contenido desactualizado que ya no refleja tu pensamiento actual, y brechas en tu conocimiento: areas donde capturaste preguntas pero nunca encontraste respuestas.</p>
+    </div>
+
+    <div class="workflow-card">
+      <div class="workflow-label">Pipeline de Ingestion de Investigacion</div>
+      <p style="margin:0;font-size:0.9rem">Deja caer la URL de un articulo o un PDF en una carpeta especifica. Claude lo procesa automaticamente en una nota estructurada con resumen, puntos clave, citas relevantes y enlaces a contenido relacionado ya existente en tu vault. La investigacion llega formateada, no como dump de texto.</p>
+    </div>
+
+    <h3>Checklist del Mes 3</h3>
+    <ul class="checklist">
+      <li>Construye y prueba los 4 workflows automatizados: procesamiento de inbox, revision semanal, auditoria mensual, ingestion de investigacion</li>
+      <li>Configura el plugin Periodic Notes con plantillas para notas diarias, semanales y mensuales</li>
+      <li>Instala Dataview y crea 5 queries que rastrean las metricas clave de tu vault: notas por proyecto, notas creadas esta semana, notas sin tag, notas huerfanas</li>
+      <li>Instala Obsidian Git y configura commits automaticos cada 30 minutos para que tu vault tenga historial de versiones completo</li>
+      <li>Disena tu formato de nota AI-first: frontmatter consistente, estructura legible por maquina con encabezados predecibles, preambulo de una oracion</li>
+      <li>Alcanza 200+ notas con alta densidad de enlaces entre ellas</li>
+    </ul>
+
+    <div class="meta-target">
+      <strong>META AL FINAL DEL MES</strong>
+      Los 4 workflows corriendo sin intervencion manual. 200+ notas con alta densidad de enlaces y el vault procesandose a si mismo.
+    </div>
+  </div>
+
+  <!-- MES 4 -->
+  <div class="month-card">
+    <div class="month-header">
+      <span class="month-badge">MES 4</span>
+      <span class="month-title">Ingenieria de Contexto Profunda</span>
+    </div>
+    <div class="month-goal">
+      <strong>OBJETIVO DEL MES</strong>
+      Hacer que Claude sea tan familiar con tu trabajo que produzca output indistinguible de un colega que ha trabajado contigo por anos. La diferencia entre respuestas genericas e inutiles y respuestas transformadoras esta en el contexto.
+    </div>
+
+    <p>Las respuestas genericas de IA son inutiles en la practica diaria. Las respuestas especificas al contexto son transformadoras. Este mes se trata de hacer que Claude conozca tan profundamente tu trabajo que su output se sienta personalizado a tu realidad, no a un caso generico de internet.</p>
+
+    <h3>CLAUDE.md Comprehensivo</h3>
+    <p>Escribe un CLAUDE.md que cubra: la estructura de tu vault y por que esta organizada asi, convenciones de notas (como se llaman los archivos, que va en el frontmatter, como se estructuran los encabezados), preferencias de AI workflow (que tipo de output esperas, que nunca debe hacer, como reportar incertidumbre).</p>
+
+    <h3>Documentos de Contexto por Dominio</h3>
+    <p>Crea un documento de contexto especifico para cada area principal de tu trabajo. No mezcles dominios en un solo archivo:</p>
+    <ul>
+      <li>Tu archivo de contexto de <strong>marketing</strong> incluye: voz de marca, audiencia objetivo, resultados de campanas pasadas, estandares de contenido que funcionaron y que no funcionaron</li>
+      <li>Tu archivo de contexto de <strong>investigacion</strong> incluye: metodologia preferida, fuentes de confianza, criterios de calidad, preguntas de investigacion actuales y cerradas</li>
+      <li>Tu archivo de contexto de <strong>proyectos</strong> incluye: clientes activos, contexto de cada relacion, compromisos contraidos, historial de decisiones</li>
+    </ul>
+    <p>Cuando Claude lee estos archivos antes de responder, la calidad del output cambia cualitativamente. No es el mismo modelo; es el mismo modelo con el contexto correcto.</p>
+
+    <h3>Template Prompts para Tareas Comunes</h3>
+    <p>Construye template prompts para tus tareas mas frecuentes. En lugar de escribir un nuevo prompt cada vez que necesitas un analisis competitivo, tienes una plantilla que incluye el contexto correcto, las restricciones, el formato de output y los criterios de calidad. La consistencia del output sube radicalmente.</p>
+
+    <h3>Checklist del Mes 4</h3>
+    <ul class="checklist">
+      <li>Escribe un CLAUDE.md comprehensivo que cubra estructura del vault, convenciones de notas y preferencias de AI workflow</li>
+      <li>Crea 3-5 documentos de contexto especificos por dominio para tus areas de trabajo clave</li>
+      <li>Construye 10 template prompts para tus tareas mas comunes</li>
+      <li>Practica context engineering activamente: prueba como diferentes setups de contexto cambian la calidad del output de Claude para la misma tarea</li>
+      <li>Alcanza 300+ notas con mantenimiento automatico corriendo fluidamente sin intervencion manual</li>
+    </ul>
+
+    <div class="meta-target">
+      <strong>META AL FINAL DEL MES</strong>
+      Claude produce output que usa tu terminologia, reconoce tus proyectos por nombre y aplica tus criterios de calidad sin que tengas que explicarlos en cada prompt.
+    </div>
+  </div>
+
+  <!-- MES 5 -->
+  <div class="month-card">
+    <div class="month-header">
+      <span class="month-badge">MES 5</span>
+      <span class="month-title">Construir para Otros</span>
+    </div>
+    <div class="month-goal">
+      <strong>OBJETIVO DEL MES</strong>
+      Dar el salto de "construi un segundo cerebro para mi mismo" a "puedo construir un segundo cerebro para cualquiera". Este salto convierte una habilidad personal en una habilidad profesional.
+    </div>
+
+    <p>Encuentra tres personas &mdash;amigos, colegas, familiares&mdash; que luchan con sobrecarga de informacion, desorganizacion de notas o gestion del conocimiento. Construye una configuracion basica Obsidian + Claude para cada una de ellas.</p>
+
+    <p>Cada persona tendra necesidades diferentes, workflows diferentes y niveles de comodidad tecnica radicalmente distintos. Adaptar tu sistema para servir contextos diferentes es la habilidad especifica que te convierte en un arquitecto en lugar de simplemente un usuario avanzado de tu propia configuracion.</p>
+
+    <h3>Lo que Aprendes al Construir para Otros</h3>
+    <ul>
+      <li>Que partes de tu sistema son universales y funcionan para todos los trabajadores del conocimiento</li>
+      <li>Que partes son especificas a tu dominio y necesitan adaptacion</li>
+      <li>Como explicar conceptos tecnicos a personas sin experiencia en IA</li>
+      <li>Donde estan los puntos de friction reales que tu sistema resuelve pero que no habian sido obvios desde adentro</li>
+      <li>Como escribir documentacion y guias de onboarding que realmente funcionen</li>
+    </ul>
+
+    <h3>Empieza a Compartir Publicamente</h3>
+    <p>Documenta todo lo que aprendes durante los builds de los tres sistemas. Escribe sobre ello en X, LinkedIn o un blog. Las personas que van un paso atras de ti en el camino encuentran enorme valor en documentacion de alguien que acaba de resolver los problemas que ellos tienen ahora mismo. Esta es la base de la autoridad como arquiteco.</p>
+
+    <h3>Checklist del Mes 5</h3>
+    <ul class="checklist">
+      <li>Disena y construye una configuracion basica Obsidian + Claude para 3 personas con necesidades diferentes</li>
+      <li>Crea un "Second Brain Starter Kit" reutilizable: plantilla de vault, lista de plugins esenciales, plantilla CLAUDE.md, guia de primera semana</li>
+      <li>Documenta los patrones comunes a los tres builds: lo que funciona para todos vs lo que necesita personalizacion segun el dominio</li>
+      <li>Empieza a compartir tu conocimiento publicamente: escribe al menos 3 piezas sobre lo que has aprendido</li>
+    </ul>
+
+    <div class="meta-target">
+      <strong>META AL FINAL DEL MES</strong>
+      Tres personas usando el sistema que construiste para ellas. Un Starter Kit documentado que puedes reutilizar. Presencia publica inicial en el tema.
+    </div>
+  </div>
+
+  <!-- MES 6 -->
+  <div class="month-card">
+    <div class="month-header">
+      <span class="month-badge">MES 6</span>
+      <span class="month-title">Profesionalizarse</span>
+    </div>
+    <div class="month-goal">
+      <strong>OBJETIVO DEL MES</strong>
+      Convertirte en el experto. Para el mes seis tienes meses de experiencia practica, sistemas construidos para otros y conocimiento documentado. Es tiempo de convertir todo eso en una oferta profesional.
+    </div>
+
+    <p>Para el mes seis has construido tu propio segundo cerebro, lo has refinado durante meses de uso diario real, disenado sistemas para tres personas con necesidades distintas y documentado todo lo que aprendiste. Eso es un portafolio, aunque todavia no lo hayas presentado como tal.</p>
+
+    <h3>Crea tu Portafolio</h3>
+    <p>Documenta tu trabajo con especificidad: capturas de pantalla de sistemas funcionando, comparaciones antes-y-despues de como alguien gestionaba su conocimiento antes y despues de tu intervencion, metricas especificas de tiempo ahorrado o proyectos completados, testimonios reales de las personas para quienes construiste sistemas.</p>
+    <p>Los testimonios no necesitan ser formales. Un mensaje diciendo "oye, el sistema que me armaste esta cambiando como trabajo" es evidencia valida de resultado.</p>
+
+    <h3>Define tu Oferta de Servicio</h3>
+    <p>La formula: "Diseno sistemas de gestion del conocimiento potenciados por IA usando Claude y Obsidian para [nicho especifico]." La especificidad del nicho es lo que te diferencia y lo que justifica los precios premium.</p>
+    <p>No intentes servir a todos: "trabajadores del conocimiento" es demasiado amplio. "Investigadores academicos que manejan 200+ papers" o "fundadores de SaaS que necesitan sistematizar su inteligencia de mercado" son nichos donde puedes ser el experto obvio.</p>
+
+    <h3>Los Precios</h3>
+    <div class="price-row">
+      <div class="price-box">
+        <div class="price">$500</div>
+        <div class="price-label">configuracion basica con onboarding</div>
+      </div>
+      <div class="price-box">
+        <div class="price">$2,000 - $5,000</div>
+        <div class="price-label">build comprehensivo del sistema completo</div>
+      </div>
+      <div class="price-box">
+        <div class="price">Retension mensual</div>
+        <div class="price-label">optimizacion y soporte continuos</div>
+      </div>
+    </div>
+
+    <h3>Checklist del Mes 6</h3>
+    <ul class="checklist">
+      <li>Crea un portafolio documentando tu trabajo con resultados medibles especificos</li>
+      <li>Define una oferta de servicio clara para un nicho especifico con entregables concretos</li>
+      <li>Consigue tu primer cliente pagado o propuesta de valor para un stakeholder interno</li>
+      <li>Publica al menos 5 piezas de contenido sobre arquitectura del segundo cerebro para establecer tu expertise publicamente</li>
+      <li>Unete a las comunidades de Obsidian y Claude como contribuidor activo, no solo consumidor</li>
+      <li>Tu vault: 500+ notas, multiples workflows automatizados corriendo, integracion profunda de IA en todas las areas de tu trabajo</li>
+    </ul>
+
+    <div class="meta-target">
+      <strong>META AL FINAL DEL MES</strong>
+      Primera fuente de ingreso o propuesta de valor documentada. Portafolio con resultados medibles. 500+ notas con el sistema corriendo solo.
+    </div>
+  </div>
+
+  <h2>La Linea de Llegada</h2>
+
+  <p>Seis meses. Esa es la inversion completa. Y del otro lado esta una habilidad que es valiosa para cada trabajador del conocimiento, cada investigador, cada empresa que opera sobre informacion &mdash; que es practicamente todas.</p>
+
+  <div class="card card-gold">
+    <p>La diferencia entre los que construyen y los que consumen no es talento tecnico. Es el habito de construir sistemas en lugar de acumular notas. Una vez que ese habito esta instalado, el conocimiento deja de decaer y empieza a componer.</p>
+    <p style="margin-bottom:0"><strong>Empieza con el Mes 1.</strong> Descarga Obsidian. Crea tus primeras 10 notas. Enlazalas entre si. El segundo cerebro empieza con la primera conexion.</p>
+  </div>
+
+  <h2>Quiz de Comprension</h2>
+
+  <div class="quiz">
+    <h3>Verifica tu comprension</h3>
+
+    <div class="quiz-item" id="qi1">
+      <p class="quiz-q">1. Cual es la diferencia fundamental entre una nota y un sistema, segun la introduccion de este roadmap?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q1" value="a"> Las notas son analogicas y los sistemas son digitales</label>
+        <label><input type="radio" name="q1" value="b"> Una nota es algo que se escribe y se olvida; un sistema se construye una vez y trabaja cada dia volviendose mas valioso con el uso</label>
+        <label><input type="radio" name="q1" value="c"> Los sistemas requieren mas notas que un sistema de notas normal</label>
+        <label><input type="radio" name="q1" value="d"> Las notas se guardan localmente y los sistemas en la nube</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q1','b','qi1')">Verificar</button>
+      <div class="quiz-result correct-msg" id="q1-correct">Correcto. Una nota es algo que escribes y olvidas. Un sistema es algo que construyes una vez y trabaja para ti cada dia, volviendose mas valioso cuanto mas lo usas. Esta distincion define la filosofia de todo el roadmap.</div>
+      <div class="quiz-result wrong-msg" id="q1-wrong">Incorrecto. La diferencia es funcional: una nota se escribe y se olvida. Un sistema trabaja para ti cada dia y se vuelve mas valioso con el uso, porque el conocimiento se compone en lugar de decaer.</div>
+    </div>
+
+    <div class="quiz-item" id="qi2">
+      <p class="quiz-q">2. Que es lo que los grandes arquitectos hacen diferente al "disenar para IA desde el inicio"?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q2" value="a"> Instalan mas plugins de IA que el usuario promedio</label>
+        <label><input type="radio" name="q2" value="b"> Usan solo Claude para tomar notas, sin Obsidian</label>
+        <label><input type="radio" name="q2" value="c"> Estructuran cada nota pensando que la IA la va a leer: frontmatter legible por maquina, formato consistente, preambulos de una oracion, metadatos de fuente</label>
+        <label><input type="radio" name="q2" value="d"> Exportan sus notas a formato PDF para que la IA las lea mejor</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q2','c','qi2')">Verificar</button>
+      <div class="quiz-result correct-msg" id="q2-correct">Correcto. Los grandes arquitectos estructuran cada nota pensando que la IA la va a leer: frontmatter legible por maquina, formato consistente, preambulos de una oracion y metadatos de fuente. Estas decisiones se componen en diferencias masivas de calidad de recuperacion.</div>
+      <div class="quiz-result wrong-msg" id="q2-wrong">Incorrecto. Disenar para IA desde el inicio significa estructurar cada nota pensando que un LLM la va a leer: frontmatter consistente, preambulos de una oracion, metadatos de fuente. Sin esta estructura, agregar IA despues produce resultados pobres.</div>
+    </div>
+
+    <div class="quiz-item" id="qi3">
+      <p class="quiz-q">3. En el Mes 3, cuales son los cuatro workflows automatizados que se construyen?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q3" value="a"> Procesamiento de inbox, revision semanal, auditoria mensual y pipeline de ingestion de investigacion</label>
+        <label><input type="radio" name="q3" value="b"> Resumen diario, revision semanal, backup mensual y exportacion a PDF</label>
+        <label><input type="radio" name="q3" value="c"> Smart Connections, MCP, Dataview y Obsidian Git</label>
+        <label><input type="radio" name="q3" value="d"> Creacion de notas, enlazado automatico, tagging y archivado</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q3','a','qi3')">Verificar</button>
+      <div class="quiz-result correct-msg" id="q3-correct">Correcto. Los cuatro workflows del Mes 3 son: procesamiento nocturno de inbox, generacion de revision semanal, auditoria mensual de conocimiento y pipeline de ingestion de investigacion. Juntos hacen que el vault se mantenga solo.</div>
+      <div class="quiz-result wrong-msg" id="q3-wrong">Incorrecto. Los cuatro workflows del Mes 3 son: procesamiento nocturno de inbox (ordena notas nuevas), revision semanal (compila la semana), auditoria mensual (identifica brechas) y pipeline de ingestion de investigacion (procesa URLs y PDFs en notas estructuradas).</div>
+    </div>
+
+    <div class="quiz-item" id="qi4">
+      <p class="quiz-q">4. Por que el Mes 5 pide construir sistemas para tres personas diferentes, no solo para uno mismo?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q4" value="a"> Para tener tres veces mas notas en tu propia vault</label>
+        <label><input type="radio" name="q4" value="b"> Porque Obsidian requiere al menos tres usuarios para funcionar correctamente</label>
+        <label><input type="radio" name="q4" value="c"> Para aprender que partes del sistema son universales y cuales necesitan adaptacion, convirtiendo la habilidad personal en profesional</label>
+        <label><input type="radio" name="q4" value="d"> Para obtener descuentos en la suscripcion de Obsidian</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q4','c','qi4')">Verificar</button>
+      <div class="quiz-result correct-msg" id="q4-correct">Correcto. Construir para otros revela que partes son universales y cuales necesitan adaptacion segun el dominio. Esta habilidad de adaptar el sistema a contextos distintos es lo que convierte a un usuario avanzado en un arquitecto profesional.</div>
+      <div class="quiz-result wrong-msg" id="q4-wrong">Incorrecto. El Mes 5 construye para otros para descubrir que partes del sistema son universales y cuales necesitan adaptacion. Adaptar a contextos distintos es la habilidad que distingue a un arquitecto de un usuario avanzado de su propia configuracion.</div>
+    </div>
+
+    <div class="quiz-item" id="qi5">
+      <p class="quiz-q">5. Cual es el tercer diferenciador de los grandes arquitectos y por que importa?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q5" value="a"> Usan los modelos de IA mas caros disponibles</label>
+        <label><input type="radio" name="q5" value="b"> Iteran sin descanso: revisan workflows semanalmente, actualizan CLAUDE.md mensualmente y refinan prompts basados en lo que el output ensenã</label>
+        <label><input type="radio" name="q5" value="c"> Tienen mas notas que el usuario promedio</label>
+        <label><input type="radio" name="q5" value="d"> Publican mas contenido en redes sociales sobre sus sistemas</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q5','b','qi5')">Verificar</button>
+      <div class="quiz-result correct-msg" id="q5-correct">Correcto. El tercer diferenciador es la iteracion continua: revision semanal de workflows, actualizacion mensual del CLAUDE.md y refinamiento de prompts basado en el output real. Un sistema que no se refina se vuelve obsoleto; el refinamiento es lo que lo convierte en algo profundamente personalizado.</div>
+      <div class="quiz-result wrong-msg" id="q5-wrong">Incorrecto. El tercer diferenciador es iterar sin descanso: revisar workflows semanalmente, actualizar CLAUDE.md mensualmente y refinar prompts basados en lo que el output ensenã. Los usuarios promedio configuran y abandonan. Los arquitectos refinan continuamente.</div>
+    </div>
+  </div>
+
+  <!-- Completar -->
+  <div class="completed-section">
+    <input type="checkbox" id="completedCheck" onchange="markCompleted()">
+    <label for="completedCheck">Marcar como completada</label>
+    <span class="dim" id="completedDate" style="margin-left:auto;font-family:var(--font-mono);font-size:0.78rem"></span>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// Progress bar
+window.addEventListener('scroll', function() {
+  var scrollTop = window.scrollY || document.documentElement.scrollTop;
+  var docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  var pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  document.getElementById('progressBar').style.width = pct + '%';
+});
+
+// Quiz
+function checkAnswer(qName, correct, itemId) {
+  var selected = document.querySelector('input[name="' + qName + '"]:checked');
+  if (!selected) return;
+  var correctEl = document.getElementById(qName + '-correct');
+  var wrongEl = document.getElementById(qName + '-wrong');
+  correctEl.style.display = 'none';
+  wrongEl.style.display = 'none';
+  if (selected.value === correct) {
+    correctEl.style.display = 'block';
+  } else {
+    wrongEl.style.display = 'block';
+  }
+}
+
+// localStorage completion
+var pageKey = 'completed_031';
+window.addEventListener('DOMContentLoaded', function() {
+  var saved = localStorage.getItem(pageKey);
+  if (saved) {
+    document.getElementById('completedCheck').checked = true;
+    document.getElementById('completedDate').textContent = 'Completada el ' + saved;
+  }
+});
+
+function markCompleted() {
+  var cb = document.getElementById('completedCheck');
+  if (cb.checked) {
+    var now = new Date().toLocaleDateString('es-CO', {year:'numeric',month:'short',day:'numeric'});
+    localStorage.setItem(pageKey, now);
+    document.getElementById('completedDate').textContent = 'Completada el ' + now;
+  } else {
+    localStorage.removeItem(pageKey);
+    document.getElementById('completedDate').textContent = '';
+  }
+}
+</script>
+</body>
+</html>

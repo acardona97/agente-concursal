@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>029 - Guia de Modelos IA: Cual Usar para Cada Tarea</title>
+<style>
+:root {
+  --bg:#0d0f0e; --surface:#131615; --border:#1e2420;
+  --gold:#c9a84c; --gold-dim:#7a6230;
+  --text:#e8e4d9; --text-dim:#7a7568;
+  --green:#2d4a3e; --blue:#1e3a5f;
+  --font-body:'Georgia',serif;
+  --font-mono:'Courier New',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);line-height:1.7;min-height:100vh}
+.progress-bar-container{position:fixed;top:0;left:0;right:0;height:3px;background:var(--border);z-index:100}
+.progress-bar{height:100%;background:var(--gold);transition:width 0.3s}
+.nav{position:fixed;top:3px;left:0;right:0;background:rgba(13,15,14,0.95);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;justify-content:space-between;align-items:center;z-index:99;backdrop-filter:blur(8px)}
+.nav-brand{color:var(--gold);font-family:var(--font-mono);font-size:0.8rem;letter-spacing:2px}
+.nav-links{display:flex;gap:8px}
+.nav-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);padding:5px 14px;border-radius:4px;cursor:pointer;font-family:var(--font-mono);font-size:0.75rem;text-decoration:none;transition:all 0.2s}
+.nav-btn:hover,.nav-btn.active{border-color:var(--gold);color:var(--gold)}
+.container{max-width:860px;margin:0 auto;padding:80px 24px 60px}
+h1{font-size:1.9rem;color:var(--gold);margin-bottom:8px;line-height:1.3}
+.meta{color:var(--text-dim);font-family:var(--font-mono);font-size:0.8rem;margin-bottom:32px;display:flex;gap:20px;flex-wrap:wrap}
+h2{font-size:1.25rem;color:var(--gold);margin:40px 0 16px;border-left:3px solid var(--gold-dim);padding-left:12px}
+h3{font-size:1.05rem;color:var(--text);margin:24px 0 10px}
+p{margin-bottom:14px;color:var(--text)}
+ul,ol{margin:0 0 14px 20px;color:var(--text)}
+li{margin-bottom:6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;margin:20px 0}
+.card-gold{border-color:var(--gold-dim)}
+.card-blue{border-color:#1e3a5f;background:#0d1a2e}
+.card-green{border-color:#1e3a2e;background:#0a1a12}
+.card-red{border-color:#3a1e1e;background:#1a0d0d}
+code{font-family:var(--font-mono);background:#1a1e1c;padding:2px 6px;border-radius:3px;font-size:0.88rem;color:#a8d4b0}
+pre{background:#0a0c0b;border:1px solid var(--border);border-radius:6px;padding:18px;overflow-x:auto;margin:16px 0}
+pre code{background:none;padding:0;color:#a8d4b0;font-size:0.83rem;line-height:1.65}
+.highlight{color:var(--gold)}
+.dim{color:var(--text-dim)}
+.quiz{background:#0d1a12;border:1px solid #1e3a2e;border-radius:8px;padding:20px;margin:32px 0}
+.quiz h3{color:#4caf7d;margin-top:0}
+.quiz-item{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.quiz-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.quiz-q{color:var(--text);margin-bottom:10px;font-weight:bold}
+.quiz-options label{display:block;padding:7px 12px;margin:4px 0;border-radius:4px;cursor:pointer;border:1px solid var(--border);transition:all 0.2s;font-size:0.9rem}
+.quiz-options label:hover{border-color:var(--gold-dim);background:var(--surface)}
+.quiz-options input{margin-right:8px}
+.quiz-result{display:none;margin-top:10px;padding:8px 12px;border-radius:4px;font-size:0.88rem;font-family:var(--font-mono)}
+.correct-msg{background:#0d2a1a;border:1px solid #2d6a4a;color:#4caf7d}
+.wrong-msg{background:#2a0d0d;border:1px solid #6a2d2d;color:#f47070}
+.btn{background:var(--surface);border:1px solid var(--gold-dim);color:var(--gold);padding:8px 20px;border-radius:4px;cursor:pointer;font-family:var(--font-mono);font-size:0.85rem;transition:all 0.2s;margin-top:10px}
+.btn:hover{background:var(--gold);color:var(--bg)}
+.completed-section{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px;margin-top:40px;display:flex;align-items:center;gap:14px}
+.completed-section label{cursor:pointer;color:var(--text-dim);font-size:0.9rem}
+input[type="checkbox"]{width:18px;height:18px;cursor:pointer;accent-color:var(--gold)}
+.main-table{width:100%;border-collapse:collapse;margin:20px 0;font-size:0.88rem}
+.main-table th{background:#0a0c0b;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);font-family:var(--font-mono);color:var(--gold);font-size:0.82rem}
+.main-table td{padding:9px 12px;border-bottom:1px solid #16191a;vertical-align:top}
+.main-table tr:last-child td{border-bottom:none}
+.model-tag{display:inline-block;font-family:var(--font-mono);font-size:0.75rem;padding:2px 8px;border-radius:3px;margin:2px 2px 2px 0;white-space:nowrap}
+.tag-claude{background:#1e2e3a;border:1px solid #2a4a5e;color:#7ab4d4}
+.tag-chatgpt{background:#1e2e1e;border:1px solid #2a4a2a;color:#7ad47a}
+.tag-gemini{background:#2e2a1e;border:1px solid #4a3a1a;color:#d4b47a}
+.tag-deepseek{background:#2e1e2e;border:1px solid #4a2a4a;color:#d47ad4}
+.tag-grok{background:#2e1e1e;border:1px solid #4a2a2a;color:#d47a7a}
+.category-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;margin:18px 0;border-left:3px solid var(--gold-dim)}
+.category-num{display:inline-block;background:var(--gold-dim);color:var(--bg);font-family:var(--font-mono);font-size:0.75rem;padding:3px 8px;border-radius:3px;margin-right:10px;font-weight:bold}
+.rule-box{background:#0d1a0d;border:1px solid #1e3a1e;border-radius:6px;padding:12px 16px;margin-top:14px;font-family:var(--font-mono);font-size:0.83rem;color:#7ad47a}
+.rule-box strong{color:#4caf7d}
+.stack-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:0.88rem}
+.stack-table td{padding:9px 14px;border-bottom:1px solid #16191a}
+.stack-table tr:last-child td{border-bottom:none}
+.stack-table td:first-child{color:var(--gold);font-family:var(--font-mono);font-size:0.82rem;white-space:nowrap;width:40%}
+.stack-table td:last-child{color:var(--text-dim);font-family:var(--font-mono);font-size:0.82rem}
+.error-list{list-style:none;margin:0;padding:0}
+.error-list li{padding:12px 14px;margin-bottom:8px;border-radius:6px;border:1px solid #3a1e1e;background:#1a0d0d;font-size:0.93rem}
+.error-list li strong{color:#f47070;display:block;margin-bottom:4px;font-family:var(--font-mono);font-size:0.82rem}
+</style>
+</head>
+<body>
+
+<div class="progress-bar-container">
+  <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<nav class="nav">
+  <span class="nav-brand">QUARTA FLIGHT SCHOOL</span>
+  <div class="nav-links">
+    <a href="INDEX.html" class="nav-btn">Indice</a>
+    <a href="028-pipeline-4-agentes-claude-code.html" class="nav-btn">&#8592; Anterior</a>
+    <span class="nav-btn active">029</span>
+    <a href="030-multi-agent-workflows-guia-completa.html" class="nav-btn">Siguiente &#8594;</a>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="meta">
+    <span>Bloque: Ecosistema IA 2026</span>
+    <span>25 min</span>
+    <span>Clase 029</span>
+    <span class="dim">Fuente: @hrswatigupta en X</span>
+  </div>
+
+  <h1>Guia de Modelos IA: Cual Usar para Cada Tarea</h1>
+
+  <h2>La Pregunta Correcta</h2>
+
+  <p>La pregunta equivocada es "cual modelo de IA es el mejor?" En 2026, la pregunta mas inteligente es: <span class="highlight">"cual modelo debo usar para ESTA tarea exacta?"</span> Ningun modelo domina todo. Usar un solo modelo para todo puede estar ralentizandote sin que lo notes.</p>
+
+  <p>Los mejores usuarios de IA no son los que encontraron el modelo perfecto. Son los que construyeron el workflow mas inteligente, distribuyendo tareas segun las fortalezas reales de cada herramienta.</p>
+
+  <h2>Por Que la Gente Usa IA Mal</h2>
+
+  <p>El problema de productividad mas grande no son los prompts debiles. Es la <strong>mala correspondencia modelo-tarea</strong>. La mayoria de usuarios comete estos errores:</p>
+
+  <ul>
+    <li>Usan un solo modelo para absolutamente todo</li>
+    <li>Pagan por herramientas que apenas usan o que no necesitan</li>
+    <li>Esperan respuestas perfectas sin verificar</li>
+    <li>Tratan la IA como un buscador glorificado</li>
+    <li>Ignoran por completo la ecuacion costo vs valor real obtenido</li>
+  </ul>
+
+  <p>El resultado es predecible: tiempo perdido esperando respuestas lentas de modelos sobre-calificados, mas alucinaciones porque el modelo no esta optimizado para esa tarea, outputs desordenados y fatiga de suscripciones cuando se paga por herramientas que se usan mal.</p>
+
+  <div class="card card-gold">
+    <p style="margin:0"><strong>El objetivo no es encontrar la IA mas inteligente.</strong> Es construir el workflow mas inteligente: la combinacion correcta de modelos para los tipos de trabajo que realmente haces cada dia.</p>
+  </div>
+
+  <h2>Mapa General: 8 Categorias y Sus Modelos</h2>
+
+  <p>Antes de entrar en detalle por categoria, aqui el mapa completo de correspondencia tarea-modelo:</p>
+
+  <div style="overflow-x:auto">
+  <table class="main-table">
+    <thead>
+      <tr>
+        <th>Categoria de Tarea</th>
+        <th>Modelos Recomendados</th>
+        <th>Razon Principal</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Escritura y Contenido</td>
+        <td><span class="model-tag tag-claude">Claude</span><span class="model-tag tag-chatgpt">ChatGPT</span></td>
+        <td>Profundidad natural vs estructura</td>
+      </tr>
+      <tr>
+        <td>Codigo y Desarrollo</td>
+        <td><span class="model-tag tag-chatgpt">ChatGPT</span><span class="model-tag tag-deepseek">DeepSeek</span></td>
+        <td>Explicacion logica vs bajo costo tecnico</td>
+      </tr>
+      <tr>
+        <td>Investigacion, PDFs, Docs Largos</td>
+        <td><span class="model-tag tag-claude">Claude</span><span class="model-tag tag-gemini">Gemini</span></td>
+        <td>Contexto largo vs investigacion mixta</td>
+      </tr>
+      <tr>
+        <td>Informacion en Tiempo Real</td>
+        <td><span class="model-tag tag-gemini">Gemini</span><span class="model-tag tag-grok">Grok</span></td>
+        <td>Conectividad web en vivo</td>
+      </tr>
+      <tr>
+        <td>Brainstorming y Creatividad</td>
+        <td><span class="model-tag tag-claude">Claude</span><span class="model-tag tag-chatgpt">ChatGPT</span></td>
+        <td>Profundidad de ideas vs volumen rapido</td>
+      </tr>
+      <tr>
+        <td>Trabajo de Negocio Estructurado</td>
+        <td><span class="model-tag tag-chatgpt">ChatGPT</span></td>
+        <td>Estructura y frameworks claros</td>
+      </tr>
+      <tr>
+        <td>Trabajo Multimodal</td>
+        <td><span class="model-tag tag-gemini">Gemini</span><span class="model-tag tag-chatgpt">ChatGPT</span></td>
+        <td>Texto + imagen + archivo</td>
+      </tr>
+      <tr>
+        <td>Usuarios con Presupuesto Limitado</td>
+        <td><span class="model-tag tag-deepseek">DeepSeek</span></td>
+        <td>Rentable con razonamiento tecnico fuerte</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>Las 8 Categorias en Detalle</h2>
+
+  <div class="category-card">
+    <h3><span class="category-num">1</span>Escritura y Creacion de Contenido</h3>
+    <p><span class="dim">Casos de uso:</span> articulos de blog, newsletters, guiones, storytelling, reescritura reflexiva, resumenes, contenido de formato largo.</p>
+
+    <h3>Claude &mdash; cuando importa la profundidad y el tono natural</h3>
+    <p>Usa Claude para: articulos de largo aliento, reescrituras reflexivas, storytelling, resumenes de investigacion, contenido sensible al tono donde los matices importan.</p>
+    <p><strong>Fortalezas de Claude en escritura:</strong></p>
+    <ul>
+      <li>Comprension contextual fuerte: no pierde el hilo en textos largos</li>
+      <li>Flujo de escritura similar al humano: las transiciones se sienten organicas</li>
+      <li>Buen manejo de matices: capta instrucciones de tono sutiles</li>
+      <li>Manejo fuerte de documentos largos: mantiene coherencia en 5000+ palabras</li>
+    </ul>
+
+    <h3>ChatGPT &mdash; cuando la estructura importa mas que la creatividad</h3>
+    <p>Usa ChatGPT para: frameworks de contenido, posts basados en pasos, estructuras de marketing, escritura estilo SOP, reutilizacion de contenido en multiples formatos.</p>
+    <p><strong>Fortalezas de ChatGPT en escritura:</strong></p>
+    <ul>
+      <li>Estructura limpia y jerarquica de forma natural</li>
+      <li>Bueno para listas de pasos y formatos escaneables</li>
+      <li>Reutilizacion de contenido entre formatos distintos</li>
+    </ul>
+
+    <div class="rule-box"><strong>Regla rapida:</strong> Profundidad natural y tono &rarr; Claude &nbsp;|&nbsp; Estructura y framework &rarr; ChatGPT</div>
+  </div>
+
+  <div class="category-card">
+    <h3><span class="category-num">2</span>Codigo y Desarrollo</h3>
+    <p><span class="dim">Casos de uso:</span> depuracion, refactorizacion, planificacion de API, SQL, explicacion de codigo, generacion de boilerplate, planificacion de arquitectura.</p>
+
+    <h3>ChatGPT &mdash; cuando necesitas explicacion y comprension</h3>
+    <p>ChatGPT sobresale en depuracion interactiva, explicacion de logica paso a paso, comprension de codigo heredado, discusiones de arquitectura de sistemas e implementacion multi-paso con razonamiento explicito.</p>
+    <p>Cuando no entiendes por que algo falla, ChatGPT tiende a construir explicaciones mas didacticas que otros modelos.</p>
+
+    <h3>DeepSeek &mdash; cuando el trabajo tecnico es pesado y el presupuesto importa</h3>
+    <p>DeepSeek es la alternativa rentable para trabajo tecnico intenso. Bueno para: experimentacion de codigo, tareas de ingenieria repetitivas, ciclos de proyectos secundarios donde la velocidad de iteracion importa mas que la perfeccion.</p>
+    <p><strong>Por que ayuda en codigo:</strong></p>
+    <ul>
+      <li>Razonamiento tecnico fuerte, a la altura en la mayoria de tareas comunes</li>
+      <li>Workflows amigables con el presupuesto: puedes iterar mas veces al mismo costo</li>
+      <li>Util para exploracion intensa de codigo cuando no necesitas el mejor modelo</li>
+    </ul>
+
+    <div class="rule-box"><strong>Regla rapida:</strong> Necesitas explicacion y razonamiento &rarr; ChatGPT &nbsp;|&nbsp; Tecnico pesado + bajo costo &rarr; DeepSeek</div>
+  </div>
+
+  <div class="category-card">
+    <h3><span class="category-num">3</span>Investigacion, PDFs y Documentos Largos</h3>
+    <p><span class="dim">Casos de uso:</span> documentos legales, papers de investigacion, contratos, whitepapers, libros, estudios de caso, PDFs largos de 100+ paginas.</p>
+
+    <h3>Claude &mdash; cuando necesitas profundidad real en documentos</h3>
+    <p>Claude tiene la ventana de contexto mas larga disponible y la mejor comprension de documentos largos. Ideal para: lectura de contexto largo sin perdida de coherencia, resumenes detallados que capturan matices, referencias cruzadas dentro del mismo documento y analisis profundo que requiere retener detalles del inicio del documento al final.</p>
+    <p><strong>Se destaca en:</strong></p>
+    <ul>
+      <li>Comprension fuerte de la estructura del documento</li>
+      <li>Mejor manejo de profundidad: no "olvida" lo que leyo 50 paginas atras</li>
+      <li>Resumenes mas limpios que capturan argumentos principales sin perder detalles clave</li>
+    </ul>
+
+    <h3>Gemini &mdash; cuando la investigacion mezcla fuentes externas</h3>
+    <p>Gemini es util para tareas de investigacion mixta donde necesitas combinar un documento con busqueda web, workflows archivo + web conectado y sintesis rapida de informacion de multiples fuentes.</p>
+
+    <div class="rule-box"><strong>Regla rapida:</strong> Necesitas profundidad en el documento &rarr; Claude &nbsp;|&nbsp; Investigacion mixta con contexto externo &rarr; Gemini</div>
+  </div>
+
+  <div class="category-card">
+    <h3><span class="category-num">4</span>Informacion en Tiempo Real</h3>
+    <p><span class="dim">Casos de uso:</span> ultimas noticias, cambios de mercado, monitoreo de tendencias, seguimiento de competidores, cambios de productos, comparaciones rapidas web.</p>
+
+    <h3>Gemini &mdash; investigacion conectada a la web</h3>
+    <p>Gemini tiene integracion nativa con busqueda de Google. Ideal para: workflows conectados a busqueda, investigacion amplia con multiples fuentes actuales, busquedas en tiempo real y comprension de medios mixtos donde los documentos se combinan con contenido web actual.</p>
+
+    <h3>Grok &mdash; tendencias y contenido social en vivo</h3>
+    <p>Grok tiene acceso privilegiado al contenido de X (Twitter) en tiempo real. Ideal para: descubrimiento rapido de tendencias emergentes, exploracion de lo que la gente esta discutiendo ahora mismo, workflows de actualizacion en vivo donde el pulso de la conversacion publica importa.</p>
+
+    <div class="rule-box"><strong>Regla rapida:</strong> Si importa la frescura de la informacion, los modelos conectados a la web generalmente ganan sobre los modelos con fecha de corte fija.</div>
+  </div>
+
+  <div class="category-card">
+    <h3><span class="category-num">5</span>Brainstorming y Creatividad</h3>
+    <p><span class="dim">Casos de uso:</span> ideas de hooks, nombres de startups, angulos de contenido viral, ideas de campanas, conceptos de productos, resolucion creativa de problemas.</p>
+
+    <h3>Claude &mdash; cuando la profundidad de las ideas importa</h3>
+    <p>Claude frecuentemente es mas fuerte para: expansion mas profunda de una idea semilla, pensamiento creativo matizado que considera angulos no obvios y mejor creatividad en escritura donde el resultado final debe leerse bien, no solo listar opciones.</p>
+
+    <h3>ChatGPT &mdash; cuando necesitas volumen rapido</h3>
+    <p>ChatGPT es frecuentemente mas fuerte para: generacion rapida de muchas ideas, listas largas de variaciones, brainstorming basado en frameworks ("dame 20 nombres usando estas reglas"), multiples variaciones de output que luego filtras tu.</p>
+
+    <p>La estrategia optima es usar ChatGPT para generar volumen y luego llevar los mejores candidatos a Claude para profundizar y refinar.</p>
+
+    <div class="rule-box"><strong>Regla rapida:</strong> Profundidad y calidad &rarr; Claude &nbsp;|&nbsp; Volumen y variedad rapida &rarr; ChatGPT</div>
+  </div>
+
+  <div class="category-card">
+    <h3><span class="category-num">6</span>Trabajo de Negocio Estructurado</h3>
+    <p><span class="dim">Casos de uso:</span> SOPs, documentos de negocio, plantillas, planes de estrategia, checklists, frameworks, manuales de proceso.</p>
+
+    <h3>ChatGPT &mdash; el motor de workflow estructurado</h3>
+    <p>Esta es la categoria donde ChatGPT con frecuencia se convierte en el motor principal del workflow. Sus fortalezas aqui son concretas:</p>
+    <ul>
+      <li>Estructura fuerte y logica en la organizacion de informacion</li>
+      <li>Formato limpio con encabezados, subencabezados y listas jerarquicas</li>
+      <li>Mejores frameworks listos para usar directamente</li>
+      <li>Listas y pasos claros, sin ambiguedad</li>
+      <li>Outputs basados en logica que siguen plantillas establecidas fielmente</li>
+    </ul>
+    <p>Cuando necesitas un SOP que pueda seguir un empleado nuevo, un plan de proyecto con fases claras o una plantilla de documento de negocio, ChatGPT frecuentemente entrega el resultado mas usable sin edicion.</p>
+  </div>
+
+  <div class="category-card">
+    <h3><span class="category-num">7</span>Trabajo Multimodal</h3>
+    <p><span class="dim">Casos de uso:</span> comprension de capturas de pantalla, analisis de imagenes, interpretacion de archivos, workflows de input mixto, comparacion documento + imagen.</p>
+
+    <h3>Gemini + ChatGPT &mdash; capacidades multimodales</h3>
+    <p>Ambos son utiles aqui pero con enfoques distintos:</p>
+    <ul>
+      <li><strong>Gemini:</strong> fuerte en workflows visuales complejos, productividad que mezcla archivos de distintos tipos, y tareas donde el contexto externo web se combina con imagenes o documentos</li>
+      <li><strong>ChatGPT:</strong> fuerte en analisis de imagenes con razonamiento estructurado, descripcion de capturas de pantalla para documentacion, interpretacion de graficos y datos visuales</li>
+    </ul>
+
+    <div class="rule-box"><strong>Regla rapida:</strong> Si tu tarea combina texto + imagen + archivo, lo multimodal importa y estos son los modelos a evaluar primero.</div>
+  </div>
+
+  <div class="category-card">
+    <h3><span class="category-num">8</span>Usuarios con Presupuesto Limitado</h3>
+    <p><span class="dim">Para:</span> estudiantes, desarrolladores explorando ideas, fundadores validando proyectos, proyectos secundarios donde el margen importa.</p>
+
+    <h3>DeepSeek &mdash; bajo costo no significa baja utilidad</h3>
+    <p>DeepSeek ofrece una ecuacion de valor diferente: su costo por token es significativamente menor que los modelos premium, pero su rendimiento en tareas tecnicas es competitivo para la mayoria de casos comunes.</p>
+    <p>Para que funciona bien con presupuesto:</p>
+    <ul>
+      <li>Rentable para iterar muchas veces en un problema tecnico</li>
+      <li>Ayuda tecnica fuerte: puede debuggear, escribir y explicar codigo</li>
+      <li>Bueno para experimentacion donde probar rapido es mas importante que el output perfecto</li>
+      <li>Valor solido para tareas tecnicas repetidas a lo largo del dia</li>
+    </ul>
+    <p>Bajo costo no siempre significa baja utilidad. Para muchos casos de uso diarios, DeepSeek entrega resultados que satisfacen las necesidades reales.</p>
+  </div>
+
+  <h2>Los 5 Errores Mas Grandes en 2026</h2>
+
+  <ul class="error-list">
+    <li>
+      <strong>ERROR 1 &mdash; Usar un Solo Modelo para Todo</strong>
+      Los modelos tienen diferentes arquitecturas, datos de entrenamiento y optimizaciones. Estas diferencias producen fortalezas reales en distintas tareas. Ignorarlas es como usar siempre el mismo destornillador para todos los tornillos.
+    </li>
+    <li>
+      <strong>ERROR 2 &mdash; Pagar por Multiples Herramientas Sin Necesidad de Workflow</strong>
+      El apilamiento de suscripciones aumenta el costo rapido. Antes de agregar un modelo a tu stack, define que tarea especifica va a cubrir que no cubren los modelos que ya tienes. Si no puedes responder eso, no la necesitas.
+    </li>
+    <li>
+      <strong>ERROR 3 &mdash; Confiar Demasiado Rapido en la IA</strong>
+      Los modelos alucinan. Algunos mas que otros en ciertos dominios. Los hechos importantes, los datos numericos, las referencias legales y las afirmaciones criticas siempre requieren verificacion independiente. La IA es un acelerador, no un oraculo.
+    </li>
+    <li>
+      <strong>ERROR 4 &mdash; Prompts Debiles</strong>
+      Input malo produce output malo. Esto aplica a todos los modelos. Dar contexto suficiente, especificar el formato de output, definir la audiencia y las restricciones: estas decisiones de prompt tienen mas impacto en la calidad del resultado que la eleccion de modelo.
+    </li>
+    <li>
+      <strong>ERROR 5 &mdash; Comparar Marca Sobre Resultado</strong>
+      La pregunta no es "cual modelo tiene mejor reputacion". La pregunta es "cual modelo resuelve esta tarea especifica mas rapido con el nivel de calidad que necesito". Esa respuesta cambia segun la tarea.
+    </li>
+  </ul>
+
+  <h2>Stack Practico de Workflow IA</h2>
+
+  <p>Este es el mapa de uso recomendado para un workflow diario completo:</p>
+
+  <div class="card card-gold">
+    <table class="stack-table">
+      <tbody>
+        <tr>
+          <td>Escritura</td>
+          <td>Claude</td>
+        </tr>
+        <tr>
+          <td>Codigo principal</td>
+          <td>ChatGPT + DeepSeek</td>
+        </tr>
+        <tr>
+          <td>PDFs y docs largos</td>
+          <td>Claude</td>
+        </tr>
+        <tr>
+          <td>Investigacion</td>
+          <td>Claude + Gemini</td>
+        </tr>
+        <tr>
+          <td>Web en tiempo real</td>
+          <td>Gemini + Grok</td>
+        </tr>
+        <tr>
+          <td>Creatividad y brainstorming</td>
+          <td>Claude</td>
+        </tr>
+        <tr>
+          <td>Planificacion de negocio</td>
+          <td>ChatGPT</td>
+        </tr>
+        <tr>
+          <td>Codigo con presupuesto</td>
+          <td>DeepSeek</td>
+        </tr>
+        <tr>
+          <td>Workflows mixtos</td>
+          <td>ChatGPT</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Este stack no es inamovible. La idea es que cada decision de modelo tenga una razon. Con el tiempo, a medida que los modelos evolucionan, algunas de estas correspondencias cambiaran. Pero el principio de hacer corresponder modelo con tarea permanece.</p>
+
+  <div class="card card-green">
+    <p style="margin:0"><strong>El principio central:</strong> no hay un modelo que sea el mejor para todo. Hay el modelo correcto para esta tarea, con este nivel de calidad requerido, en este presupuesto, ahora mismo. Esa es la pregunta inteligente.</p>
+  </div>
+
+  <h2>Quiz de Comprension</h2>
+
+  <div class="quiz">
+    <h3>Verifica tu comprension</h3>
+
+    <div class="quiz-item" id="qi1">
+      <p class="quiz-q">1. Para escribir un articulo de investigacion largo que requiere tono natural y coherencia en todo el documento, que modelo es la mejor opcion?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q1" value="a"> ChatGPT, porque tiene mejor estructura</label>
+        <label><input type="radio" name="q1" value="b"> Claude, porque tiene comprension contextual fuerte y flujo natural en documentos largos</label>
+        <label><input type="radio" name="q1" value="c"> Gemini, porque tiene acceso a busqueda web en tiempo real</label>
+        <label><input type="radio" name="q1" value="d"> DeepSeek, porque es el mas economico</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q1','b','qi1')">Verificar</button>
+      <div class="quiz-result correct-msg" id="q1-correct">Correcto. Claude tiene comprension contextual fuerte y flujo de escritura similar al humano. Es la opcion correcta para textos largos donde el tono y la coherencia importan.</div>
+      <div class="quiz-result wrong-msg" id="q1-wrong">Incorrecto. Para articulos largos con tono natural, Claude es el modelo correcto. Su fortaleza especifica es la comprension contextual y el flujo de escritura en documentos de formato largo.</div>
+    </div>
+
+    <div class="quiz-item" id="qi2">
+      <p class="quiz-q">2. Un fundador con presupuesto limitado necesita iterar rapido en codigo para su MVP. Que modelo se recomienda y por que?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q2" value="a"> Claude, porque es el mas inteligente</label>
+        <label><input type="radio" name="q2" value="b"> Grok, porque tiene acceso a tendencias en tiempo real</label>
+        <label><input type="radio" name="q2" value="c"> DeepSeek, porque ofrece razonamiento tecnico fuerte a bajo costo permitiendo mas iteraciones</label>
+        <label><input type="radio" name="q2" value="d"> Gemini, porque tiene mejor multimodalidad</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q2','c','qi2')">Verificar</button>
+      <div class="quiz-result correct-msg" id="q2-correct">Correcto. DeepSeek ofrece razonamiento tecnico fuerte con un costo por token significativamente menor. Para un fundador que necesita iterar muchas veces, esto permite mas experimentacion al mismo presupuesto.</div>
+      <div class="quiz-result wrong-msg" id="q2-wrong">Incorrecto. Para usuarios con presupuesto limitado en trabajo tecnico, DeepSeek es la recomendacion. Bajo costo no significa baja utilidad: su razonamiento tecnico es competitivo para la mayoria de tareas comunes.</div>
+    </div>
+
+    <div class="quiz-item" id="qi3">
+      <p class="quiz-q">3. Necesitas monitorear que estan diciendo los competidores en redes sociales ahora mismo y rastrear tendencias emergentes. Que modelo usar?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q3" value="a"> Claude, porque tiene el contexto mas largo</label>
+        <label><input type="radio" name="q3" value="b"> Grok, porque tiene acceso privilegiado al contenido de X en tiempo real</label>
+        <label><input type="radio" name="q3" value="c"> ChatGPT, porque tiene mejor estructura de respuesta</label>
+        <label><input type="radio" name="q3" value="d"> DeepSeek, porque es mas economico para tareas repetitivas</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q3','b','qi3')">Verificar</button>
+      <div class="quiz-result correct-msg" id="q3-correct">Correcto. Grok tiene acceso privilegiado al contenido de X en tiempo real, lo que lo hace ideal para monitorear tendencias emergentes y lo que se esta discutiendo en el momento.</div>
+      <div class="quiz-result wrong-msg" id="q3-wrong">Incorrecto. Para monitorear tendencias en redes sociales en tiempo real, Grok es el modelo correcto. Su acceso al contenido de X en vivo lo diferencia de los demas modelos con fecha de corte fija.</div>
+    </div>
+
+    <div class="quiz-item" id="qi4">
+      <p class="quiz-q">4. Cual es el error mas critico que cometen los usuarios de IA segun esta guia?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q4" value="a"> Usar demasiados modelos diferentes</label>
+        <label><input type="radio" name="q4" value="b"> No pagar por los modelos premium</label>
+        <label><input type="radio" name="q4" value="c"> Usar un solo modelo para todo, ignorando las fortalezas especificas de cada uno</label>
+        <label><input type="radio" name="q4" value="d"> Escribir prompts demasiado largos</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q4','c','qi4')">Verificar</button>
+      <div class="quiz-result correct-msg" id="q4-correct">Correcto. El error numero uno es usar un solo modelo para todo. Los modelos tienen arquitecturas y optimizaciones diferentes que producen fortalezas reales en distintas tareas. Ignorarlas reduce la calidad de los resultados.</div>
+      <div class="quiz-result wrong-msg" id="q4-wrong">Incorrecto. El error principal es usar un solo modelo para absolutamente todo. La guia enfatiza que el objetivo es construir el workflow mas inteligente, no encontrar el modelo perfecto universal.</div>
+    </div>
+
+    <div class="quiz-item" id="qi5">
+      <p class="quiz-q">5. Para crear un SOP detallado con pasos claros que un nuevo empleado pueda seguir, que modelo se recomienda?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q5" value="a"> Claude, por su escritura natural</label>
+        <label><input type="radio" name="q5" value="b"> Grok, por su acceso a informacion reciente</label>
+        <label><input type="radio" name="q5" value="c"> ChatGPT, porque tiene estructura fuerte, formato limpio y outputs basados en logica para frameworks de negocio</label>
+        <label><input type="radio" name="q5" value="d"> Gemini, por su capacidad multimodal</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q5','c','qi5')">Verificar</button>
+      <div class="quiz-result correct-msg" id="q5-correct">Correcto. ChatGPT es el motor de workflow estructurado. Para SOPs, planes de negocio y frameworks, su fortaleza en estructura clara, jerarquia logica y listas de pasos lo hace el modelo correcto para esta categoria.</div>
+      <div class="quiz-result wrong-msg" id="q5-wrong">Incorrecto. Para trabajo de negocio estructurado como SOPs y frameworks, ChatGPT es la recomendacion. Su estructura fuerte, formato limpio y outputs basados en logica producen documentos usables directamente.</div>
+    </div>
+  </div>
+
+  <!-- Completar -->
+  <div class="completed-section">
+    <input type="checkbox" id="completedCheck" onchange="markCompleted()">
+    <label for="completedCheck">Marcar como completada</label>
+    <span class="dim" id="completedDate" style="margin-left:auto;font-family:var(--font-mono);font-size:0.78rem"></span>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// Progress bar
+window.addEventListener('scroll', function() {
+  var scrollTop = window.scrollY || document.documentElement.scrollTop;
+  var docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  var pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  document.getElementById('progressBar').style.width = pct + '%';
+});
+
+// Quiz
+function checkAnswer(qName, correct, itemId) {
+  var selected = document.querySelector('input[name="' + qName + '"]:checked');
+  if (!selected) return;
+  var correctEl = document.getElementById(qName + '-correct');
+  var wrongEl = document.getElementById(qName + '-wrong');
+  correctEl.style.display = 'none';
+  wrongEl.style.display = 'none';
+  if (selected.value === correct) {
+    correctEl.style.display = 'block';
+  } else {
+    wrongEl.style.display = 'block';
+  }
+}
+
+// localStorage completion
+var pageKey = 'completed_029';
+window.addEventListener('DOMContentLoaded', function() {
+  var saved = localStorage.getItem(pageKey);
+  if (saved) {
+    document.getElementById('completedCheck').checked = true;
+    document.getElementById('completedDate').textContent = 'Completada el ' + saved;
+  }
+});
+
+function markCompleted() {
+  var cb = document.getElementById('completedCheck');
+  if (cb.checked) {
+    var now = new Date().toLocaleDateString('es-CO', {year:'numeric',month:'short',day:'numeric'});
+    localStorage.setItem(pageKey, now);
+    document.getElementById('completedDate').textContent = 'Completada el ' + now;
+  } else {
+    localStorage.removeItem(pageKey);
+    document.getElementById('completedDate').textContent = '';
+  }
+}
+</script>
+</body>
+</html>

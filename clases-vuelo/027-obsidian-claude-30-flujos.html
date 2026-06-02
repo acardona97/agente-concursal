@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>027 - Obsidian + Claude: 30 Flujos, Plugins y Setups</title>
+<style>
+:root {
+  --bg:#0d0f0e; --surface:#131615; --border:#1e2420;
+  --gold:#c9a84c; --gold-dim:#7a6230;
+  --text:#e8e4d9; --text-dim:#7a7568;
+  --green:#2d4a3e; --blue:#1e3a5f;
+  --font-body:'Georgia',serif;
+  --font-mono:'Courier New',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);line-height:1.7;min-height:100vh}
+.progress-bar-container{position:fixed;top:0;left:0;right:0;height:3px;background:var(--border);z-index:100}
+.progress-bar{height:100%;background:var(--gold);transition:width 0.3s}
+.nav{position:fixed;top:3px;left:0;right:0;background:rgba(13,15,14,0.95);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;justify-content:space-between;align-items:center;z-index:99;backdrop-filter:blur(8px)}
+.nav-brand{color:var(--gold);font-family:var(--font-mono);font-size:0.8rem;letter-spacing:2px}
+.nav-links{display:flex;gap:8px}
+.nav-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);padding:5px 14px;border-radius:4px;cursor:pointer;font-family:var(--font-mono);font-size:0.75rem;text-decoration:none;transition:all 0.2s}
+.nav-btn:hover,.nav-btn.active{border-color:var(--gold);color:var(--gold)}
+.container{max-width:860px;margin:0 auto;padding:80px 24px 60px}
+h1{font-size:1.9rem;color:var(--gold);margin-bottom:8px;line-height:1.3}
+.meta{color:var(--text-dim);font-family:var(--font-mono);font-size:0.8rem;margin-bottom:32px;display:flex;gap:20px;flex-wrap:wrap}
+h2{font-size:1.25rem;color:var(--gold);margin:40px 0 16px;border-left:3px solid var(--gold-dim);padding-left:12px}
+h3{font-size:1.05rem;color:var(--text);margin:24px 0 10px}
+p{margin-bottom:14px;color:var(--text)}
+ul,ol{margin:0 0 14px 20px;color:var(--text)}
+li{margin-bottom:6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;margin:20px 0}
+.card-gold{border-color:var(--gold-dim)}
+.card-blue{border-color:#1e3a5f;background:#0d1a2e}
+.card-green{border-color:#1e3a2e;background:#0a1a12}
+.card-red{border-color:#3a1e1e;background:#1a0d0d}
+code{font-family:var(--font-mono);background:#1a1e1c;padding:2px 6px;border-radius:3px;font-size:0.88rem;color:#a8d4b0}
+pre{background:#0a0c0b;border:1px solid var(--border);border-radius:6px;padding:18px;overflow-x:auto;margin:16px 0}
+pre code{background:none;padding:0;color:#a8d4b0;font-size:0.83rem;line-height:1.65}
+.highlight{color:var(--gold)}
+.dim{color:var(--text-dim)}
+.quiz{background:#0d1a12;border:1px solid #1e3a2e;border-radius:8px;padding:20px;margin:32px 0}
+.quiz h3{color:#4caf7d;margin-top:0}
+.quiz-item{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.quiz-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.quiz-q{color:var(--text);margin-bottom:10px;font-weight:bold}
+.quiz-options label{display:block;padding:7px 12px;margin:4px 0;border-radius:4px;cursor:pointer;border:1px solid var(--border);transition:all 0.2s;font-size:0.9rem}
+.quiz-options label:hover{border-color:var(--gold-dim);background:var(--surface)}
+.quiz-options input{margin-right:8px}
+.quiz-result{display:none;margin-top:10px;padding:8px 12px;border-radius:4px;font-size:0.88rem;font-family:var(--font-mono)}
+.correct-msg{background:#0d2a1a;border:1px solid #2d6a4a;color:#4caf7d}
+.wrong-msg{background:#2a0d0d;border:1px solid #6a2d2d;color:#f47070}
+.btn{background:var(--surface);border:1px solid var(--gold-dim);color:var(--gold);padding:8px 20px;border-radius:4px;cursor:pointer;font-family:var(--font-mono);font-size:0.85rem;transition:all 0.2s;margin-top:10px}
+.btn:hover{background:var(--gold);color:var(--bg)}
+.completed-section{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px;margin-top:40px;display:flex;align-items:center;gap:14px}
+.completed-section label{cursor:pointer;color:var(--text-dim);font-size:0.9rem}
+input[type="checkbox"]{width:18px;height:18px;cursor:pointer;accent-color:var(--gold)}
+.plugin-num{display:inline-block;background:var(--gold-dim);color:var(--bg);font-family:var(--font-mono);font-size:0.72rem;padding:2px 7px;border-radius:3px;margin-right:8px;font-weight:bold}
+.flow-num{display:inline-block;background:#1e3a5f;color:#7ab4f0;font-family:var(--font-mono);font-size:0.72rem;padding:2px 7px;border-radius:3px;margin-right:8px;font-weight:bold}
+.setup-num{display:inline-block;background:#1e3a2e;color:#4caf7d;font-family:var(--font-mono);font-size:0.72rem;padding:2px 7px;border-radius:3px;margin-right:8px;font-weight:bold}
+.plugin-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px;margin:16px 0;border-left:3px solid var(--gold-dim)}
+.flow-card{background:#0d1a2e;border:1px solid #1e3a5f;border-radius:8px;padding:18px;margin:16px 0;border-left:3px solid #1e3a5f}
+.setup-card{background:#0a1a12;border:1px solid #1e3a2e;border-radius:8px;padding:18px;margin:16px 0;border-left:3px solid #1e3a2e}
+.plugin-card h3,.flow-card h3,.setup-card h3{margin-top:0;color:var(--text)}
+.stack-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
+@media(max-width:600px){.stack-grid{grid-template-columns:1fr}}
+.stack-item{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px}
+.stack-item h4{color:var(--gold);font-family:var(--font-mono);font-size:0.82rem;margin-bottom:6px}
+.timeline-step{display:flex;gap:14px;margin:10px 0;align-items:flex-start}
+.timeline-label{background:var(--gold-dim);color:var(--bg);font-family:var(--font-mono);font-size:0.72rem;padding:3px 8px;border-radius:3px;white-space:nowrap;margin-top:2px;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<div class="progress-bar-container">
+  <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<nav class="nav">
+  <span class="nav-brand">QUARTA FLIGHT SCHOOL</span>
+  <div class="nav-links">
+    <a href="INDEX.html" class="nav-btn">Indice</a>
+    <a href="026-polymarket-prediccion-eventos.html" class="nav-btn">&#8592; Anterior</a>
+    <span class="nav-btn active">027</span>
+    <a href="028-pipeline-4-agentes-claude-code.html" class="nav-btn">Siguiente &#8594;</a>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="meta">
+    <span>Bloque: Ecosistema IA 2026</span>
+    <span>45 min</span>
+    <span>Clase 027</span>
+    <span class="dim">Fuente: @eng_khairallah1 en X</span>
+  </div>
+
+  <h1>Obsidian + Claude &mdash; 30 Flujos, Plugins y Setups</h1>
+  <p class="dim">El sistema completo para convertir Obsidian en un segundo cerebro potenciado por IA.</p>
+
+  <!-- ============================================================ -->
+  <h2>Introduccion</h2>
+
+  <p>Obsidian tiene mas de 2700 plugins comunitarios. Mas de 100 son de IA. El CEO de Obsidian publico Skills oficiales para Claude. El ecosistema Obsidian+Claude esta explotando en 2026.</p>
+
+  <p>La mayoria de personas usa Obsidian como un bloc de notas avanzado y Claude como un chatbot. Estan perdiendo la capa de integracion que los convierte en algo cualitativamente mas poderoso: un sistema donde tus notas se convierten en el contexto persistente de Claude, y donde Claude organiza, conecta y amplifica el conocimiento que acumulas con el tiempo.</p>
+
+  <div class="card card-gold">
+    <h3>El problema central</h3>
+    <p>Claude sin vault es amnesia. Vault sin Claude es una biblioteca sin indice. La combinacion resuelve ambos problemas: Claude recuerda todo lo que esta en tu vault, y tu vault se mantiene organizado y conectado gracias a Claude.</p>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>Parte 1: Los 10 Plugins Esenciales</h2>
+
+  <p>De los mas de 2700 plugins disponibles, estos diez forman la base de cualquier setup serio de Obsidian con IA.</p>
+
+  <!-- Plugin 01 -->
+  <div class="plugin-card">
+    <h3><span class="plugin-num">01</span>Smart Connections</h3>
+    <p>El plugin de IA mas popular de Obsidian. Usa RAG (Retrieval-Augmented Generation) para que puedas chatear con todo tu vault. Le preguntas "Que se sobre retencion de clientes?" y el plugin busca en todas tus notas, encuentra las relevantes y responde usando tu propio conocimiento acumulado.</p>
+    <p>Gratis para modelos locales. El costo en nube varia segun el proveedor que elijas (OpenAI, Anthropic, etc.).</p>
+    <p><strong>Por que importa:</strong> Convierte un vault pasivo de notas en una base de conocimiento activa con la que puedes conversar directamente dentro de Obsidian.</p>
+  </div>
+
+  <!-- Plugin 02 -->
+  <div class="plugin-card">
+    <h3><span class="plugin-num">02</span>Copilot</h3>
+    <p>Q&amp;A basado en RAG con una interfaz de chat limpia integrada dentro de Obsidian. Soporta Claude, GPT, Gemini y modelos locales. Para quienes quieren la conversacion con IA dentro de Obsidian sin salir a una ventana del navegador.</p>
+    <p><strong>Diferencia con Smart Connections:</strong> Copilot tiene una interfaz de chat mas convencional. Smart Connections tiene mas funciones de conexion automatica de notas. Muchos usuarios instalan los dos.</p>
+  </div>
+
+  <!-- Plugin 03 -->
+  <div class="plugin-card">
+    <h3><span class="plugin-num">03</span>Templater</h3>
+    <p>Plantillas automaticas de notas que se ejecutan cuando creas tipos especificos de notas. Configura una plantilla de reunion que automaticamente agrega fecha, campo de asistentes, seccion de items de accion y tags de frontmatter. Cada nota empieza estructurada y lista para IA.</p>
+    <p><strong>Combinacion critica:</strong> Templater + Claude es especialmente poderoso porque el formato consistente mejora dramaticamente la recuperacion de informacion. Claude puede leer mil notas de reunion con la misma estructura y extraer patrones con precision.</p>
+  </div>
+
+  <!-- Plugin 04 -->
+  <div class="plugin-card">
+    <h3><span class="plugin-num">04</span>Dataview</h3>
+    <p>Convierte tu vault en una base de datos consultable. Puedes hacer queries como "Mostrame todas las notas etiquetadas #proyecto-alpha creadas en los ultimos 30 dias" y obtienes una tabla en vivo dentro de cualquier nota.</p>
+    <p><strong>Cuando Claude lo usa:</strong> Puede responder preguntas sobre tu vault usando datos estructurados de Dataview, no solo busqueda de texto completo. La diferencia es la misma que entre buscar en Google y hacer una consulta SQL.</p>
+  </div>
+
+  <!-- Plugin 05 -->
+  <div class="plugin-card">
+    <h3><span class="plugin-num">05</span>Tasks</h3>
+    <p>Gestion completa de tareas dentro de tus notas. Crea tareas en cualquier nota con fechas limite, prioridades y recurrencia. Consulta todas las tareas de tu vault en una sola vista, sin importar en que nota esten.</p>
+    <p><strong>Con Claude:</strong> Claude puede leer cada tarea de tu vault y ayudarte a priorizar, reprogramar y hacer seguimiento. Si le describes tu semana, Claude sabe exactamente que esta pendiente.</p>
+  </div>
+
+  <!-- Plugin 06 -->
+  <div class="plugin-card">
+    <h3><span class="plugin-num">06</span>Obsidian Git</h3>
+    <p>Control de versiones para tu vault. Auto-commits cambios en intervalos establecidos (por ejemplo, cada 30 minutos). Tus notas tienen historial completo: puedes ver que cambio, cuando cambio y revertir si es necesario.</p>
+    <p><strong>Caso de uso critico:</strong> Si tu vault es central a tu trabajo profesional (como lo es para un abogado), perder notas no es una opcion. Git te da resguardo automatico y la posibilidad de recuperar cualquier version.</p>
+  </div>
+
+  <!-- Plugin 07 -->
+  <div class="plugin-card">
+    <h3><span class="plugin-num">07</span>Calendar</h3>
+    <p>Vista de calendario visual de tus notas diarias. Haz clic en cualquier fecha para ver o crear la nota de ese dia. Simple, pero transforma la consistencia del habito de notas diarias.</p>
+    <p><strong>Para Claude:</strong> Cuando mantienes notas diarias consistentemente, Claude tiene un registro cronologico de tu trabajo, ideas y decisiones en el tiempo. Puede responder preguntas como "cuando tome esta decision y cuales fueron mis razones".</p>
+  </div>
+
+  <!-- Plugin 08 -->
+  <div class="plugin-card">
+    <h3><span class="plugin-num">08</span>Kanban</h3>
+    <p>Convierte cualquier nota en un tablero Kanban visual. Rastrea etapas de proyectos, pipelines de contenido o flujos de trabajo. Las columnas son flexibles: puedes tener "Idea / En curso / En revision / Publicado" para contenido o "Prospecto / Propuesta / Negociacion / Cerrado" para ventas.</p>
+    <p><strong>Con Claude:</strong> Puedes pedirle a Claude que revise el tablero, identifique cuellos de botella y sugiera que mover.</p>
+  </div>
+
+  <!-- Plugin 09 -->
+  <div class="plugin-card">
+    <h3><span class="plugin-num">09</span>Periodic Notes</h3>
+    <p>Automatiza la creacion de notas diarias, semanales, mensuales y trimestrales con plantillas. No tienes que recordar crear la nota del dia &mdash; la plantilla aparece sola con la estructura correcta.</p>
+    <p><strong>El efecto compuesto:</strong> Con Periodic Notes, tu vault construye un registro estructurado en el tiempo que Claude puede analizar para patrones, tendencias y progreso a lo largo de cualquier periodo. "Como ha evolucionado mi foco en los ultimos tres meses" se convierte en una pregunta que Claude puede responder.</p>
+  </div>
+
+  <!-- Plugin 10 -->
+  <div class="plugin-card">
+    <h3><span class="plugin-num">10</span>Obsidian CLI</h3>
+    <p>Lanzado en 2026. Interfaz de linea de comandos para Obsidian. Crea notas, busca y gestiona tu vault directamente desde la terminal, sin necesidad de que la interfaz grafica de Obsidian este abierta.</p>
+    <p><strong>Por que cambia todo:</strong> Esto es lo que hace la integracion Claude Code + Obsidian completamente fluida. Claude Code puede llamar comandos CLI para interactuar con el vault programaticamente: crear notas de resumen, leer contenido de notas especificas, buscar en el vault. La integracion se vuelve automatizable.</p>
+    <pre><code># Ejemplo: Claude Code crea una nota en el vault
+obsidian new "Reuniones/2026-06-02-cliente-abc.md" \
+  --content "## Reunion Cliente ABC\nFecha: 2026-06-02\n..."
+
+# Buscar notas relevantes
+obsidian search "proceso concursal" --limit 5</code></pre>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>Parte 2: Los 10 Flujos de Trabajo</h2>
+
+  <p>Los plugins son la infraestructura. Los flujos de trabajo son los habitos y procesos que extraen el valor. Estos diez flujos cubren los casos de uso mas impactantes.</p>
+
+  <!-- Flujo 11 -->
+  <div class="flow-card">
+    <h3><span class="flow-num">11</span>The Morning Synthesis</h3>
+    <p>Cada manana, Claude lee tus notas diarias de los ultimos tres dias mas tus notas de proyectos activos. Crea automaticamente una nota "Start of Day" en tu carpeta diaria con cuatro secciones:</p>
+    <ul>
+      <li>Donde lo dejaste ayer</li>
+      <li>Que vence hoy</li>
+      <li>Que esta vencido</li>
+      <li>Una prioridad de foco sugerida para la sesion</li>
+    </ul>
+    <p>Lo lees con el cafe y sabes exactamente por donde empezar. Sin tiempo perdido en orientarte.</p>
+  </div>
+
+  <!-- Flujo 12 -->
+  <div class="flow-card">
+    <h3><span class="flow-num">12</span>The Meeting Processor</h3>
+    <p>Despues de cada reunion, pegas tus notas en bruto en una nota nueva (no importa el formato, pueden ser fragmentos). Claude las lee y produce:</p>
+    <ul>
+      <li>Items de accion con responsables y fechas limite</li>
+      <li>Decisiones clave tomadas</li>
+      <li>Enlaces a notas de proyectos relevantes en tu vault</li>
+      <li>Tags apropiados para encontrar la nota despues</li>
+    </ul>
+    <p>Un volcado de cinco minutos se convierte en un registro estructurado, enlazado y buscable.</p>
+  </div>
+
+  <!-- Flujo 13 -->
+  <div class="flow-card">
+    <h3><span class="flow-num">13</span>The Research Ingestion Pipeline</h3>
+    <p>Guardas la URL de un articulo o pegas una transcripcion de PDF en tu carpeta Inbox. Claude la lee y crea:</p>
+    <ul>
+      <li>Una nota de resumen con los insights clave</li>
+      <li>Enlaces a notas existentes sobre el mismo tema</li>
+      <li>Metadatos de fuente (autor, fecha, URL)</li>
+      <li>Marcadores de cualquier contradiccion con tu conocimiento existente</li>
+    </ul>
+    <p>Un comando convierte input crudo en conocimiento conectado.</p>
+  </div>
+
+  <!-- Flujo 14 -->
+  <div class="flow-card">
+    <h3><span class="flow-num">14</span>The Weekly Review Automation</h3>
+    <p>Cada viernes, Claude escanea todas las notas creadas o modificadas esa semana y crea una nota de revision semanal con: logros de la semana, decisiones tomadas, patrones notados en tu trabajo y prioridades para la proxima semana.</p>
+    <p>Tu revision semanal toma dos minutos en leer en lugar de una hora en crear.</p>
+  </div>
+
+  <!-- Flujo 15 -->
+  <div class="flow-card">
+    <h3><span class="flow-num">15</span>The Idea Cross-Pollinator</h3>
+    <p>Tienes una idea en una nota. Le preguntas a Claude: "Encuentra todas las notas en mi vault que podrian conectarse con esta idea de forma no obvia."</p>
+    <p>Claude busca toda tu base de conocimiento y encuentra conexiones que nunca habrias encontrado manualmente. Los enlaces inesperados entre temas no relacionados son donde viven los mejores insights. Un abogado puede descubrir que un caso de 2019 tiene una estructura contractual identica al problema que enfrenta hoy.</p>
+  </div>
+
+  <!-- Flujo 16 -->
+  <div class="flow-card">
+    <h3><span class="flow-num">16</span>The Project Kickoff Generator</h3>
+    <p>Cuando empiezas un nuevo proyecto, le dices a Claude los objetivos, restricciones y plazos. Claude crea una carpeta de proyecto completa con:</p>
+    <ul>
+      <li>Nota de vision general del proyecto</li>
+      <li>Nota de tareas con hitos</li>
+      <li>Enlace a todas las notas del vault relevantes para este proyecto</li>
+      <li>Lista de brechas de conocimiento que necesitas llenar</li>
+      <li>Plantilla para actualizaciones semanales del proyecto</li>
+    </ul>
+  </div>
+
+  <!-- Flujo 17 -->
+  <div class="flow-card">
+    <h3><span class="flow-num">17</span>The Vault Health Check</h3>
+    <p>Mensualmente, Claude audita tu vault y genera un reporte de mantenimiento con:</p>
+    <ul>
+      <li>Notas huerfanas sin enlaces entrantes</li>
+      <li>Notas con informacion desactualizada</li>
+      <li>Proyectos que se han paralizado sin actualizaciones en dos semanas</li>
+      <li>Tags que se usan de forma inconsistente</li>
+      <li>Campos de frontmatter que faltan</li>
+    </ul>
+    <p>Tu vault se mantiene organizado sin esfuerzo manual.</p>
+  </div>
+
+  <!-- Flujo 18 -->
+  <div class="flow-card">
+    <h3><span class="flow-num">18</span>The Book Notes System</h3>
+    <p>Cuando terminas de leer un libro, creas una nota con tus highlights y pensamientos. Claude la lee junto con todas tus notas existentes y produce:</p>
+    <ul>
+      <li>Resumen de las ideas clave</li>
+      <li>Conexiones con tu conocimiento existente</li>
+      <li>Takeaways accionables especificos para tus proyectos actuales</li>
+      <li>Lista de otros libros o temas a explorar basada en las intersecciones</li>
+    </ul>
+    <p>Cada libro que lees no es un silo &mdash; entra a la red de conocimiento.</p>
+  </div>
+
+  <!-- Flujo 19 -->
+  <div class="flow-card">
+    <h3><span class="flow-num">19</span>The Argument Builder</h3>
+    <p>Trabajando en una presentacion, articulo o propuesta? Dale a Claude tu tesis. Busca en tu vault toda la evidencia de apoyo: datos, investigacion pasada, citas de notas de libros, resultados relevantes de proyectos.</p>
+    <p>Los organiza en un argumento estructurado con la evidencia mas fuerte primero. Para un abogado, esto significa que la investigacion juridica de anos anteriores se reutiliza automaticamente.</p>
+  </div>
+
+  <!-- Flujo 20 -->
+  <div class="flow-card">
+    <h3><span class="flow-num">20</span>The Decision Journal</h3>
+    <p>Antes de tomar una decision importante, creas una nota con las opciones y tu pensamiento actual. Despues de que la decision se desarrolla, regresas y registras el resultado.</p>
+    <p>Con el tiempo, Claude puede analizar tu diario de decisiones e identificar patrones: que tipos de decisiones tiendes a acertar, donde aparecen tus sesgos cognitivos, que factores deberian pesar mas en decisiones futuras. Es un sistema de mejora continua basado en tus propios datos.</p>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>Parte 3: Los 10 Setups Avanzados</h2>
+
+  <p>Los flujos de trabajo son los procesos. Los setups avanzados son las configuraciones de infraestructura que los hacen posibles o los potencian significativamente.</p>
+
+  <!-- Setup 21 -->
+  <div class="setup-card">
+    <h3><span class="setup-num">21</span>Claude Code + Vault como Memoria Persistente</h3>
+    <p>En tu archivo <code>CLAUDE.md</code>, defines tu vault de Obsidian como la memoria a largo plazo de Claude. La configuracion basica:</p>
+    <pre><code># Memory
+Long-term memory lives in ~/vault/obsidian/.
+Before starting any task, read relevant notes.
+Write findings to new notes in ~/vault/obsidian/claude-outputs/.
+Tag all generated notes with #ai-generated.</code></pre>
+    <p>Claude lee notas relevantes antes de comenzar cualquier tarea, escribe hallazgos en nuevas notas y construye conocimiento acumulado entre sesiones. Tu vault se convierte en el cerebro de Claude entre sesiones.</p>
+  </div>
+
+  <!-- Setup 22 -->
+  <div class="setup-card">
+    <h3><span class="setup-num">22</span>mcpvault MCP Server</h3>
+    <p>Servidor MCP de cero dependencias que lee tu vault sin que Obsidian este ejecutandose. Tiene busqueda BM25 con clasificacion por relevancia, maneja frontmatter de forma segura y expone 14 metodos MCP.</p>
+    <p>Funciona con Claude Desktop, Claude Code, Cursor y Windsurf. Es la opcion MCP mas limpia para la mayoria de usuarios.</p>
+    <pre><code># Instalacion
+npm install -g mcpvault
+
+# En claude_desktop_config.json:
+{
+  "mcpServers": {
+    "vault": {
+      "command": "mcpvault",
+      "args": ["--vault", "/ruta/a/tu/vault"]
+    }
+  }
+}</code></pre>
+    <p>Una vez conectado, Claude puede hacer busquedas semanticas en tu vault, leer notas especificas y escribir nuevas notas directamente desde Claude Desktop o Claude Code.</p>
+  </div>
+
+  <!-- Setup 23 -->
+  <div class="setup-card">
+    <h3><span class="setup-num">23</span>Official Obsidian Skills de Steph Ango</h3>
+    <p>El CEO de Obsidian construyo estas Skills directamente. Cinco skills que cubren notas markdown, archivos canvas y la Obsidian CLI. Mas de 12900 estrellas en GitHub.</p>
+    <p>Siguen la especificacion abierta de Agent Skills para que cualquier agente compatible pueda usarlas. Esta es la forma oficialmente respaldada de dejar que agentes IA trabajen con Obsidian.</p>
+    <p>Las Skills incluyen: crear notas, editar notas existentes, leer el contenido de notas, buscar en el vault y manipular archivos canvas (los lienzos visuales de Obsidian).</p>
+  </div>
+
+  <!-- Setup 24 -->
+  <div class="setup-card">
+    <h3><span class="setup-num">24</span>obsidian-second-brain Skill</h3>
+    <p>31 comandos para operar un vault de Obsidian como un segundo cerebro AI-first. Incluye:</p>
+    <ul>
+      <li>Gestion completa del vault</li>
+      <li>Herramientas de pensamiento que debaten contigo usando tus propias notas</li>
+      <li>Agentes programados que corren en horarios especificos</li>
+      <li>Toolkit de investigacion que extrae posts en vivo de X via Grok</li>
+      <li>Investigacion web via Perplexity integrada directamente en notas estructuradas</li>
+      <li>Transcripciones de YouTube directamente en notas del vault</li>
+    </ul>
+    <p>Es un setup mas ambicioso que las Skills oficiales, disenado especificamente para el uso AI-first del vault.</p>
+  </div>
+
+  <!-- Setup 25 -->
+  <div class="setup-card">
+    <h3><span class="setup-num">25</span>Multi-Vault Strategy</h3>
+    <p>Vaults separadas para contextos separados. La estructura tipica:</p>
+    <ul>
+      <li><strong>Vault personal:</strong> diario, reflexiones, vida personal</li>
+      <li><strong>Vault de trabajo:</strong> proyectos profesionales, clientes, decisiones</li>
+      <li><strong>Vault de aprendizaje:</strong> cursos, libros, investigacion</li>
+    </ul>
+    <p>Claude se conecta a la vault relevante para la tarea. Sin mezcla entre entradas del diario personal y notas de proyectos de trabajo. El contexto permanece limpio.</p>
+  </div>
+
+  <!-- Setup 26 -->
+  <div class="setup-card">
+    <h3><span class="setup-num">26</span>Obsidian + Claude Code Routines</h3>
+    <p>Configura una Rutina de Claude Code que se ejecute nocturnamente contra tu vault. El ejemplo mas practico:</p>
+    <p>Cada noche a las 2am, Claude escanea notas nuevas en la carpeta Inbox, las archiva en la ubicacion correcta segun su contenido, agrega tags y enlaces relevantes, y crea una nota "procesado-de-noche.md" con un resumen de lo archivado.</p>
+    <p>Te despiertas con una vault organizada cada manana.</p>
+  </div>
+
+  <!-- Setup 27 -->
+  <div class="setup-card">
+    <h3><span class="setup-num">27</span>Graph View Analysis</h3>
+    <p>La Vista de Grafo de Obsidian muestra conexiones visuales entre todas tus notas. Con cientos de notas se vuelve ruidosa y dificil de interpretar manualmente.</p>
+    <p>Pide a Claude que analice el grafo e identifique:</p>
+    <ul>
+      <li><strong>Hubs:</strong> notas que conectan muchos otros nodos (tus ideas o temas mas centrales)</li>
+      <li><strong>Clusters:</strong> grupos de notas relacionadas que forman areas de conocimiento</li>
+      <li><strong>Brechas:</strong> clusters que no estan conectados entre si pero deberian estarlo</li>
+    </ul>
+    <p>El analisis de grafo revela la estructura real de tu conocimiento, no la estructura que crees que tienes.</p>
+  </div>
+
+  <!-- Setup 28 -->
+  <div class="setup-card">
+    <h3><span class="setup-num">28</span>Zettelkasten + IA</h3>
+    <p>El metodo Zettelkasten &mdash; notas atomicas con IDs unicos y enlaces explicitos entre ellas &mdash; fue disenado por Niklas Luhmann para su cerebro humano. Funciona aun mejor con cerebros de IA.</p>
+    <p>Claude puede seguir cadenas de enlaces Zettelkasten para razonar sobre temas complejos usando tu conocimiento acumulado. Cada nota atomica es un paso de razonamiento. Claude los encadena.</p>
+    <p>La combinacion Zettelkasten + Claude es probablemente el sistema de gestion del conocimiento mas poderoso disponible hoy para trabajo intelectual serio.</p>
+  </div>
+
+  <!-- Setup 29 -->
+  <div class="setup-card">
+    <h3><span class="setup-num">29</span>Vault-Powered Claude Projects</h3>
+    <p>Exportas secciones clave de tu vault como archivos de conocimiento para Proyectos en Claude.ai. El mapeo:</p>
+    <ul>
+      <li>Tu area "Marketing" se convierte en la base de conocimiento del proyecto "Produccion de Contenido"</li>
+      <li>Tu area "Derecho Concursal" se convierte en la base de conocimiento del proyecto legal</li>
+      <li>Tu area "Inversiones" alimenta el proyecto de analisis financiero</li>
+    </ul>
+    <p>Cada Proyecto Claude extrae del segmento relevante de tu vault, sin contaminar el contexto con informacion de otras areas.</p>
+  </div>
+
+  <!-- Setup 30 -->
+  <div class="setup-card">
+    <h3><span class="setup-num">30</span>The Feedback Loop System</h3>
+    <p>El setup mas poderoso a largo plazo. Cuando Claude produce algo usando tu vault &mdash; un resumen, un analisis, una recomendacion &mdash; guardas el output de vuelta en tu vault como una nueva nota etiquetada con <code>#ai-generated</code>.</p>
+    <p>Con el tiempo, tu vault contiene tanto tu pensamiento original como la sintesis de Claude. Cada uno construye sobre el otro. El conocimiento se compone exponencialmente: tus nuevas notas son mas ricas porque Claude tiene mas contexto, y los outputs de Claude son mas precisos porque el vault es mas completo.</p>
+    <div class="card card-gold" style="margin-top:12px">
+      <p style="margin:0"><strong>El efecto a 12 meses:</strong> Un vault con feedback loop activo durante un ano es cualitativamente diferente a un vault que solo tiene tus notas manuales. Es un segundo cerebro que aprende.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>Setup Stack Recomendado</h2>
+
+  <p>El stack del driver diario segun Khairallah, optimizado para productividad profesional:</p>
+
+  <div class="stack-grid">
+    <div class="stack-item">
+      <h4>Plugins Core</h4>
+      <ul>
+        <li>Smart Connections</li>
+        <li>Templater</li>
+        <li>Dataview</li>
+        <li>Periodic Notes</li>
+        <li>Tasks</li>
+      </ul>
+    </div>
+    <div class="stack-item">
+      <h4>Integracion IA</h4>
+      <ul>
+        <li>mcpvault conectado a Claude Code</li>
+        <li>CLAUDE.md con ubicacion del vault</li>
+        <li>Obsidian CLI instalado</li>
+      </ul>
+    </div>
+    <div class="stack-item">
+      <h4>Automatizaciones</h4>
+      <ul>
+        <li>Rutina nocturna para procesar Inbox</li>
+        <li>Resumen matutino a las 7am</li>
+        <li>Weekly Review automatico</li>
+      </ul>
+    </div>
+    <div class="stack-item">
+      <h4>Estructura del Vault</h4>
+      <ul>
+        <li>Projects/ (activos)</li>
+        <li>Areas/ (responsabilidades)</li>
+        <li>Resources/ (referencias)</li>
+        <li>Archive/ (completados)</li>
+        <li>Inbox/ (sin procesar)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card card-blue">
+    <h3>Automatizacion de Revision Semanal</h3>
+    <p>Cada viernes a las 4pm, Claude Code ejecuta el flujo de Weekly Review:</p>
+    <ol>
+      <li>Lee todas las notas modificadas esa semana</li>
+      <li>Crea <code>Reviews/semana-YYYY-WW.md</code> con el resumen</li>
+      <li>Identifica tareas vencidas y las mueve al inicio de la nota del lunes siguiente</li>
+      <li>Actualiza el tablero Kanban del proyecto principal</li>
+    </ol>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>Como Empezar Hoy</h2>
+
+  <p>El plan de implementacion en dos semanas:</p>
+
+  <div class="timeline-step">
+    <span class="timeline-label">Hora 1</span>
+    <div>
+      <p style="margin:0">Descarga Obsidian. Crea tu vault con estructura de carpetas PARA (Projects/Areas/Resources/Archive). Instala Templater y crea plantillas para notas diarias y de reuniones. No necesitas tener las plantillas perfectas en esta hora &mdash; solo usables.</p>
+    </div>
+  </div>
+
+  <div class="timeline-step">
+    <span class="timeline-label">Hora 2</span>
+    <div>
+      <p style="margin:0">Instala Smart Connections. Configura con Claude o GPT. Ten tu primera conversacion con tu vault, aunque solo tenga dos o tres notas. El objetivo es sentir como funciona el RAG sobre contenido propio.</p>
+    </div>
+  </div>
+
+  <div class="timeline-step">
+    <span class="timeline-label">Hora 3</span>
+    <div>
+      <p style="margin:0">Configura mcpvault (es el mas simple). Conectalo a Claude Desktop o Claude Code. Ejecuta tu primera consulta cross-vault desde Claude. Pregunta algo sobre las notas que ya tienes.</p>
+    </div>
+  </div>
+
+  <div class="timeline-step">
+    <span class="timeline-label">Dia 2</span>
+    <div>
+      <p style="margin:0">Crea 10 notas sobre tus proyectos y areas de enfoque actuales. No tienen que ser perfectas. El vault necesita masa critica para que el RAG sea util.</p>
+    </div>
+  </div>
+
+  <div class="timeline-step">
+    <span class="timeline-label">Dia 3</span>
+    <div>
+      <p style="margin:0">Construye tu primer flujo automatizado: la Morning Synthesis. Configura Claude Code para que genere tu nota de inicio de dia usando las notas de los ultimos tres dias.</p>
+    </div>
+  </div>
+
+  <div class="timeline-step">
+    <span class="timeline-label">Semana 1</span>
+    <div>
+      <p style="margin:0">Instala Periodic Notes y Dataview. Construye el habito de notas diarias y revisiones semanales. Agrega Obsidian Git para que todo se versione automaticamente.</p>
+    </div>
+  </div>
+
+  <div class="timeline-step">
+    <span class="timeline-label">Semana 2</span>
+    <div>
+      <p style="margin:0">Ya estas ejecutando un segundo cerebro potenciado por IA. Agrega los flujos de trabajo segun tu necesidad: Meeting Processor si tienes muchas reuniones, Argument Builder si produces documentos, Book Notes System si lees frecuentemente.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <div class="quiz">
+    <h3>Comprobacion de Conocimiento</h3>
+
+    <!-- Q1 -->
+    <div class="quiz-item" id="qi1">
+      <p class="quiz-q">1. El plugin Smart Connections usa que tecnologia para permitirte chatear con tu vault?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q1" value="a"> Fine-tuning del modelo con tus notas</label>
+        <label><input type="radio" name="q1" value="b"> RAG (Retrieval-Augmented Generation)</label>
+        <label><input type="radio" name="q1" value="c"> Sincronizacion directa con Claude.ai</label>
+        <label><input type="radio" name="q1" value="d"> Base de datos SQL local</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q1','b','qi1')">Verificar</button>
+      <div class="quiz-result correct-msg" id="q1-correct">Correcto. Smart Connections usa RAG para indexar semanticamente todas tus notas y recuperar las relevantes cuando haces una pregunta.</div>
+      <div class="quiz-result wrong-msg" id="q1-wrong">Incorrecto. Smart Connections usa RAG (Retrieval-Augmented Generation): indexa semanticamente tus notas y recupera las relevantes para cada pregunta.</div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="quiz-item" id="qi2">
+      <p class="quiz-q">2. Cual es la principal ventaja del plugin Dataview para la integracion con Claude?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q2" value="a"> Permite exportar notas a PDF</label>
+        <label><input type="radio" name="q2" value="b"> Sincroniza el vault con la nube</label>
+        <label><input type="radio" name="q2" value="c"> Convierte el vault en una base de datos consultable, permitiendo respuestas basadas en datos estructurados</label>
+        <label><input type="radio" name="q2" value="d"> Genera graficos automaticamente</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q2','c','qi2')">Verificar</button>
+      <div class="quiz-result correct-msg" id="q2-correct">Correcto. Dataview permite hacer queries sobre el vault, y cuando Claude accede a esos resultados puede responder con datos estructurados en vez de solo busqueda de texto.</div>
+      <div class="quiz-result wrong-msg" id="q2-wrong">Incorrecto. La ventaja de Dataview es convertir el vault en una base de datos consultable. Claude puede responder preguntas usando datos estructurados, no solo busqueda de texto completo.</div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="quiz-item" id="qi3">
+      <p class="quiz-q">3. Que hace el servidor MCP mcpvault que lo hace especialmente conveniente?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q3" value="a"> Requiere que Obsidian este abierto para funcionar</label>
+        <label><input type="radio" name="q3" value="b"> Solo funciona con Claude Desktop, no con Claude Code</label>
+        <label><input type="radio" name="q3" value="c"> Lee el vault sin dependencias adicionales y sin que Obsidian este ejecutandose</label>
+        <label><input type="radio" name="q3" value="d"> Necesita una base de datos externa para almacenar los indices</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q3','c','qi3')">Verificar</button>
+      <div class="quiz-result correct-msg" id="q3-correct">Correcto. mcpvault es de cero dependencias y lee el vault directamente sin que Obsidian este abierto. Funciona con Claude Desktop, Claude Code, Cursor y Windsurf.</div>
+      <div class="quiz-result wrong-msg" id="q3-wrong">Incorrecto. La ventaja de mcpvault es precisamente que no requiere que Obsidian este ejecutandose y tiene cero dependencias adicionales. Funciona con multiples clientes IA.</div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="quiz-item" id="qi4">
+      <p class="quiz-q">4. En que consiste el "Feedback Loop System" (Setup 30)?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q4" value="a"> Enviar notas a Claude para que las corrija y devuelva</label>
+        <label><input type="radio" name="q4" value="b"> Guardar los outputs de Claude de vuelta en el vault como notas etiquetadas, haciendo que el conocimiento se componga con el tiempo</label>
+        <label><input type="radio" name="q4" value="c"> Usar Claude para calificar la calidad de cada nota</label>
+        <label><input type="radio" name="q4" value="d"> Hacer backup automatico de conversaciones con Claude</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q4','b','qi4')">Verificar</button>
+      <div class="quiz-result correct-msg" id="q4-correct">Correcto. El Feedback Loop guarda los outputs de Claude (#ai-generated) de vuelta en el vault. Tus notas y la sintesis de Claude se construyen mutuamente, creando conocimiento compuesto.</div>
+      <div class="quiz-result wrong-msg" id="q4-wrong">Incorrecto. El Feedback Loop System consiste en guardar los outputs que Claude genera &mdash; resumenes, analisis, recomendaciones &mdash; de vuelta en el vault como notas etiquetadas con #ai-generated.</div>
+    </div>
+
+    <!-- Q5 -->
+    <div class="quiz-item" id="qi5">
+      <p class="quiz-q">5. Por que la Obsidian CLI lanzada en 2026 es importante para la integracion con Claude Code?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q5" value="a"> Porque permite usar Obsidian en dispositivos moviles</label>
+        <label><input type="radio" name="q5" value="b"> Porque Claude Code puede llamar comandos CLI para interactuar con el vault programaticamente, sin necesidad de la interfaz grafica</label>
+        <label><input type="radio" name="q5" value="c"> Porque sincroniza el vault con GitHub automaticamente</label>
+        <label><input type="radio" name="q5" value="d"> Porque reemplaza al servidor MCP mcpvault</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q5','b','qi5')">Verificar</button>
+      <div class="quiz-result correct-msg" id="q5-correct">Correcto. La CLI hace que la integracion Claude Code + Obsidian sea completamente fluida: Claude Code puede crear notas, buscar en el vault y gestionar archivos directamente desde scripts y automatizaciones.</div>
+      <div class="quiz-result wrong-msg" id="q5-wrong">Incorrecto. La importancia de la CLI es que Claude Code puede invocarla programaticamente. Claude Code puede crear notas, buscar contenido y gestionar el vault sin necesitar que Obsidian este abierto ni un humano operando la interfaz.</div>
+    </div>
+
+  </div>
+
+  <!-- Completar -->
+  <div class="completed-section">
+    <input type="checkbox" id="completedCheck" onchange="markCompleted()">
+    <label for="completedCheck">Marcar como completada</label>
+    <span class="dim" id="completedDate" style="margin-left:auto;font-family:var(--font-mono);font-size:0.78rem"></span>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// Progress bar
+window.addEventListener('scroll', function() {
+  var scrollTop = window.scrollY || document.documentElement.scrollTop;
+  var docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  var pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  document.getElementById('progressBar').style.width = pct + '%';
+});
+
+// Quiz
+function checkAnswer(qName, correct, itemId) {
+  var selected = document.querySelector('input[name="' + qName + '"]:checked');
+  if (!selected) return;
+  var correctEl = document.getElementById(qName + '-correct');
+  var wrongEl = document.getElementById(qName + '-wrong');
+  correctEl.style.display = 'none';
+  wrongEl.style.display = 'none';
+  if (selected.value === correct) {
+    correctEl.style.display = 'block';
+  } else {
+    wrongEl.style.display = 'block';
+  }
+}
+
+// localStorage completion
+var pageKey = 'completed_027';
+window.addEventListener('DOMContentLoaded', function() {
+  var saved = localStorage.getItem(pageKey);
+  if (saved) {
+    document.getElementById('completedCheck').checked = true;
+    document.getElementById('completedDate').textContent = 'Completada el ' + saved;
+  }
+});
+
+function markCompleted() {
+  var cb = document.getElementById('completedCheck');
+  if (cb.checked) {
+    var now = new Date().toLocaleDateString('es-CO', {year:'numeric',month:'short',day:'numeric'});
+    localStorage.setItem(pageKey, now);
+    document.getElementById('completedDate').textContent = 'Completada el ' + now;
+  } else {
+    localStorage.removeItem(pageKey);
+    document.getElementById('completedDate').textContent = '';
+  }
+}
+</script>
+</body>
+</html>

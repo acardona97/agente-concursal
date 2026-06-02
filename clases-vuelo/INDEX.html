@@ -147,6 +147,8 @@ body {
 .b4 .bloque-title { color: var(--purple); }
 .b5 .bloque-num { background: var(--orange-bg); color: var(--orange); border: 1px solid var(--orange); }
 .b5 .bloque-title { color: var(--orange); }
+.b6 .bloque-num { background: rgba(122,178,140,0.1); color: #7ab48c; border: 1px solid #4a7a5c; }
+.b6 .bloque-title { color: #7ab48c; }
 
 /* CLASE CARD */
 .clases-grid { display: flex; flex-direction: column; gap: 8px; }
@@ -251,7 +253,7 @@ body {
     <div class="progress-track">
       <div class="progress-fill" id="topProgressFill"></div>
     </div>
-    <div class="progress-text" id="topProgressText">0 / 26 clases</div>
+    <div class="progress-text" id="topProgressText">0 / 31 clases</div>
   </div>
 </div>
 
@@ -260,7 +262,7 @@ body {
   <!-- PROFILE CARD -->
   <div class="profile-card">
     <div class="profile-title">Andrés Cardona · Quarta</div>
-    <div class="profile-sub">Curso personalizado para el vuelo · 13 horas · Generado 2026-06-01</div>
+    <div class="profile-sub">Curso personalizado para el vuelo · 16 horas · Actualizado 2026-06-02</div>
 
     <div>
       <div class="profile-section-title">Perfil del estudiante</div>
@@ -284,7 +286,7 @@ body {
   <!-- STATS -->
   <div class="stats-row">
     <div class="stat-box">
-      <span class="stat-num">26</span>
+      <span class="stat-num">31</span>
       <div class="stat-label">Clases totales</div>
     </div>
     <div class="stat-box">
@@ -342,6 +344,11 @@ body {
         <div class="ruta-seg-time">9:30 — 11:58</div>
         <div class="ruta-seg-clases">023 → 026 &nbsp;·&nbsp;</div>
         <div class="ruta-seg-label">Finanzas · BTC · Polymarket</div>
+      </div>
+      <div class="ruta-seg">
+        <div class="ruta-seg-time">11:58 — 14:50</div>
+        <div class="ruta-seg-clases">027 → 031 &nbsp;·&nbsp;</div>
+        <div class="ruta-seg-label">Ecosistema IA 2026</div>
       </div>
     </div>
   </div>
@@ -646,15 +653,71 @@ body {
     </div>
   </div>
 
+  <!-- BLOQUE 6 -->
+  <div class="bloque b6">
+    <div class="bloque-header">
+      <div class="bloque-num">6</div>
+      <div class="bloque-title">Ecosistema IA 2026</div>
+      <div class="bloque-meta">~3 h · 5 clases · Obsidian · Multi-Agente · Modelos</div>
+    </div>
+    <div class="clases-grid">
+      <a class="clase-card" href="027-obsidian-claude-30-flujos.html" data-id="027">
+        <div class="clase-check"></div>
+        <div class="clase-num">027</div>
+        <div class="clase-content">
+          <div class="clase-titulo">Obsidian + Claude — 30 Flujos y Setups</div>
+          <div class="clase-meta">10 plugins esenciales · 10 flujos de trabajo · 10 setups avanzados · mcpvault · CLI · Feedback Loop</div>
+        </div>
+        <div class="clase-tiempo">45 min</div>
+      </a>
+      <a class="clase-card" href="028-pipeline-4-agentes-claude-code.html" data-id="028">
+        <div class="clase-check"></div>
+        <div class="clase-num">028</div>
+        <div class="clase-content">
+          <div class="clase-titulo">Pipeline de 4 Agentes que Trabajan Mientras Duermes</div>
+          <div class="clase-meta">Planner→Coder→Tester→Reviewer · archivos .md de cada agente · orquestador /ship · handoff files</div>
+        </div>
+        <div class="clase-tiempo">40 min</div>
+      </a>
+      <a class="clase-card" href="029-guia-modelos-ia-cual-usar.html" data-id="029">
+        <div class="clase-check"></div>
+        <div class="clase-num">029</div>
+        <div class="clase-content">
+          <div class="clase-titulo">Guia Definitiva — Qué Modelo Usar para Cada Tarea</div>
+          <div class="clase-meta">8 categorias · Claude vs ChatGPT vs DeepSeek vs Gemini vs Grok · 5 errores frecuentes · stack practico</div>
+        </div>
+        <div class="clase-tiempo">25 min</div>
+      </a>
+      <a class="clase-card" href="030-multi-agent-workflows-guia-completa.html" data-id="030">
+        <div class="clase-check"></div>
+        <div class="clase-num">030</div>
+        <div class="clase-content">
+          <div class="clase-titulo">Multi-Agent Workflows — Guia Completa (11 Modulos)</div>
+          <div class="clase-meta">Primitivos · 6 topologias · 5 modos de falla · capa de gobierno · patrones Claude-nativos · diseno desde cero</div>
+        </div>
+        <div class="clase-tiempo">60 min</div>
+      </a>
+      <a class="clase-card" href="031-segundo-cerebro-ia-roadmap-6-meses.html" data-id="031">
+        <div class="clase-check"></div>
+        <div class="clase-num">031</div>
+        <div class="clase-content">
+          <div class="clase-titulo">Segundo Cerebro IA — Roadmap de 6 Meses</div>
+          <div class="clase-meta">3 diferenciadores · roadmap mes a mes · Feedback Loop · Knowledge Engineer como carrera · diseno AI-First</div>
+        </div>
+        <div class="clase-tiempo">35 min</div>
+      </a>
+    </div>
+  </div>
+
   <div class="total-row">
-    <div>Total estimado: 780 min · 13 horas · 26 clases · 6 micro-clases + 20 completas</div>
+    <div>Total estimado: 960 min · 16 horas · 31 clases · 6 micro-clases + 25 completas</div>
     <button class="btn-reset" onclick="resetProgress()">↺ Reiniciar progreso</button>
   </div>
 
 </div><!-- /main -->
 
 <script>
-const TOTAL = 26;
+const TOTAL = 31;
 
 function loadProgress() {
   let done = 0;

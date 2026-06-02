@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>028 - Pipeline de 4 Agentes con Claude Code</title>
+<style>
+:root {
+  --bg:#0d0f0e; --surface:#131615; --border:#1e2420;
+  --gold:#c9a84c; --gold-dim:#7a6230;
+  --text:#e8e4d9; --text-dim:#7a7568;
+  --green:#2d4a3e; --blue:#1e3a5f;
+  --font-body:'Georgia',serif;
+  --font-mono:'Courier New',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);line-height:1.7;min-height:100vh}
+.progress-bar-container{position:fixed;top:0;left:0;right:0;height:3px;background:var(--border);z-index:100}
+.progress-bar{height:100%;background:var(--gold);transition:width 0.3s}
+.nav{position:fixed;top:3px;left:0;right:0;background:rgba(13,15,14,0.95);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;justify-content:space-between;align-items:center;z-index:99;backdrop-filter:blur(8px)}
+.nav-brand{color:var(--gold);font-family:var(--font-mono);font-size:0.8rem;letter-spacing:2px}
+.nav-links{display:flex;gap:8px}
+.nav-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);padding:5px 14px;border-radius:4px;cursor:pointer;font-family:var(--font-mono);font-size:0.75rem;text-decoration:none;transition:all 0.2s}
+.nav-btn:hover,.nav-btn.active{border-color:var(--gold);color:var(--gold)}
+.container{max-width:860px;margin:0 auto;padding:80px 24px 60px}
+h1{font-size:1.9rem;color:var(--gold);margin-bottom:8px;line-height:1.3}
+.meta{color:var(--text-dim);font-family:var(--font-mono);font-size:0.8rem;margin-bottom:32px;display:flex;gap:20px;flex-wrap:wrap}
+h2{font-size:1.25rem;color:var(--gold);margin:40px 0 16px;border-left:3px solid var(--gold-dim);padding-left:12px}
+h3{font-size:1.05rem;color:var(--text);margin:24px 0 10px}
+p{margin-bottom:14px;color:var(--text)}
+ul,ol{margin:0 0 14px 20px;color:var(--text)}
+li{margin-bottom:6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;margin:20px 0}
+.card-gold{border-color:var(--gold-dim)}
+.card-blue{border-color:#1e3a5f;background:#0d1a2e}
+.card-green{border-color:#1e3a2e;background:#0a1a12}
+.card-red{border-color:#3a1e1e;background:#1a0d0d}
+code{font-family:var(--font-mono);background:#1a1e1c;padding:2px 6px;border-radius:3px;font-size:0.88rem;color:#a8d4b0}
+pre{background:#0a0c0b;border:1px solid var(--border);border-radius:6px;padding:18px;overflow-x:auto;margin:16px 0}
+pre code{background:none;padding:0;color:#a8d4b0;font-size:0.83rem;line-height:1.65}
+.highlight{color:var(--gold)}
+.dim{color:var(--text-dim)}
+.quiz{background:#0d1a12;border:1px solid #1e3a2e;border-radius:8px;padding:20px;margin:32px 0}
+.quiz h3{color:#4caf7d;margin-top:0}
+.quiz-item{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.quiz-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.quiz-q{color:var(--text);margin-bottom:10px;font-weight:bold}
+.quiz-options label{display:block;padding:7px 12px;margin:4px 0;border-radius:4px;cursor:pointer;border:1px solid var(--border);transition:all 0.2s;font-size:0.9rem}
+.quiz-options label:hover{border-color:var(--gold-dim);background:var(--surface)}
+.quiz-options input{margin-right:8px}
+.quiz-result{display:none;margin-top:10px;padding:8px 12px;border-radius:4px;font-size:0.88rem;font-family:var(--font-mono)}
+.correct-msg{background:#0d2a1a;border:1px solid #2d6a4a;color:#4caf7d}
+.wrong-msg{background:#2a0d0d;border:1px solid #6a2d2d;color:#f47070}
+.btn{background:var(--surface);border:1px solid var(--gold-dim);color:var(--gold);padding:8px 20px;border-radius:4px;cursor:pointer;font-family:var(--font-mono);font-size:0.85rem;transition:all 0.2s;margin-top:10px}
+.btn:hover{background:var(--gold);color:var(--bg)}
+.completed-section{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px;margin-top:40px;display:flex;align-items:center;gap:14px}
+.completed-section label{cursor:pointer;color:var(--text-dim);font-size:0.9rem}
+input[type="checkbox"]{width:18px;height:18px;cursor:pointer;accent-color:var(--gold)}
+.agent-card{border-radius:8px;padding:20px;margin:20px 0}
+.agent-planner{background:#1a0d1a;border:1px solid #5a3a6a;border-left:3px solid #8a5aaa}
+.agent-coder{background:#0d1a2e;border:1px solid #1e3a5f;border-left:3px solid #3a7aaf}
+.agent-tester{background:#0a1a12;border:1px solid #1e3a2e;border-left:3px solid #2d8a4a}
+.agent-reviewer{background:#2a1a0d;border:1px solid #6a3a1e;border-left:3px solid #aa7a2a}
+.agent-card h3{margin-top:0}
+.agent-label{display:inline-block;font-family:var(--font-mono);font-size:0.72rem;padding:2px 8px;border-radius:3px;margin-bottom:10px}
+.label-planner{background:#5a3a6a;color:#d4aaff}
+.label-coder{background:#1e3a5f;color:#7ab4f0}
+.label-tester{background:#1e3a2e;color:#4caf7d}
+.label-reviewer{background:#6a3a1e;color:#f0aa7a}
+.pipeline-flow{display:flex;align-items:center;gap:0;margin:24px 0;flex-wrap:wrap}
+.pipeline-node{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px 16px;font-family:var(--font-mono);font-size:0.8rem;text-align:center;flex-shrink:0}
+.pipeline-arrow{color:var(--gold-dim);font-size:1.2rem;padding:0 6px;flex-shrink:0}
+.pipeline-node.planner-node{border-color:#5a3a6a;color:#d4aaff}
+.pipeline-node.coder-node{border-color:#1e3a5f;color:#7ab4f0}
+.pipeline-node.tester-node{border-color:#1e3a2e;color:#4caf7d}
+.pipeline-node.reviewer-node{border-color:#6a3a1e;color:#f0aa7a}
+.handoff-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:0.88rem}
+.handoff-table th{background:var(--surface);color:var(--gold);font-family:var(--font-mono);text-align:left;padding:8px 12px;border:1px solid var(--border);font-size:0.8rem}
+.handoff-table td{padding:8px 12px;border:1px solid var(--border);color:var(--text)}
+.handoff-table tr:nth-child(even) td{background:#0a0c0b}
+.comparison{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
+@media(max-width:600px){.comparison{grid-template-columns:1fr}.pipeline-flow{flex-direction:column}}
+.comparison-bad{background:#1a0d0d;border:1px solid #3a1e1e;border-radius:6px;padding:14px}
+.comparison-good{background:#0a1a12;border:1px solid #1e3a2e;border-radius:6px;padding:14px}
+.comparison-bad h4{color:#f47070;font-family:var(--font-mono);font-size:0.82rem;margin-bottom:8px}
+.comparison-good h4{color:#4caf7d;font-family:var(--font-mono);font-size:0.82rem;margin-bottom:8px}
+.file-tree{background:#0a0c0b;border:1px solid var(--border);border-radius:6px;padding:18px;margin:16px 0;font-family:var(--font-mono);font-size:0.85rem;line-height:1.8}
+.tree-dir{color:var(--gold)}
+.tree-file{color:#a8d4b0}
+.tree-comment{color:var(--text-dim)}
+.cmd-line{background:#0d1a2e;border:1px solid #1e3a5f;border-radius:6px;padding:14px;margin:16px 0;font-family:var(--font-mono);font-size:0.92rem}
+.cmd-prompt{color:var(--text-dim)}
+.cmd-text{color:#7ab4f0}
+.verdict-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}
+@media(max-width:500px){.verdict-grid{grid-template-columns:1fr}}
+.verdict{border-radius:6px;padding:12px;text-align:center;font-family:var(--font-mono);font-size:0.82rem}
+.verdict-ship{background:#0a2a12;border:1px solid #2d6a2a;color:#4caf7d}
+.verdict-work{background:#2a1a0d;border:1px solid #6a4a1e;color:#f0aa7a}
+.verdict-block{background:#2a0d0d;border:1px solid #6a2d2d;color:#f47070}
+.verdict strong{display:block;font-size:1rem;margin-bottom:4px}
+</style>
+</head>
+<body>
+
+<div class="progress-bar-container">
+  <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<nav class="nav">
+  <span class="nav-brand">QUARTA FLIGHT SCHOOL</span>
+  <div class="nav-links">
+    <a href="INDEX.html" class="nav-btn">Indice</a>
+    <a href="027-obsidian-claude-30-flujos.html" class="nav-btn">&#8592; Anterior</a>
+    <span class="nav-btn active">028</span>
+    <a href="029-guia-modelos-ia-cual-usar.html" class="nav-btn">Siguiente &#8594;</a>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="meta">
+    <span>Bloque: Ecosistema IA 2026</span>
+    <span>40 min</span>
+    <span>Clase 028</span>
+    <span class="dim">Fuente: @zodchiii en X</span>
+  </div>
+
+  <h1>Pipeline de 4 Agentes con Claude Code</h1>
+  <p class="dim">Planner, Coder, Tester y Reviewer encadenados para entregar una feature mientras duermes.</p>
+
+  <!-- ============================================================ -->
+  <h2>Introduccion</h2>
+
+  <p>Cuatro agentes IA pueden enviar una feature mientras duermes. La mayoria de personas nunca los conecta correctamente. Los activan uno por uno, a mano, cada uno olvidando lo que hizo el anterior. Tu sigues siendo el cuello de botella.</p>
+
+  <p>El problema no es la capacidad de los agentes. Es la arquitectura. Un agente manejando todo el pipeline de desarrollo &mdash; planear, codificar, probar y revisar &mdash; llena su ventana de contexto tan rapido que la calidad cae a la mitad del proceso.</p>
+
+  <div class="comparison">
+    <div class="comparison-bad">
+      <h4>Un solo agente haciendo todo</h4>
+      <ul style="margin:0;padding-left:16px;font-size:0.88rem">
+        <li>Contexto se llena mezclando planeacion, codigo, pruebas y notas de revision</li>
+        <li>Calidad cae progresivamente</li>
+        <li>Cada sesion empieza desde cero</li>
+        <li>Tu sigues siendo el puente entre etapas</li>
+      </ul>
+    </div>
+    <div class="comparison-good">
+      <h4>Cuatro especialistas en pipeline</h4>
+      <ul style="margin:0;padding-left:16px;font-size:0.88rem">
+        <li>Cada agente tiene contexto limpio y estrecho</li>
+        <li>Calidad consistente en cada etapa</li>
+        <li>Handoffs automaticos via archivos compartidos</li>
+        <li>Un trigger, cuatro etapas, una feature terminada</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>Por que un Pipeline Gana a una Pila de Agentes</h2>
+
+  <p>El truco que convierte cuatro agentes separados en un pipeline cohesionado es el <strong>archivo de handoff</strong>. Cada agente escribe su output en un archivo predecible donde el siguiente puede leerlo.</p>
+
+  <div class="pipeline-flow">
+    <div class="pipeline-node planner-node">Planner<br><span style="font-size:0.7rem;color:var(--text-dim)">spec.md</span></div>
+    <div class="pipeline-arrow">&#8594;</div>
+    <div class="pipeline-node coder-node">Coder<br><span style="font-size:0.7rem;color:var(--text-dim)">changes.md</span></div>
+    <div class="pipeline-arrow">&#8594;</div>
+    <div class="pipeline-node tester-node">Tester<br><span style="font-size:0.7rem;color:var(--text-dim)">test-results.md</span></div>
+    <div class="pipeline-arrow">&#8594;</div>
+    <div class="pipeline-node reviewer-node">Reviewer<br><span style="font-size:0.7rem;color:var(--text-dim)">review.md</span></div>
+  </div>
+
+  <table class="handoff-table">
+    <tr>
+      <th>Agente</th>
+      <th>Lee</th>
+      <th>Escribe</th>
+      <th>Modelo</th>
+    </tr>
+    <tr>
+      <td>Planner</td>
+      <td>La peticion de feature + codebase</td>
+      <td><code>.pipeline/spec.md</code></td>
+      <td>Opus</td>
+    </tr>
+    <tr>
+      <td>Coder</td>
+      <td><code>.pipeline/spec.md</code></td>
+      <td><code>.pipeline/changes.md</code></td>
+      <td>Sonnet</td>
+    </tr>
+    <tr>
+      <td>Tester</td>
+      <td><code>.pipeline/changes.md</code> + spec</td>
+      <td><code>.pipeline/test-results.md</code></td>
+      <td>Sonnet</td>
+    </tr>
+    <tr>
+      <td>Reviewer</td>
+      <td>Todo lo anterior + git diff</td>
+      <td><code>.pipeline/review.md</code></td>
+      <td>Opus</td>
+    </tr>
+  </table>
+
+  <p>El orquestador que los ejecuta en orden es un solo slash command. Cuatro subagentes, un comando, una carpeta compartida para handoffs.</p>
+
+  <!-- ============================================================ -->
+  <h2>Agente 1: The Planner</h2>
+
+  <div class="agent-card agent-planner">
+    <span class="agent-label label-planner">PLANNER &middot; OPUS &middot; SUBAGENTE</span>
+    <h3>El que convierte vagedad en precision</h3>
+    <p>El Planner nunca escribe codigo. Su trabajo es convertir una peticion de feature vaga en una spec concreta que el Coder puede seguir sin adivinar. Una spec vaga produce codigo vago sin importar que tan bueno sea el Coder &mdash; por eso esta etapa se ejecuta con Opus. Establece el techo de calidad para todo lo que viene despues.</p>
+  </div>
+
+  <p>Crea el archivo <code>.claude/agents/planner.md</code>:</p>
+
+  <pre><code>---
+name: planner
+description: Turns a feature request into an implementation spec. Use as the second subagent in the pipeline, after requirements are clear.
+tools: Read, Grep, Glob, Write
+model: opus
+---
+
+You are a planning specialist. You do NOT write implementation code.
+
+Given a feature request:
+1. Read the relevant parts of the codebase to understand current patterns
+2. Write a spec to `.pipeline/spec.md` containing:
+   - Files to create or modify, with exact paths
+   - The interface or function signatures needed
+   - Edge cases the implementation must handle
+   - Which existing patterns to follow (name the file to copy from)
+3. Flag anything ambiguous as an OPEN QUESTION at the top of the spec.
+
+Keep the spec tight, so leave no gaps and invent no requirements that weren't asked for.</code></pre>
+
+  <div class="card card-gold">
+    <h3>Por que Opus para el Planner?</h3>
+    <p>La planeacion requiere razonamiento profundo sobre el codebase y la peticion. Opus tiene la capacidad de identificar patrones sutiles, anticipar edge cases no obvios y escribir specs que eliminan la ambiguedad. El costo adicional de Opus en esta etapa se recupera en el tiempo que el Coder no pierde en suposiciones incorrectas.</p>
+  </div>
+
+  <h3>Que debe contener spec.md</h3>
+
+  <p>Una buena spec del Planner tiene esta estructura:</p>
+
+  <pre><code># Feature Spec: [nombre de la feature]
+
+## OPEN QUESTIONS (si las hay)
+- Pregunta 1: [que no queda claro de la peticion]
+
+## Files to Modify
+- `src/auth/login.py` — agregar rate limiting middleware
+- `tests/test_auth.py` — agregar casos de prueba para rate limiting
+
+## Interfaces Required
+```python
+def apply_rate_limit(endpoint: str, user_id: str, max_attempts: int = 5) -> bool:
+    """Returns True if request is allowed, False if rate limited."""
+```
+
+## Edge Cases to Handle
+- Usuario sin autenticar (usar IP como identificador)
+- Rate limit diferente para admin vs usuario normal
+- Reset del contador despues de autenticacion exitosa
+
+## Patterns to Follow
+- Sigue el patron de middleware en `src/middleware/auth_middleware.py`
+- Usa el mismo logging pattern que `src/auth/logout.py`</code></pre>
+
+  <!-- ============================================================ -->
+  <h2>Agente 2: The Coder</h2>
+
+  <div class="agent-card agent-coder">
+    <span class="agent-label label-coder">CODER &middot; SONNET &middot; SUBAGENTE</span>
+    <h3>El que implementa la spec, sin desviarse</h3>
+    <p>El Coder lee la spec y escribe la implementacion. No planea y no revisa su propio trabajo. Solo construye exactamente lo que dice la spec. Sonnet es la eleccion correcta aqui: implementacion contra una spec clara es el trabajo costo-calidad equilibrado que Sonnet maneja mejor.</p>
+  </div>
+
+  <p>Crea el archivo <code>.claude/agents/coder.md</code>:</p>
+
+  <pre><code>---
+name: coder
+description: Implements the spec at .pipeline/spec.md. Use as the second subagent in the ship pipeline.
+tools: Read, Write, Edit, Grep, Glob, Bash
+model: sonnet
+---
+
+You are an implementation specialist.
+
+1. Read `.pipeline/spec.md` in full. If it has OPEN QUESTIONS, stop and surface them instead of guessing.
+2. Implement exactly what the spec describes. Follow the patterns it names. Do not add features it didn't ask for.
+3. Write a short summary to `.pipeline/changes.md`: which files changed, what each change does, and anything the Tester should focus on.
+
+You write code that matches the repo. You do not refactor unrelated code or "improve" things outside the spec's scope.</code></pre>
+
+  <div class="card card-blue">
+    <h3>El archivo changes.md</h3>
+    <p>El handoff del Coder al Tester no es implicito. <code>changes.md</code> es el mapa que le dice al Tester exactamente donde mirar:</p>
+    <pre><code># Changes Summary
+
+## Files Modified
+- `src/auth/login.py` — Added `apply_rate_limit()` function and middleware decorator
+- `src/middleware/rate_limit.py` — New file with RateLimitStore class
+- `config/settings.py` — Added RATE_LIMIT_MAX_ATTEMPTS and RATE_LIMIT_WINDOW_SECONDS
+
+## What Changed
+Login endpoint now checks rate limit before processing credentials.
+Rate limiting uses in-memory store with TTL. Resets on successful auth.
+
+## Tester Focus Areas
+- Test that 5 failed attempts within 60s triggers rate limit
+- Test that successful auth resets the counter
+- Test IP-based limiting for unauthenticated requests
+- Test that admin users have higher limit (10 attempts)</code></pre>
+    <p>La diferencia entre probar a ciegas y probar con precision es este archivo.</p>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>Agente 3: The Tester</h2>
+
+  <div class="agent-card agent-tester">
+    <span class="agent-label label-tester">TESTER &middot; SONNET &middot; SUBAGENTE</span>
+    <h3>El que verifica comportamiento, no implementacion</h3>
+    <p>El Tester lee lo que cambio y escribe pruebas que demuestran que la feature funciona. Luego las ejecuta. Si fallan, para. No arregla el codigo el mismo &mdash; eso seria mezclar roles y contaminar la separacion de responsabilidades del pipeline.</p>
+  </div>
+
+  <p>Crea el archivo <code>.claude/agents/tester.md</code>:</p>
+
+  <pre><code>---
+name: tester
+description: Writes and runs tests for changes described in .pipeline/changes.md.
+tools: Read, Write, Edit, Grep, Glob, Bash
+model: sonnet
+---
+
+You are a test specialist.
+
+1. Read `.pipeline/changes.md` to see what was built and where.
+2. Read the changed files and the spec at `.pipeline/spec.md`.
+3. Write tests covering: the happy path, the edge cases the spec named, and at least one failure case. Match the repo's test framework.
+4. Run the tests. If any fail, write the failures to `.pipeline/test-results.md` and STOP. Do not fix the code yourself.
+5. If all pass, note that in `.pipeline/test-results.md`.
+
+You test behavior, not implementation details. A failing test means the pipeline pauses for the Reviewer, not that you patch around it.</code></pre>
+
+  <div class="card card-green">
+    <h3>Por que el Tester no arregla el codigo?</h3>
+    <p>Si el Tester encuentra un fallo y lo arregla el mismo, suceden dos cosas malas:</p>
+    <ol>
+      <li>El Coder nunca sabe que su implementacion tenia un bug &mdash; no aprende</li>
+      <li>El arreglo del Tester puede ser incorrecto o inconsistente con los patrones del codebase</li>
+    </ol>
+    <p>La regla es: test falla, pipeline se detiene, humano (tu) decides si reiniciar desde el Coder o arreglarlo directamente. El pipeline es un gate, no un auto-corrector.</p>
+  </div>
+
+  <h3>Estructura de test-results.md segun el resultado</h3>
+
+  <pre><code># Test Results
+
+## Status: ALL PASS
+
+## Tests Run
+- test_rate_limit_triggers_after_5_attempts: PASS
+- test_successful_auth_resets_counter: PASS
+- test_ip_limiting_unauthenticated: PASS
+- test_admin_higher_limit: PASS
+- test_rate_limit_resets_after_window: PASS
+
+## Coverage
+Modified files: 94%
+New file src/middleware/rate_limit.py: 87%</code></pre>
+
+  <pre><code># Test Results
+
+## Status: FAILURES FOUND
+
+## Failing Tests
+- test_admin_higher_limit: FAIL
+  AssertionError: Expected 10 attempts for admin, got 5
+  The admin check in apply_rate_limit() uses the wrong user role field.
+
+## Passing Tests
+- test_rate_limit_triggers_after_5_attempts: PASS
+- test_successful_auth_resets_counter: PASS
+
+## Note for Reviewer
+Pipeline paused. Admin role check needs fix in src/auth/login.py line 47.</code></pre>
+
+  <!-- ============================================================ -->
+  <h2>Agente 4: The Reviewer</h2>
+
+  <div class="agent-card agent-reviewer">
+    <span class="agent-label label-reviewer">REVIEWER &middot; OPUS &middot; SUBAGENTE &middot; SOLO LECTURA</span>
+    <h3>El ultimo gate antes de que toques el codigo</h3>
+    <p>El Reviewer lee todo lo que produjo el pipeline y da un veredicto. Es solo lectura &mdash; sus herramientas no incluyen Write ni Edit. No puede tapar problemas editando. Solo puede juzgar. Esto es intencional.</p>
+  </div>
+
+  <p>Crea el archivo <code>.claude/agents/reviewer.md</code>:</p>
+
+  <pre><code>---
+name: reviewer
+description: Final review of the full pipeline output. Fourth and last stage.
+tools: Read, Grep, Bash
+model: opus
+---
+
+You are a senior reviewer. You are read-only. You do not edit code.
+
+1. Read the spec, the changes summary, and the test results from `.pipeline/`.
+2. Run `git diff` to see the actual changes.
+3. Assess: does the code match the spec? Are the tests meaningful or superficial? Any security, performance, or correctness issues?
+4. Write a verdict to `.pipeline/review.md`:
+   - VERDICT: SHIP / NEEDS WORK / BLOCK
+   - For NEEDS WORK or BLOCK, list exactly what to fix and where.
+
+Be the last line of defense. If the tests are green but the code is wrong, say BLOCK. Green tests are not the same as correct behavior.</code></pre>
+
+  <div class="verdict-grid">
+    <div class="verdict verdict-ship">
+      <strong>SHIP</strong>
+      Codigo correcto, pruebas significativas, nada que bloquee.
+    </div>
+    <div class="verdict verdict-work">
+      <strong>NEEDS WORK</strong>
+      Problemas menores o mejoras recomendadas. No bloquea pero deberia atenderse.
+    </div>
+    <div class="verdict verdict-block">
+      <strong>BLOCK</strong>
+      Error de correctitud, seguridad o comportamiento incorrecto. No se mergea.
+    </div>
+  </div>
+
+  <div class="card card-gold">
+    <h3>Por que "pruebas verdes no es lo mismo que comportamiento correcto"</h3>
+    <p>Un Tester puede escribir pruebas que pasan pero no prueban lo que importa. El Reviewer con Opus tiene la capacidad de leer las pruebas y detectar si son superficiales: si solo verifican que el codigo no explota, en lugar de verificar que el comportamiento es el correcto bajo las condiciones reales del dominio.</p>
+    <p>Por eso el Reviewer ejecuta sus propias comprobaciones con <code>git diff</code> y lee toda la cadena de produccion del pipeline, no solo el resultado final.</p>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>El Orquestador: Un Comando para los Cuatro</h2>
+
+  <p>La pieza que convierte cuatro agentes separados en un pipeline. Un slash command que los invoca en orden, cada uno recogiendo el archivo de handoff del anterior.</p>
+
+  <p>Crea el archivo <code>.claude/commands/ship.md</code>:</p>
+
+  <pre><code>Run the full feature pipeline for: $ARGUMENTS
+
+Execute these stages in order. Do not skip ahead. After each stage, confirm the handoff file exists before starting the next.
+
+1. Delegate to the `planner` subagent with the feature request above. Wait for `.pipeline/spec.md`.
+2. If the spec has OPEN QUESTIONS, stop and show them to me. Otherwise delegate to the `coder` subagent. Wait for `.pipeline/changes.md`.
+3. Delegate to the `tester` subagent. Wait for `.pipeline/test-results.md`. If tests failed, stop and show me the failures.
+4. Delegate to the `reviewer` subagent. Show me `.pipeline/review.md`.
+
+Report the final verdict. Do not merge anything. Leave the branch for my morning review.</code></pre>
+
+  <p>Con este comando en su lugar, una sola linea activa toda la cadena:</p>
+
+  <div class="cmd-line">
+    <span class="cmd-prompt">$ </span><span class="cmd-text">/ship add rate limiting to the login endpoint</span>
+  </div>
+
+  <p>Claude Code ejecuta el Planner, espera <code>spec.md</code>, ejecuta el Coder, espera <code>changes.md</code>, ejecuta el Tester, verifica los resultados, y finalmente ejecuta el Reviewer. Si encuentra OPEN QUESTIONS o tests fallidos, se detiene y te muestra exactamente el problema. De lo contrario, cuando te despiertas tienes un <code>review.md</code> con el veredicto.</p>
+
+  <!-- ============================================================ -->
+  <h2>Estructura de Directorios Final</h2>
+
+  <div class="file-tree">
+<span class="tree-dir">.claude/</span>
+  <span class="tree-dir">  agents/</span>
+    <span class="tree-file">    planner.md</span>     <span class="tree-comment">&#8592; El Planner (Opus)</span>
+    <span class="tree-file">    coder.md</span>       <span class="tree-comment">&#8592; El Coder (Sonnet)</span>
+    <span class="tree-file">    tester.md</span>      <span class="tree-comment">&#8592; El Tester (Sonnet)</span>
+    <span class="tree-file">    reviewer.md</span>    <span class="tree-comment">&#8592; El Reviewer (Opus)</span>
+  <span class="tree-dir">  commands/</span>
+    <span class="tree-file">    ship.md</span>        <span class="tree-comment">&#8592; El orquestador</span>
+<span class="tree-dir">.pipeline/</span>               <span class="tree-comment">&#8592; Carpeta de handoffs (crear antes de correr)</span>
+  <span class="tree-file">  spec.md</span>            <span class="tree-comment">&#8592; Planner escribe aqui</span>
+  <span class="tree-file">  changes.md</span>         <span class="tree-comment">&#8592; Coder escribe aqui</span>
+  <span class="tree-file">  test-results.md</span>    <span class="tree-comment">&#8592; Tester escribe aqui</span>
+  <span class="tree-file">  review.md</span>          <span class="tree-comment">&#8592; Reviewer escribe aqui</span>
+  </div>
+
+  <p>La carpeta <code>.pipeline/</code> existe en el repo pero sus archivos son efimeros: se sobreescriben en cada ejecucion del pipeline. Agregala a <code>.gitignore</code> o no &mdash; si la agregas al repo, tienes historial de los outputs del pipeline, lo cual puede ser util para auditorias.</p>
+
+  <!-- ============================================================ -->
+  <h2>Consideraciones de Modelo por Agente</h2>
+
+  <div class="card card-blue">
+    <h3>La logica de Opus en las puntas, Sonnet en el medio</h3>
+    <p>El pipeline usa Opus para Planner y Reviewer, Sonnet para Coder y Tester. Esto no es arbitrario:</p>
+    <ul>
+      <li><strong>Planner (Opus):</strong> El razonamiento sobre el codebase y la peticion es el punto donde la calidad mas importa. Un plan deficiente es costoso de recuperar.</li>
+      <li><strong>Coder (Sonnet):</strong> Implementar una spec clara es trabajo mecanico de alta calidad. Sonnet lo hace bien y mas rapido que Opus.</li>
+      <li><strong>Tester (Sonnet):</strong> Escribir pruebas contra una spec explicita es otro trabajo de implementacion. Sonnet es suficiente.</li>
+      <li><strong>Reviewer (Opus):</strong> Detectar que algo esta mal cuando todo parece estar bien requiere razonamiento profundo. El Reviewer es el ultimo gate &mdash; merece Opus.</li>
+    </ul>
+    <p>El costo total del pipeline es significativamente menor que usar Opus en los cuatro agentes, manteniendo la calidad donde mas importa.</p>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>Ejecucion Overnight: Donde Correrlo</h2>
+
+  <p>Para la version overnight &mdash; donde el pipeline se ejecuta mientras duermes &mdash; necesitas infraestructura que mantenga una sesion de Claude Code activa. Las opciones principales:</p>
+
+  <ul>
+    <li><strong>Servidor cloud dedicado:</strong> Una instancia de EC2, Digital Ocean Droplet o similar con Claude Code instalado. El pipeline se ejecuta en servidores 24/7 sin tocar un servidor propio de produccion.</li>
+    <li><strong>GitHub Actions:</strong> Configura un workflow que se dispara al crear un issue con cierta etiqueta. El pipeline corre en el runner de GitHub.</li>
+    <li><strong>Cron local en un servidor siempre activo:</strong> Si tienes un servidor de desarrollo corriendo, un cron job puede disparar el pipeline en horarios programados.</li>
+  </ul>
+
+  <p>La combinacion mas limpia para empezar: un servidor cloud economico (2 vCPU, 4GB RAM es suficiente) con Claude Code y el pipeline configurado. Cuesta menos de 20 USD al mes.</p>
+
+  <!-- ============================================================ -->
+  <h2>Como Adaptarlo al Proyecto Quarta</h2>
+
+  <p>Este pipeline es directamente aplicable al Quarta Legal Hub. La adaptacion especifica para el proyecto:</p>
+
+  <div class="card card-green">
+    <h3>Quarta Legal Hub Pipeline</h3>
+
+    <h4 style="color:var(--gold);margin-top:16px">Planner</h4>
+    <p>Especifica endpoints nuevos del API o cambios al agente concursal. Conoce la estructura de Flask, los modelos de datos de procesos concursales y los patrones de respuesta del API existente. Lee las notas legales en Obsidian vault cuando la spec tiene implicaciones juridicas.</p>
+
+    <h4 style="color:var(--gold);margin-top:16px">Coder</h4>
+    <p>Implementa en Flask/Python siguiendo los patrones existentes del proyecto. No inventa nuevas convenciones &mdash; copia los patrones que ya existen en el codebase.</p>
+
+    <h4 style="color:var(--gold);margin-top:16px">Tester</h4>
+    <p>Escribe tests para los nuevos endpoints. Para el agente concursal, include tests que verifican que los outputs legales del agente son coherentes con la norma aplicable.</p>
+
+    <h4 style="color:var(--gold);margin-top:16px">Reviewer</h4>
+    <p>Verifica que el output legal del agente sea correcto, no solo que el codigo no explote. El Reviewer para Quarta tiene instrucciones adicionales de verificar coherencia con la Ley 1116 de 2006.</p>
+  </div>
+
+  <p>Ejemplo de trigger especifico para Quarta:</p>
+
+  <div class="cmd-line">
+    <span class="cmd-prompt">$ </span><span class="cmd-text">/ship add endpoint GET /api/creditors that returns sorted creditor list by class and priority</span>
+  </div>
+
+  <div class="cmd-line">
+    <span class="cmd-prompt">$ </span><span class="cmd-text">/ship update concursal agent to cite specific articles from Ley 1116 in reorganization recommendations</span>
+  </div>
+
+  <!-- ============================================================ -->
+  <h2>Patrones de Uso y Limites del Pipeline</h2>
+
+  <div class="card card-red">
+    <h3>Cuando NO usar el pipeline</h3>
+    <ul>
+      <li><strong>Bugs urgentes en produccion:</strong> El pipeline es para features. Los bugs criticos necesitan intervencion directa.</li>
+      <li><strong>Features con requisitos completamente ambiguos:</strong> Si no puedes describir la feature en una oracion, el Planner va a llenarla de OPEN QUESTIONS. Clarifica primero.</li>
+      <li><strong>Cambios que requieren decision de arquitectura:</strong> Si la feature implica elegir entre dos enfoques arquitecturales, tu tienes que tomar esa decision antes de disparar el pipeline.</li>
+    </ul>
+  </div>
+
+  <div class="card card-green">
+    <h3>Cuando el pipeline brilla</h3>
+    <ul>
+      <li>Features bien definidas de tamano medio (2-8 horas de trabajo humano)</li>
+      <li>Endpoints de API nuevos con contratos claros</li>
+      <li>Migraciones de datos con logica verificable</li>
+      <li>Adicion de validaciones a flujos existentes</li>
+      <li>Integraciones con servicios externos bien documentados</li>
+    </ul>
+  </div>
+
+  <h3>Reiniciar una etapa especifica</h3>
+
+  <p>Si el Tester encuentra fallos y necesitas solo reejecutar el Coder sin replantear la spec:</p>
+
+  <pre><code># En Claude Code, manualmente:
+# 1. Lee .pipeline/test-results.md para entender el fallo
+# 2. Decide si el fallo es del Coder o de la spec
+# 3. Si es del Coder: edita .pipeline/spec.md con la correccion
+#    y llama al coder subagent directamente
+# 4. Si es de la spec: edita spec.md y reinicia desde el Coder
+#    (no necesitas replantear todo desde el Planner)</code></pre>
+
+  <!-- ============================================================ -->
+  <div class="quiz">
+    <h3>Comprobacion de Conocimiento</h3>
+
+    <!-- Q1 -->
+    <div class="quiz-item" id="qi1">
+      <p class="quiz-q">1. Cual es el mecanismo que convierte cuatro agentes separados en un pipeline cohesionado?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q1" value="a"> Una base de datos compartida que todos los agentes consultan en tiempo real</label>
+        <label><input type="radio" name="q1" value="b"> El archivo de handoff: cada agente escribe su output en un archivo predecible donde el siguiente puede leerlo</label>
+        <label><input type="radio" name="q1" value="c"> Un servidor central que coordina los agentes mediante APIs</label>
+        <label><input type="radio" name="q1" value="d"> La memoria compartida de la sesion de Claude Code</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q1','b','qi1')">Verificar</button>
+      <div class="quiz-result correct-msg" id="q1-correct">Correcto. Los archivos de handoff en .pipeline/ son la clave. Cada agente escribe en un archivo predecible que el siguiente lee. Sin esta convencion, los agentes no se pueden encadenar automaticamente.</div>
+      <div class="quiz-result wrong-msg" id="q1-wrong">Incorrecto. El mecanismo es el archivo de handoff. Planner escribe spec.md, Coder lo lee y escribe changes.md, Tester lo lee y escribe test-results.md, Reviewer lee todo. Es simple y no requiere infraestructura especial.</div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="quiz-item" id="qi2">
+      <p class="quiz-q">2. Por que el Reviewer usa herramientas de solo lectura (Read, Grep, Bash) sin Write ni Edit?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q2" value="a"> Para ahorrar tokens de contexto</label>
+        <label><input type="radio" name="q2" value="b"> Porque el Reviewer corre en Opus y Opus no puede editar archivos</label>
+        <label><input type="radio" name="q2" value="c"> Para que el Reviewer no pueda tapar problemas editando codigo, forzandolo a solo juzgar</label>
+        <label><input type="radio" name="q2" value="d"> Porque el codigo ya fue mergeado cuando el Reviewer actua</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q2','c','qi2')">Verificar</button>
+      <div class="quiz-result correct-msg" id="q2-correct">Correcto. Las herramientas de solo lectura son una restriccion intencional. Si el Reviewer pudiera editar, podria ocultar problemas del Coder en lugar de reportarlos. El rol del Reviewer es juzgar, no arreglar.</div>
+      <div class="quiz-result wrong-msg" id="q2-wrong">Incorrecto. La restriccion a solo lectura es intencional y arquitectural. Fuerza al Reviewer a reportar los problemas en lugar de parchearlos silenciosamente. Si pudiera editar, contaminaria la separacion de roles del pipeline.</div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="quiz-item" id="qi3">
+      <p class="quiz-q">3. El Planner usa Opus y el Coder usa Sonnet. Cual es la razon principal de esta diferencia?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q3" value="a"> Opus no puede escribir codigo, por eso Sonnet hace el Coder</label>
+        <label><input type="radio" name="q3" value="b"> La planeacion requiere razonamiento profundo (Opus), mientras que implementar una spec clara es trabajo de alta calidad pero mecanico (Sonnet)</label>
+        <label><input type="radio" name="q3" value="c"> Es solo una convencion de costos, no hay diferencia de calidad</label>
+        <label><input type="radio" name="q3" value="d"> Sonnet es mas rapido y el Coder necesita velocidad</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q3','b','qi3')">Verificar</button>
+      <div class="quiz-result correct-msg" id="q3-correct">Correcto. La logica es que Opus donde el razonamiento profundo importa (Planner, Reviewer) y Sonnet donde la tarea es de implementacion contra instrucciones claras (Coder, Tester). Optima calidad y costo.</div>
+      <div class="quiz-result wrong-msg" id="q3-wrong">Incorrecto. La diferencia es cualitativa: el Planner necesita razonar profundamente sobre el codebase y la peticion para producir una spec sin ambiguedades. Eso requiere Opus. Implementar esa spec es mecanicamente demandante pero no requiere el mismo nivel de razonamiento &mdash; Sonnet lo hace bien.</div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="quiz-item" id="qi4">
+      <p class="quiz-q">4. Que debe hacer el Tester si encuentra que un test falla?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q4" value="a"> Arreglar el codigo directamente para que el test pase</label>
+        <label><input type="radio" name="q4" value="b"> Modificar el test para que acepte el comportamiento actual</label>
+        <label><input type="radio" name="q4" value="c"> Escribir los fallos en test-results.md y detenerse sin arreglar el codigo</label>
+        <label><input type="radio" name="q4" value="d"> Llamar al Reviewer antes de escribir los resultados</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q4','c','qi4')">Verificar</button>
+      <div class="quiz-result correct-msg" id="q4-correct">Correcto. El Tester escribe los fallos en test-results.md y para. No arregla el codigo porque eso contaminaria la separacion de roles. El pipeline pausa y el humano decide el siguiente paso.</div>
+      <div class="quiz-result wrong-msg" id="q4-wrong">Incorrecto. El Tester debe escribir los fallos en test-results.md y detenerse ahi. Si arregla el codigo el mismo, el Coder nunca sabe que su implementacion tenia un bug y el arreglo puede ser inconsistente con los patrones del codebase.</div>
+    </div>
+
+    <!-- Q5 -->
+    <div class="quiz-item" id="qi5">
+      <p class="quiz-q">5. Que condicion hace que el orquestador (slash command /ship) pause y muestre informacion antes de continuar?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q5" value="a"> Cuando el Planner tarda mas de 5 minutos en generar la spec</label>
+        <label><input type="radio" name="q5" value="b"> Cuando la spec tiene OPEN QUESTIONS o cuando los tests fallan</label>
+        <label><input type="radio" name="q5" value="c"> Cuando el Reviewer da un veredicto NEEDS WORK</label>
+        <label><input type="radio" name="q5" value="d"> Cuando el Coder modifica mas de 5 archivos</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q5','b','qi5')">Verificar</button>
+      <div class="quiz-result correct-msg" id="q5-correct">Correcto. El orquestador tiene dos puntos de pausa humana: (1) si spec.md tiene OPEN QUESTIONS, muestra las preguntas y espera respuesta; (2) si test-results.md tiene fallos, muestra los fallos y detiene el pipeline.</div>
+      <div class="quiz-result wrong-msg" id="q5-wrong">Incorrecto. El orquestador tiene dos puntos de pausa explicitos: cuando la spec tiene OPEN QUESTIONS (el Planner no pudo resolver ambiguedades) y cuando los tests fallan. Ambas situaciones requieren decision humana antes de continuar.</div>
+    </div>
+
+  </div>
+
+  <!-- Completar -->
+  <div class="completed-section">
+    <input type="checkbox" id="completedCheck" onchange="markCompleted()">
+    <label for="completedCheck">Marcar como completada</label>
+    <span class="dim" id="completedDate" style="margin-left:auto;font-family:var(--font-mono);font-size:0.78rem"></span>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// Progress bar
+window.addEventListener('scroll', function() {
+  var scrollTop = window.scrollY || document.documentElement.scrollTop;
+  var docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  var pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  document.getElementById('progressBar').style.width = pct + '%';
+});
+
+// Quiz
+function checkAnswer(qName, correct, itemId) {
+  var selected = document.querySelector('input[name="' + qName + '"]:checked');
+  if (!selected) return;
+  var correctEl = document.getElementById(qName + '-correct');
+  var wrongEl = document.getElementById(qName + '-wrong');
+  correctEl.style.display = 'none';
+  wrongEl.style.display = 'none';
+  if (selected.value === correct) {
+    correctEl.style.display = 'block';
+  } else {
+    wrongEl.style.display = 'block';
+  }
+}
+
+// localStorage completion
+var pageKey = 'completed_028';
+window.addEventListener('DOMContentLoaded', function() {
+  var saved = localStorage.getItem(pageKey);
+  if (saved) {
+    document.getElementById('completedCheck').checked = true;
+    document.getElementById('completedDate').textContent = 'Completada el ' + saved;
+  }
+});
+
+function markCompleted() {
+  var cb = document.getElementById('completedCheck');
+  if (cb.checked) {
+    var now = new Date().toLocaleDateString('es-CO', {year:'numeric',month:'short',day:'numeric'});
+    localStorage.setItem(pageKey, now);
+    document.getElementById('completedDate').textContent = 'Completada el ' + now;
+  } else {
+    localStorage.removeItem(pageKey);
+    document.getElementById('completedDate').textContent = '';
+  }
+}
+</script>
+</body>
+</html>

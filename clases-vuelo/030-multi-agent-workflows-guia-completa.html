@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>030 - Workflows Multi-Agente: Guia Completa (11 Modulos)</title>
+<style>
+:root {
+  --bg:#0d0f0e; --surface:#131615; --border:#1e2420;
+  --gold:#c9a84c; --gold-dim:#7a6230;
+  --text:#e8e4d9; --text-dim:#7a7568;
+  --green:#2d4a3e; --blue:#1e3a5f;
+  --font-body:'Georgia',serif;
+  --font-mono:'Courier New',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);line-height:1.7;min-height:100vh}
+.progress-bar-container{position:fixed;top:0;left:0;right:0;height:3px;background:var(--border);z-index:100}
+.progress-bar{height:100%;background:var(--gold);transition:width 0.3s}
+.nav{position:fixed;top:3px;left:0;right:0;background:rgba(13,15,14,0.95);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;justify-content:space-between;align-items:center;z-index:99;backdrop-filter:blur(8px)}
+.nav-brand{color:var(--gold);font-family:var(--font-mono);font-size:0.8rem;letter-spacing:2px}
+.nav-links{display:flex;gap:8px}
+.nav-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);padding:5px 14px;border-radius:4px;cursor:pointer;font-family:var(--font-mono);font-size:0.75rem;text-decoration:none;transition:all 0.2s}
+.nav-btn:hover,.nav-btn.active{border-color:var(--gold);color:var(--gold)}
+.container{max-width:860px;margin:0 auto;padding:80px 24px 60px}
+h1{font-size:1.9rem;color:var(--gold);margin-bottom:8px;line-height:1.3}
+.meta{color:var(--text-dim);font-family:var(--font-mono);font-size:0.8rem;margin-bottom:32px;display:flex;gap:20px;flex-wrap:wrap}
+h2{font-size:1.25rem;color:var(--gold);margin:40px 0 16px;border-left:3px solid var(--gold-dim);padding-left:12px}
+h3{font-size:1.05rem;color:var(--text);margin:24px 0 10px}
+p{margin-bottom:14px;color:var(--text)}
+ul,ol{margin:0 0 14px 20px;color:var(--text)}
+li{margin-bottom:6px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;margin:20px 0}
+.card-gold{border-color:var(--gold-dim)}
+.card-blue{border-color:#1e3a5f;background:#0d1a2e}
+.card-green{border-color:#1e3a2e;background:#0a1a12}
+.card-red{border-color:#3a1e1e;background:#1a0d0d}
+code{font-family:var(--font-mono);background:#1a1e1c;padding:2px 6px;border-radius:3px;font-size:0.88rem;color:#a8d4b0}
+pre{background:#0a0c0b;border:1px solid var(--border);border-radius:6px;padding:18px;overflow-x:auto;margin:16px 0}
+pre code{background:none;padding:0;color:#a8d4b0;font-size:0.83rem;line-height:1.65}
+.highlight{color:var(--gold)}
+.dim{color:var(--text-dim)}
+.quiz{background:#0d1a12;border:1px solid #1e3a2e;border-radius:8px;padding:20px;margin:32px 0}
+.quiz h3{color:#4caf7d;margin-top:0}
+.quiz-item{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.quiz-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.quiz-q{color:var(--text);margin-bottom:10px;font-weight:bold}
+.quiz-options label{display:block;padding:7px 12px;margin:4px 0;border-radius:4px;cursor:pointer;border:1px solid var(--border);transition:all 0.2s;font-size:0.9rem}
+.quiz-options label:hover{border-color:var(--gold-dim);background:var(--surface)}
+.quiz-options input{margin-right:8px}
+.quiz-result{display:none;margin-top:10px;padding:8px 12px;border-radius:4px;font-size:0.88rem;font-family:var(--font-mono)}
+.correct-msg{background:#0d2a1a;border:1px solid #2d6a4a;color:#4caf7d}
+.wrong-msg{background:#2a0d0d;border:1px solid #6a2d2d;color:#f47070}
+.btn{background:var(--surface);border:1px solid var(--gold-dim);color:var(--gold);padding:8px 20px;border-radius:4px;cursor:pointer;font-family:var(--font-mono);font-size:0.85rem;transition:all 0.2s;margin-top:10px}
+.btn:hover{background:var(--gold);color:var(--bg)}
+.completed-section{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px;margin-top:40px;display:flex;align-items:center;gap:14px}
+.completed-section label{cursor:pointer;color:var(--text-dim);font-size:0.9rem}
+input[type="checkbox"]{width:18px;height:18px;cursor:pointer;accent-color:var(--gold)}
+.main-table{width:100%;border-collapse:collapse;margin:20px 0;font-size:0.85rem}
+.main-table th{background:#0a0c0b;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);font-family:var(--font-mono);color:var(--gold);font-size:0.8rem}
+.main-table td{padding:9px 12px;border-bottom:1px solid #16191a;vertical-align:top}
+.main-table tr:last-child td{border-bottom:none}
+.mod-header{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+.mod-num{display:inline-block;background:var(--gold-dim);color:var(--bg);font-family:var(--font-mono);font-size:0.75rem;padding:3px 9px;border-radius:3px;font-weight:bold;white-space:nowrap}
+.topology-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;margin:16px 0;border-left:3px solid var(--gold-dim)}
+.topology-num{display:inline-block;background:#1e3a5f;color:#7ab4f0;font-family:var(--font-mono);font-size:0.75rem;padding:3px 9px;border-radius:3px;margin-right:8px;font-weight:bold}
+.failure-card{background:#1a0d0d;border:1px solid #3a1e1e;border-radius:8px;padding:16px;margin:10px 0}
+.failure-card .failure-label{font-family:var(--font-mono);font-size:0.78rem;color:#f47070;margin-bottom:6px;font-weight:bold}
+.prevention-card{background:#0a1a12;border:1px solid #1e3a2e;border-radius:6px;padding:12px 16px;margin-top:10px}
+.prevention-card .prevention-label{font-family:var(--font-mono);font-size:0.78rem;color:#4caf7d;margin-bottom:6px;font-weight:bold}
+.pattern-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px;margin:14px 0;border-left:3px solid #1e3a5f}
+.pattern-num{display:inline-block;background:#1e3a5f;color:#7ab4f0;font-family:var(--font-mono);font-size:0.75rem;padding:3px 9px;border-radius:3px;margin-right:8px;font-weight:bold}
+.step-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px;margin:12px 0}
+.step-label{display:inline-block;background:var(--gold-dim);color:var(--bg);font-family:var(--font-mono);font-size:0.75rem;padding:3px 9px;border-radius:3px;margin-right:10px;font-weight:bold}
+.diagram{font-family:var(--font-mono);background:#080c09;border:1px solid var(--border);border-radius:6px;padding:16px;font-size:0.82rem;line-height:2;color:#a8d4b0;margin:14px 0;overflow-x:auto}
+.checklist{list-style:none;margin:0;padding:0}
+.checklist li{padding:7px 0;border-bottom:1px solid #16191a;font-size:0.9rem}
+.checklist li:last-child{border-bottom:none}
+.checklist li::before{content:"[ ] ";font-family:var(--font-mono);color:var(--gold-dim);font-size:0.82rem}
+.decision-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
+@media(max-width:600px){.decision-grid{grid-template-columns:1fr}}
+.decision-cell{border-radius:6px;padding:14px}
+.decision-yes{background:#0a1a12;border:1px solid #1e3a2e}
+.decision-no{background:#1a0d0d;border:1px solid #3a1e1e}
+.decision-cell h4{font-family:var(--font-mono);font-size:0.82rem;margin-bottom:8px}
+.decision-yes h4{color:#4caf7d}
+.decision-no h4{color:#f47070}
+</style>
+</head>
+<body>
+
+<div class="progress-bar-container">
+  <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<nav class="nav">
+  <span class="nav-brand">QUARTA FLIGHT SCHOOL</span>
+  <div class="nav-links">
+    <a href="INDEX.html" class="nav-btn">Indice</a>
+    <a href="029-guia-modelos-ia-cual-usar.html" class="nav-btn">&#8592; Anterior</a>
+    <span class="nav-btn active">030</span>
+    <a href="031-segundo-cerebro-ia-roadmap-6-meses.html" class="nav-btn">Siguiente &#8594;</a>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="meta">
+    <span>Bloque: Ecosistema IA 2026</span>
+    <span>60 min</span>
+    <span>Clase 030</span>
+    <span class="dim">Fuente: @Av1dlive en X</span>
+  </div>
+
+  <h1>Workflows Multi-Agente: Guia Completa (11 Modulos)</h1>
+
+  <h2>Introduccion</h2>
+
+  <p>La experiencia practica es contundente: usar agentes unicos durante doce meses y luego cambiar a workflows multi-agente en dos dias revela una diferencia arquitectonica fundamental que ningun tutorial captura completamente.</p>
+
+  <p>Los sistemas multi-agente en 2026 tienen una sola pregunta definitoria: <span class="highlight">como coordinas agentes que no pueden compartir contexto sin envenenarse mutuamente?</span> La respuesta determina si tu sistema escala o colapsa bajo carga real.</p>
+
+  <p>Este curso construye tu modelo mental desde los primitivos fundamentales, luego conecta cada concepto directamente a lo que los Dynamic Workflows de Claude Code te dan hoy. Once modulos. Cada uno cierra una brecha conceptual que hace que los sistemas multi-agente fallen en produccion.</p>
+
+  <!-- MODULO 1 -->
+  <h2><span class="mod-num">MODULO 1</span> Que es un Sistema Multi-Agente</h2>
+
+  <p>La distincion mas importante que existe en esta disciplina:</p>
+
+  <div class="card card-gold">
+    <p><strong>El agente es la UNIDAD:</strong> una instancia LLM con su propio system prompt, conjunto de herramientas, ventana de memoria y a veces su propio modelo subyacente.</p>
+    <p style="margin-bottom:0"><strong>El sistema multi-agente es el RUNTIME:</strong> la maquineria que coordina dos o mas agentes, enruta tareas entre ellos, maneja handoffs y aplica una capa de gobierno sobre todo el conjunto.</p>
+  </div>
+
+  <p>Esta distincion importa porque la mayoria de fallas en sistemas multi-agente son <strong>fallas del RUNTIME</strong>, no fallas del agente. Los agentes individuales frecuentemente razonan correctamente. El sistema falla en coordinacion, propagacion de contexto y limites de permisos. Atacar el problema en el lugar equivocado &mdash; mejorando los agentes cuando el runtime esta roto &mdash; es la causa principal de iteraciones interminables sin progreso.</p>
+
+  <h3>Por Que los Agentes Unicos Fallan a Escala</h3>
+
+  <p>Tres problemas estructurales hacen que los agentes unicos colapsen en trabajos grandes:</p>
+
+  <ul>
+    <li><strong>Context saturation:</strong> cada resultado intermedio consume la ventana de contexto. A escala, el agente esta razonando sobre un monton de su propia historia en lugar del problema actual. La calidad del razonamiento cae con cada paso adicional.</li>
+    <li><strong>Sequential bottleneck:</strong> el agente ejecuta un paso a la vez. Una migracion de 200 archivos que podria paralelizarse corre en serie durante horas. No hay forma de acortar este tiempo dentro del modelo de agente unico.</li>
+    <li><strong>Fragile recovery:</strong> si el agente falla o deriva a mitad de tarea, todo el trabajo se reinicia desde cero. No hay checkpoints. No hay recuperacion parcial.</li>
+  </ul>
+
+  <p>Los sistemas multi-agente resuelven los tres problemas distribuyendo trabajo entre agentes aislados, almacenando resultados intermedios fuera del contexto de cualquier agente y agregando puntos de recuperacion a nivel de fase.</p>
+
+  <!-- MODULO 2 -->
+  <h2><span class="mod-num">MODULO 2</span> Los Tres Primitivos de Orquestacion de Claude</h2>
+
+  <p>Claude Code ofrece tres primitivos de orquestacion con caracteristicas fundamentalmente diferentes. Elegir el incorrecto produce sistemas que funcionan en demos pero fallan en produccion.</p>
+
+  <div style="overflow-x:auto">
+  <table class="main-table">
+    <thead>
+      <tr>
+        <th>Primitivo</th>
+        <th>Que es</th>
+        <th>Donde vive el estado</th>
+        <th>Repetible</th>
+        <th>Escala max</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>Subagents</code></td>
+        <td>Instancias Claude aisladas generadas por la sesion principal, reportan solo al orquestador</td>
+        <td>Contexto de la sesion principal</td>
+        <td>No</td>
+        <td>Pocos por turno</td>
+      </tr>
+      <tr>
+        <td><code>Agent Teams</code></td>
+        <td>Multiples sesiones Claude Code coordinadas por un team lead, pueden enviarse mensajes directamente via mailbox</td>
+        <td>Contexto propio de cada sesion</td>
+        <td>No</td>
+        <td>Sesiones paralelas</td>
+      </tr>
+      <tr>
+        <td><code>Dynamic Workflows</code></td>
+        <td>Script de orquestacion JavaScript que Claude escribe; un runtime separado lo ejecuta en hasta 1000 agentes</td>
+        <td>Variables del script, fuera de todos los contextos</td>
+        <td>Si (guardar como slash command)</td>
+        <td>1000 agentes / 16 concurrentes</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Regla de Decision</h3>
+
+  <ul>
+    <li><strong>Usa subagentes</strong> cuando necesites una o dos investigaciones aisladas que reporten de vuelta a una sesion unica. Trabajo ad-hoc sin necesidad de repeticion.</li>
+    <li><strong>Usa agent teams</strong> cuando los companieros necesitan comunicarse directamente entre si y contigo, sin pasar por un orquestador central. Coordinacion lateral importa.</li>
+    <li><strong>Usa dynamic workflows</strong> cuando la orquestacion debe ser repetible, el plan debe sobrevivir limites de contexto, o el trabajo toma horas o dias y necesita recuperacion por checkpoints.</li>
+  </ul>
+
+  <!-- MODULO 3 -->
+  <h2><span class="mod-num">MODULO 3</span> Las Seis Topologias de Orquestacion</h2>
+
+  <p>Las topologias son los patrones estructurales de como los agentes se conectan entre si. Cada una resuelve un problema distinto y tiene un failure mode distinto. Usarlas correctamente empieza por entender cuando cada una es la opcion apropiada.</p>
+
+  <div class="topology-card">
+    <h3><span class="topology-num">1</span>Sequential Pipeline</h3>
+    <p>Agentes dispuestos en cadena. El Agente A produce output, lo pasa al Agente B, que lo pasa al Agente C.</p>
+    <div class="diagram">[A: Parse] &rarr; [B: Analyze] &rarr; [C: Format] &rarr; [Output Final]</div>
+    <p><strong>Cuando usar:</strong> trabajo estrictamente dependiente donde cada paso debe completarse antes de que empiece el siguiente. Facil de depurar porque los datos tienen un solo camino.</p>
+    <p><strong>Implementacion Claude:</strong> cadena de prompts dentro de un script de dynamic workflow. Cada fase ejecuta un subagente, espera completitud, pasa el resultado como input al siguiente.</p>
+    <div class="failure-card">
+      <div class="failure-label">FAILURE MODE</div>
+      <p style="margin:0;font-size:0.9rem">La latencia se compone. Si el Agente B es lento, todo el pipeline espera. No usar para trabajo con caminos paralelos independientes donde el tiempo importa.</p>
+    </div>
+  </div>
+
+  <div class="topology-card">
+    <h3><span class="topology-num">2</span>Coordinator-Worker (Hub and Spoke)</h3>
+    <p>Un agente coordinador recibe la tarea de alto nivel, la descompone en subtareas y enruta cada una a un worker especialista. Los workers devuelven resultados al coordinador, que sintetiza el output final.</p>
+    <p><strong>Cuando usar:</strong> trabajo que se descompone en dominios especializados distintos. La logica de enrutamiento es estable y conocible en tiempo de plan.</p>
+    <div class="failure-card">
+      <div class="failure-label">FAILURE MODE</div>
+      <p style="margin:0;font-size:0.9rem">Punto unico de falla en el coordinador. Si el contexto del coordinador se llena o deriva, todo el sistema se degrada. Mantener el contexto del coordinador estrecho es critico.</p>
+    </div>
+  </div>
+
+  <div class="topology-card">
+    <h3><span class="topology-num">3</span>Parallel Fan-Out with Merge</h3>
+    <p>Multiples agentes trabajan simultaneamente en subtareas independientes. Un paso de merge recolecta y reconcilia sus outputs en un resultado unificado.</p>
+    <p><strong>Cuando usar:</strong> subtareas sin dependencias entre ellas. Auditar 200 archivos, consultar multiples fuentes de datos, ejecutar cinco investigaciones de bugs simultaneamente.</p>
+    <p><strong>Performance gain:</strong> la ejecucion paralela corta el tiempo de procesamiento 60-80% para tareas sin dependencias de pasos.</p>
+    <div class="failure-card">
+      <div class="failure-label">FAILURE MODE</div>
+      <p style="margin:0;font-size:0.9rem">La logica de merge es la parte dificil. Si los agentes devuelven schemas inconsistentes o hallazgos conflictivos, un merge naive produce basura. Los contratos de output son obligatorios.</p>
+    </div>
+  </div>
+
+  <div class="topology-card">
+    <h3><span class="topology-num">4</span>Generator-Verifier</h3>
+    <p>Un agente genera output. Un segundo agente lo evalua contra criterios explicitos. El resultado retroalimenta al generador. El loop corre hasta que el output pasa los criterios o se alcanza un conteo maximo de iteraciones.</p>
+    <p><strong>Cuando usar:</strong> la calidad del output es critica y los criterios de evaluacion pueden escribirse explicitamente. Escritura de pruebas, hallazgos de seguridad, planes de migracion.</p>
+    <div class="failure-card">
+      <div class="failure-label">FAILURE MODE</div>
+      <p style="margin:0;font-size:0.9rem">Si los criterios del verificador son vagos, se convierte en un sello de goma que aprueba todo. Escribe los criterios de verificacion como reglas explicitas y verificables, no como principios generales.</p>
+    </div>
+  </div>
+
+  <div class="topology-card">
+    <h3><span class="topology-num">5</span>Shared-State</h3>
+    <p>Los agentes coordinan a traves de un store persistente que todos leen y escriben directamente. Ningun orquestador central enruta mensajes; el store compartido es el mecanismo de coordinacion.</p>
+    <p><strong>Cuando usar:</strong> agentes construyen progresivamente sobre los hallazgos de los demas. El contexto que descubre un agente es inmediatamente util para otros trabajando el mismo problema.</p>
+    <p><strong>Implementacion Claude:</strong> en la practica, esto es el filesystem en un git worktree o una carpeta docs estructurada. Cada decision, cada plan, cada item completado cae en la carpeta como un archivo Markdown. Cada agente lo lee al inicio de su turno.</p>
+    <div class="failure-card">
+      <div class="failure-label">FAILURE MODE</div>
+      <p style="margin:0;font-size:0.9rem">Envenenamiento de contexto. Un agente escribe un mal hallazgo al store compartido. Cada agente downstream lo lee como verdad absoluta y construye sobre el. El error se compone a traves del pipeline sin que nadie lo detecte.</p>
+    </div>
+  </div>
+
+  <div class="topology-card">
+    <h3><span class="topology-num">6</span>Debate (Adversarial Multi-Agent)</h3>
+    <p>Dos o mas agentes atacan el mismo problema desde posiciones opuestas. Un agente juez &mdash;o el orquestador&mdash; reconcilia el output del debate en un hallazgo sintetizado.</p>
+    <p><strong>Cuando usar:</strong> quieres hallazgos que sobrevivan presion adversarial antes de llegarte. Auditorias de seguridad, evaluaciones de riesgo de migracion, decisiones de arquitectura criticas.</p>
+    <p><strong>Implementacion Claude:</strong> "Los agentes abordan el problema desde angulos independientes. Otros agentes luego intentan refutar lo que encontraron. El run itera hasta que las respuestas convergen o la divergencia en si misma es el hallazgo."</p>
+  </div>
+
+  <!-- MODULO 4 -->
+  <h2><span class="mod-num">MODULO 4</span> Arquitectura de Comunicacion</h2>
+
+  <p>La decision de diseno critica no es que formato de mensaje usar. Es si los agentes se comunican directamente o a traves de un sustrato.</p>
+
+  <div class="card card-red">
+    <h3 style="color:#f47070;margin-top:0">Comunicacion Directa Agente-a-Agente</h3>
+    <p style="margin-bottom:0">El Agente A envia su output directamente al contexto del Agente B. <strong style="color:#f47070">RIESGO:</strong> el Agente B hereda los errores, sesgos y alucinaciones del Agente A. Si el Agente A alucinó un dato, el Agente B lo toma como verdad.</p>
+  </div>
+
+  <div class="card card-green">
+    <h3 style="color:#4caf7d;margin-top:0">Comunicacion Mediada por Sustrato</h3>
+    <p style="margin-bottom:0">Los agentes escriben a un store compartido (variables del script, filesystem, base de datos). Otros agentes leen desde ahi. <strong style="color:#4caf7d">BENEFICIO:</strong> el contexto es controlado; las malas escrituras son aislables y auditables.</p>
+  </div>
+
+  <div class="card card-gold">
+    <p style="margin:0"><strong>Regla practica de sistemas de produccion:</strong> "Los agentes no deben hablarse directamente. Deben escribir a una capa de memoria compartida y leer desde ella. El conocimiento canonico vive en un lugar. Cada agente opera en aislamiento con un rol definido, herramientas definidas y outputs definidos."</p>
+  </div>
+
+  <h3>Output Contracts</h3>
+  <p>Cada agente en un sistema de produccion necesita un contrato de output explicito: un schema que define exactamente lo que debe devolver. Sin el, el paso de merge y los agentes downstream tienen que adivinar lo que recibieron, produciendo comportamiento impredecible.</p>
+
+  <h3>Context Window Budgeting</h3>
+  <ul>
+    <li><strong>Mantener el orquestador estrecho:</strong> su trabajo es descomposicion y enrutamiento. El razonamiento de dominio pertenece a los agentes especialistas, no al orquestador.</li>
+    <li><strong>Limitar lo que reciben los agentes:</strong> pasa solo lo que el agente necesita para su tarea especifica. No el historial completo del workflow.</li>
+    <li><strong>Limite de hot path para memoria a corto plazo:</strong> en loops agenticos, mantener solo los ultimos 3-5 intercambios en contexto activo. El resto va al store compartido.</li>
+  </ul>
+
+  <!-- MODULO 5 -->
+  <h2><span class="mod-num">MODULO 5</span> Modos de Falla</h2>
+
+  <p>Los cinco fallos que matan sistemas multi-agente de produccion. Cada uno es predecible y prevenible con las salvaguardas correctas.</p>
+
+  <div class="failure-card" style="margin-bottom:14px">
+    <div class="failure-label">FALLO 1 &mdash; Context Poisoning</div>
+    <p>Un agente escribe un output malo (hallazgo alucinado, schema incorrecto, estado corrupto) al store compartido. Los agentes downstream lo leen como verdad y construyen sobre el. El error se compone a traves del pipeline.</p>
+    <p><strong>Signos en produccion:</strong> hallazgos que parecen plausibles pero no pueden rastrearse de vuelta al contenido real del archivo.</p>
+    <div class="prevention-card">
+      <div class="prevention-label">PREVENCION</div>
+      <p style="margin:0;font-size:0.9rem">Validacion de schema en cada punto de escritura al store compartido. Agentes verificadores revisan outputs antes de que lleguen al store. Nunca pasar un output directo al siguiente agente sin validacion intermedia.</p>
+    </div>
+  </div>
+
+  <div class="failure-card" style="margin-bottom:14px">
+    <div class="failure-label">FALLO 2 &mdash; Cascading Failure</div>
+    <p>Un agente falla. El orquestador no aisla el fallo y enruta el mal resultado downstream. Los agentes construidos sobre el output fallido tambien fallan. Tasa de fallo documentada: 41-86.7% en sistemas sin orquestacion apropiada.</p>
+    <div class="prevention-card">
+      <div class="prevention-label">PREVENCION</div>
+      <p style="margin:0;font-size:0.9rem">Circuit breakers: si un agente devuelve error o null output, detener esa rama inmediatamente. Scoring de confianza en checkpoints del pipeline. Cada fase debe tener un criterio explicito de "lo que cuenta como exito".</p>
+    </div>
+  </div>
+
+  <div class="failure-card" style="margin-bottom:14px">
+    <div class="failure-label">FALLO 3 &mdash; Scope Creep</div>
+    <p>La descomposicion del orquestador es demasiado amplia. Los agentes interpretan su mandato de forma expansiva. Un agente encargado de "auditar el codebase" empieza a editar archivos que no debia tocar.</p>
+    <div class="prevention-card">
+      <div class="prevention-label">PREVENCION</div>
+      <p style="margin:0;font-size:0.9rem">Cada agente obtiene un scope explicito y acotado en su task prompt: que archivos puede leer, que puede escribir, que operaciones estan prohibidas. Politica de edicion: solo lectura a menos que se otorgue explicitamente acceso de escritura en el task prompt.</p>
+    </div>
+  </div>
+
+  <div class="failure-card" style="margin-bottom:14px">
+    <div class="failure-label">FALLO 4 &mdash; Silent Substitution</div>
+    <p>Un agente no puede completar un paso y silenciosamente inserta datos placeholder detras de un try/catch. Reporta exito. El pipeline trata el placeholder como un resultado real. El error no se descubre hasta que el output final es inutilizable.</p>
+    <div class="prevention-card">
+      <div class="prevention-label">PREVENCION</div>
+      <p style="margin:0;font-size:0.9rem">En CLAUDE.md: "NUNCA sustituyas datos mock o placeholder por un resultado real. Si un paso falla, reporta el error explicitamente y detente. Un fallo reportado es recuperable. Un fallo silencioso no lo es."</p>
+    </div>
+  </div>
+
+  <div class="failure-card" style="margin-bottom:14px">
+    <div class="failure-label">FALLO 5 &mdash; Coordination Deadlock</div>
+    <p>Dos agentes se esperan mutuamente. El Agente A no puede continuar hasta que el Agente B termine. El Agente B no puede empezar hasta que el Agente A escriba al store compartido. El workflow se paraliza indefinidamente.</p>
+    <div class="prevention-card">
+      <div class="prevention-label">PREVENCION</div>
+      <p style="margin:0;font-size:0.9rem">Grafos de dependencia explicitos en el script del workflow: cada agente declara lo que necesita antes de empezar. Timeouts en cada invocacion de agente. Si el timeout se alcanza, esa rama se marca como fallida y el workflow continua o se detiene segun la politica configurada.</p>
+    </div>
+  </div>
+
+  <!-- MODULO 6 -->
+  <h2><span class="mod-num">MODULO 6</span> La Capa de Gobierno</h2>
+
+  <p>Cada sistema multi-agente necesita tres capas estructurales para funcionar de forma confiable:</p>
+
+  <div style="overflow-x:auto">
+  <table class="main-table">
+    <thead>
+      <tr>
+        <th>Capa</th>
+        <th>Rol</th>
+        <th>Que se rompe sin ella</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>Orchestrator</code></td>
+        <td>Descompone tareas, enruta a especialistas, sintetiza resultados finales</td>
+        <td>Sin coordinacion; agentes duplican o conflictuan trabajo</td>
+      </tr>
+      <tr>
+        <td><code>Specialist Agents</code></td>
+        <td>Ejecutan operaciones acotadas con prompts y herramientas enfocados en dominio</td>
+        <td>Cuello de botella de contexto unico; sin paralelismo posible</td>
+      </tr>
+      <tr>
+        <td><code>Governance Layer</code></td>
+        <td>Controla lo que cada agente puede acceder, cuando puede actuar, que debe registrar</td>
+        <td>Acceso sin restricciones a herramientas; trails de auditoria faltantes; outputs no validados llegando a sistemas downstream</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Las Cuatro Funciones de la Capa de Gobierno</h3>
+
+  <ol>
+    <li><strong>Permission scoping:</strong> cada agente tiene un conjunto de permisos declarado. Un agente de auditoria de seguridad obtiene acceso de solo lectura. Un agente de migracion obtiene acceso de escritura solo a los paths especificados en el task prompt.</li>
+    <li><strong>Human-in-the-loop gates:</strong> define que acciones requieren aprobacion humana antes de ejecutarse. Las operaciones irreversibles &mdash;borrado de archivos, escritura en base de datos de produccion, deploy a infraestructura&mdash; siempre pasan por una HITL gate.</li>
+    <li><strong>Audit trails:</strong> cada decision, accion y llamada a herramienta del agente se registra con el ID del agente y el razonamiento que la llevo. Sin esto, depurar un fallo de produccion es imposible.</li>
+    <li><strong>Blast radius limits:</strong> define el dano maximo que un agente puede causar si se porta mal. Un agente que solo puede escribir a una carpeta especifica tiene un blast radius acotado aunque aluciné o sea comprometido.</li>
+  </ol>
+
+  <p>Ejemplo de CLAUDE.md para governance:</p>
+  <pre><code>## Agent Permissions
+- Read access: entire repository
+- Write access: only paths listed in the task prompt
+- Shell commands: only commands on the approved list
+- Network: no external calls unless the task prompt specifies an endpoint
+
+## Error Handling
+- Silent failures are not permitted
+- Every error must be reported before halting
+
+## Irreversible Action Policy
+- Database writes require explicit approval in the task prompt
+- File deletions require explicit approval in the task prompt</code></pre>
+
+  <!-- MODULO 7 -->
+  <h2><span class="mod-num">MODULO 7</span> Los Cinco Patrones Claude-Nativos en Produccion</h2>
+
+  <div class="pattern-card">
+    <h3><span class="pattern-num">1</span>Prompt Chaining</h3>
+    <p>Rompe una tarea compleja en una cadena de prompts simples. El output de uno se convierte en el input del siguiente. Cada prompt en la cadena tiene una responsabilidad unica y acotada.</p>
+    <p><strong>Cuando usar:</strong> la tarea tiene etapas secuenciales claras donde cada etapa depende del output de la anterior. La cadena hace explicita la dependencia y facilita la depuracion.</p>
+  </div>
+
+  <div class="pattern-card">
+    <h3><span class="pattern-num">2</span>Routing</h3>
+    <p>Un agente clasificador lee el input y lo enruta al especialista apropiado. El clasificador no procesa la tarea; solo lee, clasifica y delega. El especialista tiene el contexto correcto para la tarea especifica.</p>
+    <p><strong>Cuando usar:</strong> las tareas llegan en un stream heterogeneo donde cada tipo requiere un tratamiento fundamentalmente diferente. El enrutador reduce el contexto que cada especialista necesita cargar.</p>
+  </div>
+
+  <div class="pattern-card">
+    <h3><span class="pattern-num">3</span>Parallelization</h3>
+    <p>Distribuye subtareas independientes a multiples agentes simultaneamente. Merge de resultados al final. Los workflows de Claude corren hasta 16 agentes concurrentes.</p>
+    <p><strong>Performance:</strong> el uso de tokens cae 60-90% vs encadenamiento secuencial para tareas sin dependencias. La reduccion de tiempo de ejecucion es proporcional al numero de agentes paralelos hasta el limite de concurrencia.</p>
+  </div>
+
+  <div class="pattern-card">
+    <h3><span class="pattern-num">4</span>Orchestrator-Subagents</h3>
+    <p>Un orquestador recibe un objetivo de alto nivel, lo descompone en subtareas, despacha a subagentes especializados y sintetiza sus outputs. El unico trabajo del orquestador es descomposicion y sintesis. El razonamiento de dominio pertenece a los especialistas.</p>
+    <p>Esta division de responsabilidades es lo que mantiene el contexto del orquestador estrecho y funcional durante workflows largos.</p>
+  </div>
+
+  <div class="pattern-card">
+    <h3><span class="pattern-num">5</span>Evaluator-Optimizer</h3>
+    <p>El agente generador produce output. El agente evaluador lo puntua contra criterios explicitos. La puntuacion mas feedback regresa al generador. Loop hasta que el output pasa o se alcanzan las iteraciones maximas.</p>
+    <p><strong>Critico:</strong> establece un conteo maximo de iteraciones de 3 a 5. Sin el, el loop puede correr indefinidamente consumiendo tokens sin convergencia real.</p>
+  </div>
+
+  <!-- MODULO 8 -->
+  <h2><span class="mod-num">MODULO 8</span> Diseno de Sistema desde Cero</h2>
+
+  <p>Proceso repetible para disenar un sistema multi-agente antes de escribir un solo prompt del workflow. Saltarse este proceso produce sistemas que hay que redisenar desde cero despues de la primera ejecucion real.</p>
+
+  <div class="step-card">
+    <h3><span class="step-label">STEP 1</span>Task Decomposition</h3>
+    <p>Escribe la tarea de alto nivel en una oracion. Luego lista cada operacion distinta necesaria para completarla. Para cada operacion, responde dos preguntas: depende del output de otra operacion? puede correr al mismo tiempo que otras? Las respuestas definen el grafo de dependencias del workflow.</p>
+  </div>
+
+  <div class="step-card">
+    <h3><span class="step-label">STEP 2</span>Specialist Identification</h3>
+    <p>Para cada operacion en tu diagrama de fases, identifica el agente especialista que necesita. Define para cada agente: el rol en una oracion, acceso a herramientas exacto, contrato de output (schema JSON explicito) y comportamiento en falla.</p>
+  </div>
+
+  <div class="step-card">
+    <h3><span class="step-label">STEP 3</span>Communication Design</h3>
+    <p>Decide: sustrato-mediado o directo? Para la mayoria de sistemas de produccion la respuesta es sustrato-mediado via variables del script del workflow o el filesystem. La comunicacion directa es la excepcion, no la regla.</p>
+  </div>
+
+  <div class="step-card">
+    <h3><span class="step-label">STEP 4</span>Governance Contracts</h3>
+    <p>Escribe las reglas CLAUDE.md del agente antes de escribir cualquier prompt del workflow. Los contratos de governance definen los limites dentro de los cuales todos los prompts operan.</p>
+  </div>
+
+  <div class="step-card">
+    <h3><span class="step-label">STEP 5</span>Pre-Flight Checklist</h3>
+    <p>Antes de correr cualquier workflow multi-agente en un repositorio real:</p>
+    <ul class="checklist">
+      <li>Trabajando en un git worktree o feature branch, no en main</li>
+      <li>El scope de permisos de cada agente esta explicitamente acotado en el task prompt</li>
+      <li>Contratos de output definidos para cada agente que escribe al store compartido</li>
+      <li>Agentes verificadores en su lugar para cada agente generador en caminos criticos</li>
+      <li>HITL gates definidas para todas las acciones irreversibles</li>
+      <li>Conteos maximos de iteraciones establecidos en todos los loops evaluador-optimizador</li>
+    </ul>
+  </div>
+
+  <!-- MODULO 9 -->
+  <h2><span class="mod-num">MODULO 9</span> Construyendo con el Stack de Orquestacion de Claude</h2>
+
+  <p>La arquitectura practica combina dos primitivos en capas:</p>
+
+  <div class="card card-blue">
+    <h3 style="color:#7ab4f0;margin-top:0">Capa Exterior: Dynamic Workflow</h3>
+    <p>Claude escribe el script de orquestacion. El script maneja descomposicion del objetivo, fan-out de tareas paralelas, recoleccion de resultados y secuenciacion de fases. El estado intermedio vive en variables del script, fuera del contexto de cualquier agente individual.</p>
+    <p style="margin-bottom:0">El script puede guardarse como slash command y reutilizarse: la orquestacion se convierte en un artefacto, no en trabajo que se rehace cada vez.</p>
+  </div>
+
+  <div class="card card-green">
+    <h3 style="color:#4caf7d;margin-top:0">Capa Interior: Specialist Subagents</h3>
+    <p>Cada fase en el workflow despacha subagentes especialistas. Cada subagente tiene: un system prompt con scope via la task en el workflow, rutas de archivo especificas, schema de output definido y una politica de falla explicita.</p>
+    <p style="margin-bottom:0">Los especialistas no saben que son parte de un workflow. Solo ven su task y sus herramientas. Esto es lo que mantiene su razonamiento limpio y enfocado.</p>
+  </div>
+
+  <h3>Observabilidad: /workflows Command</h3>
+  <p>El comando <code>/workflows</code> da observabilidad en vivo a cada dynamic workflow en ejecucion: estado a nivel de fase, drill-down a nivel de agente, capacidad de pausar o reiniciar agentes individuales o detener todo el workflow. En produccion, esta visibilidad es lo que hace que los sistemas multi-agente sean manejables en lugar de cajas negras.</p>
+
+  <!-- MODULO 10 -->
+  <h2><span class="mod-num">MODULO 10</span> Escala y Control de Costos</h2>
+
+  <p>Los sistemas multi-agente no tienen curvas de costo lineales. Los costos se componen con el conteo de agentes. Entender la arquitectura de costos evita sorpresas en produccion.</p>
+
+  <h3>Arquitectura de Costos por Capa</h3>
+
+  <ol>
+    <li><strong>Orchestration planning:</strong> escribir el script o descomponer la tarea cuesta tokens por adelantado. Este costo es fijo por trabajo, no por agente. Se amortiza sobre toda la ejecucion del workflow.</li>
+    <li><strong>Agent execution:</strong> cada agente lee su tarea, lee sus archivos de input, llama herramientas y produce output. El costo escala linealmente con el conteo de agentes. Este es el driver principal del costo total.</li>
+    <li><strong>Synthesis:</strong> el orquestador lee todos los outputs del agente y sintetiza. El costo escala con el volumen total de output de todos los agentes. Un merge de 100 agentes con outputs grandes puede costar mas que la ejecucion de todos los agentes.</li>
+  </ol>
+
+  <h3>La Regla de 3-7 Agentes</h3>
+
+  <div class="card card-gold">
+    <p>Mantener equipos pequenos: 3-7 agentes por fase del workflow. Mas alla de ese rango, crear estructuras jerarquicas: un team lead por grupo, los team leads reportan a un orquestador global.</p>
+    <p style="margin-bottom:0">Las arquitecturas planas con 20+ agentes en una sola capa de coordinacion tienen overhead cuadratico de comunicacion. La jerarquia no es burocracia; es ingenieria de escala.</p>
+  </div>
+
+  <!-- MODULO 11 -->
+  <h2><span class="mod-num">MODULO 11</span> Guia de Decision</h2>
+
+  <p>La pregunta que mas tiempo pierde la gente: "debo usar multi-agente o agente unico?" La respuesta depende de caracteristicas especificas del trabajo, no de preferencias.</p>
+
+  <div class="decision-grid">
+    <div class="decision-cell decision-yes">
+      <h4>CONSTRUIR MULTI-AGENTE CUANDO:</h4>
+      <ul style="margin:0;padding-left:16px;font-size:0.9rem">
+        <li>La tarea tiene caminos paralelos genuinamente independientes (y puedes enumerarlos)</li>
+        <li>El trabajo excede la ventana de contexto de un solo agente y no puede resumirse sin perdida</li>
+        <li>Necesitas verificacion adversarial del output</li>
+        <li>El trabajo corre por horas o dias y necesita recuperacion por checkpoints</li>
+        <li>El proceso es repetible y la orquestacion misma deberia ser un artefacto reutilizable</li>
+      </ul>
+    </div>
+    <div class="decision-cell decision-no">
+      <h4>QUEDARSE CON AGENTE UNICO CUANDO:</h4>
+      <ul style="margin:0;padding-left:16px;font-size:0.9rem">
+        <li>La tarea es secuencial sin paralelismo real</li>
+        <li>El trabajo cabe comodamente en una ventana de contexto</li>
+        <li>El overhead de coordinacion excederia el tiempo de ejecucion</li>
+        <li>Todavia estas construyendo y cambiando el sistema rapidamente</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>El Error Arquitectonico Mas Grande</h3>
+
+  <div class="card card-red">
+    <p style="margin:0">Enrutar todos los resultados de los agentes de vuelta al contexto del orquestador. Una vez que haces eso, has reconstruido el cuello de botella del agente unico con extra network hops. El contexto del orquestador deberia contener el plan y la sintesis final. <strong>Nada mas.</strong> Todo lo que llega al orquestador mas alla de eso es ruido que degrada su capacidad de razonamiento.</p>
+  </div>
+
+  <h2>Quiz de Comprension</h2>
+
+  <div class="quiz">
+    <h3>Verifica tu comprension</h3>
+
+    <div class="quiz-item" id="qi1">
+      <p class="quiz-q">1. Segun el Modulo 1, la mayoria de fallas en sistemas multi-agente son fallas del runtime, no del agente individual. Que implica esto para el debugging?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q1" value="a"> Hay que mejorar los prompts de los agentes individuales primero</label>
+        <label><input type="radio" name="q1" value="b"> Hay que atacar la coordinacion, propagacion de contexto y limites de permisos, no el razonamiento del agente</label>
+        <label><input type="radio" name="q1" value="c"> Hay que cambiar el modelo LLM subyacente de los agentes</label>
+        <label><input type="radio" name="q1" value="d"> Hay que reducir el numero de agentes para simplificar el sistema</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q1','b','qi1')">Verificar</button>
+      <div class="quiz-result correct-msg" id="q1-correct">Correcto. Si las fallas son del runtime, el debugging debe atacar coordinacion, propagacion de contexto y permisos. Mejorar los agentes individuales cuando el runtime esta roto es iteracion sin progreso.</div>
+      <div class="quiz-result wrong-msg" id="q1-wrong">Incorrecto. El Modulo 1 es explicito: las fallas son del runtime. El debugging correcto ataca coordinacion, propagacion de contexto y limites de permisos. No los agentes individuales que frecuentemente razonan correctamente.</div>
+    </div>
+
+    <div class="quiz-item" id="qi2">
+      <p class="quiz-q">2. Para un workflow que necesita ser repetible y cuya orquestacion debe sobrevivir limites de contexto, que primitivo usar?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q2" value="a"> Subagents, porque son los mas simples</label>
+        <label><input type="radio" name="q2" value="b"> Agent Teams, porque permiten comunicacion directa</label>
+        <label><input type="radio" name="q2" value="c"> Dynamic Workflows, porque el estado vive en variables del script fuera de todos los contextos y puede guardarse como slash command</label>
+        <label><input type="radio" name="q2" value="d"> Cualquiera de los tres, no hay diferencia para repetibilidad</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q2','c','qi2')">Verificar</button>
+      <div class="quiz-result correct-msg" id="q2-correct">Correcto. Dynamic Workflows es el unico primitivo repetible: el estado vive en variables del script fuera de todos los contextos de agentes, y puede guardarse como slash command para reutilizacion.</div>
+      <div class="quiz-result wrong-msg" id="q2-wrong">Incorrecto. Para workflows repetibles, la respuesta es Dynamic Workflows. Es el unico primitivo donde el estado vive fuera de los contextos de los agentes y puede guardarse como slash command reutilizable.</div>
+    </div>
+
+    <div class="quiz-item" id="qi3">
+      <p class="quiz-q">3. Que es el "Context Poisoning" y como se previene?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q3" value="a"> Un agente que consume demasiados tokens; se previene con contextos mas cortos</label>
+        <label><input type="radio" name="q3" value="b"> Un agente que escribe un hallazgo incorrecto al store compartido que los agentes downstream toman como verdad; se previene con validacion de schema y agentes verificadores</label>
+        <label><input type="radio" name="q3" value="c"> Un agente que se queda sin contexto y falla; se previene reiniciando el agente</label>
+        <label><input type="radio" name="q3" value="d"> Un conflicto entre dos agentes que escriben al mismo archivo; se previene con locks</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q3','b','qi3')">Verificar</button>
+      <div class="quiz-result correct-msg" id="q3-correct">Correcto. Context Poisoning ocurre cuando un agente escribe un hallazgo incorrecto al store compartido y los agentes downstream lo toman como verdad. La prevencion es validacion de schema en cada escritura y agentes verificadores en el camino critico.</div>
+      <div class="quiz-result wrong-msg" id="q3-wrong">Incorrecto. Context Poisoning es cuando un agente escribe un output malo al store compartido y los agentes downstream lo tratan como verdad absoluta, componiendose el error a traves del pipeline. Se previene con validacion de schema y agentes verificadores.</div>
+    </div>
+
+    <div class="quiz-item" id="qi4">
+      <p class="quiz-q">4. Segun la Regla de 3-7 Agentes, que estructura se recomienda cuando el workflow necesita mas de 7 agentes por fase?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q4" value="a"> Poner todos los agentes en una sola capa plana con un orquestador central</label>
+        <label><input type="radio" name="q4" value="b"> Reducir el numero de agentes hasta que entren en el limite</label>
+        <label><input type="radio" name="q4" value="c"> Crear estructuras jerarquicas con team leads por grupo que reportan a un orquestador global</label>
+        <label><input type="radio" name="q4" value="d"> Usar un solo agente con un contexto muy grande</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q4','c','qi4')">Verificar</button>
+      <div class="quiz-result correct-msg" id="q4-correct">Correcto. Cuando se necesitan mas de 7 agentes, la solucion es jerarquia: team leads por grupo que reportan a un orquestador global. Las arquitecturas planas con 20+ agentes tienen overhead cuadratico de comunicacion.</div>
+      <div class="quiz-result wrong-msg" id="q4-wrong">Incorrecto. Para mas de 7 agentes por fase, se crean estructuras jerarquicas: un team lead por grupo de 3-7 agentes, y los team leads reportan al orquestador global. Las arquitecturas planas a esa escala tienen overhead cuadratico.</div>
+    </div>
+
+    <div class="quiz-item" id="qi5">
+      <p class="quiz-q">5. Cual es el error arquitectonico mas grande en sistemas multi-agente segun el Modulo 11?</p>
+      <div class="quiz-options">
+        <label><input type="radio" name="q5" value="a"> Usar demasiadas topologias diferentes en el mismo workflow</label>
+        <label><input type="radio" name="q5" value="b"> Enrutar todos los resultados de los agentes de vuelta al contexto del orquestador, recreando el cuello de botella del agente unico</label>
+        <label><input type="radio" name="q5" value="c"> No tener suficientes agentes para el trabajo</label>
+        <label><input type="radio" name="q5" value="d"> Usar Dynamic Workflows cuando deberian usarse Subagents</label>
+      </div>
+      <button class="btn" onclick="checkAnswer('q5','b','qi5')">Verificar</button>
+      <div class="quiz-result correct-msg" id="q5-correct">Correcto. Enrutar todos los resultados al contexto del orquestador recrea exactamente el cuello de botella del agente unico, solo con mas overhead de network. El orquestador debe contener solo el plan y la sintesis final.</div>
+      <div class="quiz-result wrong-msg" id="q5-wrong">Incorrecto. El error mas grande es enrutar todos los resultados al contexto del orquestador. Cuando haces eso, has reconstruido el cuello de botella del agente unico con extra overhead. El contexto del orquestador debe contener plan y sintesis final, nada mas.</div>
+    </div>
+  </div>
+
+  <!-- Completar -->
+  <div class="completed-section">
+    <input type="checkbox" id="completedCheck" onchange="markCompleted()">
+    <label for="completedCheck">Marcar como completada</label>
+    <span class="dim" id="completedDate" style="margin-left:auto;font-family:var(--font-mono);font-size:0.78rem"></span>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// Progress bar
+window.addEventListener('scroll', function() {
+  var scrollTop = window.scrollY || document.documentElement.scrollTop;
+  var docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  var pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  document.getElementById('progressBar').style.width = pct + '%';
+});
+
+// Quiz
+function checkAnswer(qName, correct, itemId) {
+  var selected = document.querySelector('input[name="' + qName + '"]:checked');
+  if (!selected) return;
+  var correctEl = document.getElementById(qName + '-correct');
+  var wrongEl = document.getElementById(qName + '-wrong');
+  correctEl.style.display = 'none';
+  wrongEl.style.display = 'none';
+  if (selected.value === correct) {
+    correctEl.style.display = 'block';
+  } else {
+    wrongEl.style.display = 'block';
+  }
+}
+
+// localStorage completion
+var pageKey = 'completed_030';
+window.addEventListener('DOMContentLoaded', function() {
+  var saved = localStorage.getItem(pageKey);
+  if (saved) {
+    document.getElementById('completedCheck').checked = true;
+    document.getElementById('completedDate').textContent = 'Completada el ' + saved;
+  }
+});
+
+function markCompleted() {
+  var cb = document.getElementById('completedCheck');
+  if (cb.checked) {
+    var now = new Date().toLocaleDateString('es-CO', {year:'numeric',month:'short',day:'numeric'});
+    localStorage.setItem(pageKey, now);
+    document.getElementById('completedDate').textContent = 'Completada el ' + now;
+  } else {
+    localStorage.removeItem(pageKey);
+    document.getElementById('completedDate').textContent = '';
+  }
+}
+</script>
+</body>
+</html>
